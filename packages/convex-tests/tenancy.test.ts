@@ -19,7 +19,7 @@ import {
   requireWorkspaceRole,
   requireWorkspaceUserId,
   requireOwner,
-} from "../tenancy_probe";
+} from "../../convex/tenancy_probe";
 
 test("requireWorkspace returns owner role for the demo user in the demo workspace", async () => {
   const { t, workspace, me } = await setupAuthenticatedTestEnv();

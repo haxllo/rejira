@@ -18,13 +18,13 @@
 
 import { convexTest, type TestConvex } from "convex-test";
 import { expect } from "vitest";
-import schema from "../schema";
-import * as seedModule from "../seed";
-import * as tenancyProbeModule from "../tenancy_probe";
-import { authComponent, createAuthOptions } from "../betterAuth/auth";
-import betterAuthSchema from "../betterAuth/schema";
-import * as betterAuthAdapterModule from "../betterAuth/adapter";
-import * as betterAuthAuthModule from "../betterAuth/auth";
+import schema from "../../convex/schema";
+import * as seedModule from "../../convex/seed";
+import * as tenancyProbeModule from "../../convex/tenancy_probe";
+import { authComponent, createAuthOptions } from "../../convex/betterAuth/auth";
+import betterAuthSchema from "../../convex/betterAuth/schema";
+import * as betterAuthAdapterModule from "../../convex/betterAuth/adapter";
+import * as betterAuthAuthModule from "../../convex/betterAuth/auth";
 
 process.env.BETTER_AUTH_SECRET = "test-secret-key-for-convex-tests";
 
@@ -38,8 +38,8 @@ export const DEMO_WORKSPACE_EXTERNAL_ID = "w_acme";
 // We still include the `_generated/api` and `_generated/server` keys so
 // `findModulesRoot` can locate the generated directory.
 const modules = {
-  "_generated/api": () => import("../_generated/api"),
-  "_generated/server": () => import("../_generated/server"),
+  "_generated/api": () => import("../../convex/_generated/api"),
+  "_generated/server": () => import("../../convex/_generated/server"),
   seed: () => seedModule,
   tenancy_probe: () => tenancyProbeModule,
 };
@@ -51,8 +51,8 @@ export const seedRef = seedModule.seed;
 export async function setupTestEnv(): Promise<TestConvex<typeof schema>> {
   const t = convexTest(schema, modules);
   t.registerComponent("betterAuth", betterAuthSchema, {
-    "_generated/api": () => import("../betterAuth/_generated/api"),
-    "_generated/server": () => import("../betterAuth/_generated/server"),
+    "_generated/api": () => import("../../convex/betterAuth/_generated/api"),
+    "_generated/server": () => import("../../convex/betterAuth/_generated/server"),
     adapter: () => Promise.resolve(betterAuthAdapterModule),
     auth: () => Promise.resolve(betterAuthAuthModule),
   });

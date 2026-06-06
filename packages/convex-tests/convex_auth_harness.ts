@@ -20,7 +20,7 @@
 
 import type { TestConvex } from "convex-test";
 import { setupTestEnv, getDemoIds } from "./setup";
-import type schema from "../schema";
+import type schema from "../../convex/schema";
 
 export interface AuthenticatedTestEnv {
   t: TestConvex<typeof schema>;
@@ -35,7 +35,7 @@ export async function setupAuthenticatedTestEnv(): Promise<AuthenticatedTestEnv>
 
   // Create a session for the demo user so safeGetAuthUser finds it.
   const sessionId = await t.run(async (ctx) => {
-    const { authComponent, createAuthOptions } = await import("../betterAuth/auth");
+    const { authComponent, createAuthOptions } = await import("../../convex/betterAuth/auth");
     const authAdapter = authComponent.adapter(ctx)(createAuthOptions(ctx));
     const session = await authAdapter.create({
       model: "session",

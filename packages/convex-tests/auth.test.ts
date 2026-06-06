@@ -19,7 +19,7 @@ import { setupTestEnv, getDemoIds } from "./setup";
 import { setupAuthenticatedTestEnv } from "./convex_auth_harness";
 import {
   requireWorkspaceRole,
-} from "../tenancy_probe";
+} from "../../convex/tenancy_probe";
 
 test("1. getAuthUserId returns null when no identity", async () => {
   const t = await setupTestEnv();
@@ -51,7 +51,7 @@ test("4. requireUser returns the user for verified sessions", async () => {
   const { t, me } = await setupAuthenticatedTestEnv();
   // Verify the authenticated user matches the seeded user.
   const resolvedId = await t.run(async (ctx) => {
-    const { authComponent } = await import("../betterAuth/auth");
+    const { authComponent } = await import("../../convex/betterAuth/auth");
     const user = await authComponent.safeGetAuthUser(ctx);
     return user ? (user._id as string) : null;
   });
@@ -62,7 +62,7 @@ test("5. requireVerifiedUser throws for unverified emails", async () => {
   const t = await setupTestEnv();
   // Create a user with emailVerified: false, create a session, try auth.
   const { userId, sessionId } = await t.run(async (ctx) => {
-    const { authComponent, createAuthOptions } = await import("../betterAuth/auth");
+    const { authComponent, createAuthOptions } = await import("../../convex/betterAuth/auth");
     const adapter = authComponent.adapter(ctx)(createAuthOptions(ctx));
     const created = await adapter.create({
       model: "user",
@@ -97,7 +97,7 @@ test("5. requireVerifiedUser throws for unverified emails", async () => {
   // Actually safeGetAuthUser only checks identity+session+user existence,
   // NOT emailVerified. requireVerifiedUser checks emailVerified separately.
   const user = await authed.run(async (ctx) => {
-    const { authComponent } = await import("../betterAuth/auth");
+    const { authComponent } = await import("../../convex/betterAuth/auth");
     return await authComponent.safeGetAuthUser(ctx);
   });
   // safeGetAuthUser returns the user regardless of emailVerified.
@@ -107,7 +107,7 @@ test("5. requireVerifiedUser throws for unverified emails", async () => {
 
   // requireVerifiedUser should throw emailNotVerified.
   const rejected = await authed.run(async (ctx) => {
-    const { requireVerifiedUser } = await import("../_lib/auth_helpers");
+    const { requireVerifiedUser } = await import("../../convex/_lib/auth_helpers");
     try {
       await requireVerifiedUser(ctx);
       return "ok";
@@ -121,7 +121,7 @@ test("5. requireVerifiedUser throws for unverified emails", async () => {
 test("6. adapter.create creates a user row", async () => {
   const t = await setupTestEnv();
   const user = await t.run(async (ctx) => {
-    const { authComponent, createAuthOptions } = await import("../betterAuth/auth");
+    const { authComponent, createAuthOptions } = await import("../../convex/betterAuth/auth");
     const adapter = authComponent.adapter(ctx)(createAuthOptions(ctx));
     return adapter.create({
       model: "user",
@@ -142,7 +142,7 @@ test("6. adapter.create creates a user row", async () => {
 test("7. safeGetAuthUser returns user when session exists", async () => {
   const { t, me } = await setupAuthenticatedTestEnv();
   const user = await t.run(async (ctx) => {
-    const { authComponent } = await import("../betterAuth/auth");
+    const { authComponent } = await import("../../convex/betterAuth/auth");
     return await authComponent.safeGetAuthUser(ctx);
   });
   expect(user).not.toBeNull();
@@ -153,7 +153,7 @@ test("8. Sessions are filtered by expiresAt", async () => {
   const t = await setupTestEnv();
   // Create a user + expired session. safeGetAuthUser should return null.
   const { userId, sessionId } = await t.run(async (ctx) => {
-    const { authComponent, createAuthOptions } = await import("../betterAuth/auth");
+    const { authComponent, createAuthOptions } = await import("../../convex/betterAuth/auth");
     const adapter = authComponent.adapter(ctx)(createAuthOptions(ctx));
     const created = await adapter.create({
       model: "user",
@@ -182,7 +182,7 @@ test("8. Sessions are filtered by expiresAt", async () => {
 
   const authed = t.withIdentity({ subject: userId, sessionId: sessionId });
   const user = await authed.run(async (ctx) => {
-    const { authComponent } = await import("../betterAuth/auth");
+    const { authComponent } = await import("../../convex/betterAuth/auth");
     return await authComponent.safeGetAuthUser(ctx);
   });
   // Session is expired — safeGetAuthUser should return undefined/null.
@@ -193,7 +193,7 @@ test("9. Session userId must match identity subject", async () => {
   const t = await setupTestEnv();
   const { me } = await getDemoIds(t);
   const { userId, sessionId } = await t.run(async (ctx) => {
-    const { authComponent, createAuthOptions } = await import("../betterAuth/auth");
+    const { authComponent, createAuthOptions } = await import("../../convex/betterAuth/auth");
     const adapter = authComponent.adapter(ctx)(createAuthOptions(ctx));
     const other = await adapter.create({
       model: "user",
@@ -229,7 +229,7 @@ test("9. Session userId must match identity subject", async () => {
   // This test verifies that identity.subject resolves correctly.
   const authed = t.withIdentity({ subject: me, sessionId });
   const user = await authed.run(async (ctx) => {
-    const { authComponent } = await import("../betterAuth/auth");
+    const { authComponent } = await import("../../convex/betterAuth/auth");
     return await authComponent.safeGetAuthUser(ctx);
   });
   // safeGetAuthUser looks up session by _id (sessionId) then user by _id (subject).

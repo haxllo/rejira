@@ -12,8 +12,6 @@ import type * as _lib_auth_helpers from "../_lib/auth_helpers.js";
 import type * as _lib_errors from "../_lib/errors.js";
 import type * as _lib_schema_types from "../_lib/schema_types.js";
 import type * as _lib_tenancy from "../_lib/tenancy.js";
-import type * as _tests_convex_auth_harness from "../_tests/convex_auth_harness.js";
-import type * as _tests_setup from "../_tests/setup.js";
 import type * as auth from "../auth.js";
 import type * as auth_adapter from "../auth_adapter.js";
 import type * as comments from "../comments.js";
@@ -39,8 +37,6 @@ declare const fullApi: ApiFromModules<{
   "_lib/errors": typeof _lib_errors;
   "_lib/schema_types": typeof _lib_schema_types;
   "_lib/tenancy": typeof _lib_tenancy;
-  "_tests/convex_auth_harness": typeof _tests_convex_auth_harness;
-  "_tests/setup": typeof _tests_setup;
   auth: typeof auth;
   auth_adapter: typeof auth_adapter;
   comments: typeof comments;

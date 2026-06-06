@@ -12,7 +12,7 @@ import { expect, test } from "vitest";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-const CONVEX_DIR = join(__dirname, "..");
+const CONVEX_DIR = join(__dirname, "..", "..", "convex");
 const SCHEMA_PATH = join(CONVEX_DIR, "schema.ts");
 
 function readFile(path: string): string {
