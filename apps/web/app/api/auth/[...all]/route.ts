@@ -1,49 +1,9 @@
-// Phase 3 — Stream 3A: Better Auth HTTP proxy to Convex.
+// Phase 3 — Option 2: Better Auth hosted in Next.js.
 //
-// Forwards browser requests to Convex's Better Auth HTTP handler.
-// The handler runs in Convex HTTP actions (see `convex/http.ts`).
-//
-// NOTE: The dash() plugin does NOT work in Convex due to Node.js API
-// dependencies (@better-auth/sso → samlify → crypto/fs). The dashboard
-// at dash.better-auth.com cannot connect to Convex-hosted auth.
+// Better Auth runs directly in Next.js (full Node.js runtime).
+// Data persists to Convex via convexBetterAuthNextJs + auth_adapter.
 
-const CONVEX_URL = process.env.CONVEX_SITE_URL;
+import { toNextJsHandler } from "better-auth/next-js";
+import { authInstance } from "@/lib/auth/server";
 
-async function handler(request: Request) {
-  const pathname = new URL(request.url).pathname;
-  const authPath = pathname.replace("/api/auth", "");
-  const targetUrl = `${CONVEX_URL}/api/auth${authPath}`;
-
-  const headers = new Headers(request.headers);
-  headers.delete("host");
-  headers.set("x-better-auth-forwarded-host", request.headers.get("host") ?? CONVEX_URL!);
-  headers.set("x-better-auth-forwarded-proto", headers.get("x-forwarded-proto") ?? "https");
-
-  const response = await fetch(targetUrl, {
-    method: request.method,
-    headers,
-    body: request.method !== "GET" && request.method !== "HEAD"
-      ? await request.arrayBuffer()
-      : undefined,
-  });
-
-  const responseHeaders = new Headers(response.headers);
-  responseHeaders.forEach((value, key) => {
-    if (key.toLowerCase() === "set-cookie") {
-      const withoutDomain = value
-        .replace(/;\s*Domain=[^;]+/gi, "")
-        .replace(/;\s*Path=[^;]+/gi, "")
-        + "; Path=/";
-      responseHeaders.set(key, withoutDomain);
-    }
-  });
-
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers: responseHeaders,
-  });
-}
-
-export const GET = handler;
-export const POST = handler;
+export const { GET, POST } = toNextJsHandler(authInstance);
