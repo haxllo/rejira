@@ -22,7 +22,9 @@ export default function WorkspaceLayout({
       <div className="flex h-dvh flex-col">
         <RouteChangeSelectionReset />
         <GlobalShortcuts />
-        <TopBar />
+        <Suspense fallback={<div className="h-12 border-b border-[var(--color-border)]" />}>
+          <TopBar />
+        </Suspense>
         <div className="flex min-h-0 flex-1">
           <PrimaryNav />
           <main className="min-w-0 flex-1 overflow-hidden">{children}</main>

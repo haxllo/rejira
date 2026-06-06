@@ -9,6 +9,7 @@ import { Kbd } from "@/components/primitives/kbd";
 import { Avatar } from "@/components/primitives/avatar";
 import { useUI } from "@/lib/state/ui";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useWorkspace, useWorkspaceList } from "@/hooks/useWorkspace";
 import { cn } from "@/lib/utils";
 
 export function TopBar() {
@@ -16,6 +17,9 @@ export function TopBar() {
   const path = usePathname();
   const setCommandOpen = useUI((s) => s.setCommandOpen);
   const me = useCurrentUser();
+  const workspace = useWorkspace();
+  const workspaces = useWorkspaceList();
+  const [switcherOpen, setSwitcherOpen] = React.useState(false);
 
   return (
     <header
@@ -24,25 +28,53 @@ export function TopBar() {
         "bg-[var(--color-bg)]/85 backdrop-blur-md",
       )}
     >
-      {/* Brand + workspace */}
-      <button
-        onClick={() => router.push("/inbox")}
-        className="group flex h-12 items-center gap-2.5 px-4 outline-none"
-      >
-        <motion.div
-          whileHover={{ rotate: 12 }}
-          transition={{ type: "spring", stiffness: 300, damping: 18 }}
-          className="grid size-7 place-items-center rounded-md bg-gradient-to-br from-[oklch(0.82_0.18_55)] via-[oklch(0.78_0.17_35)] to-[oklch(0.70_0.18_15)] text-[12px] font-bold text-[oklch(0.16_0.005_250)]"
+      {/* Brand + workspace switcher */}
+      <div className="relative">
+        <button
+          onClick={() => setSwitcherOpen(!switcherOpen)}
+          className="group flex h-12 items-center gap-2.5 px-4 outline-none"
         >
-          ⏣
-        </motion.div>
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-[13.5px] font-semibold tracking-tight text-[var(--color-text)]">
-            rejira
-          </span>
-          <span className="text-[12px] text-[var(--color-text-subtle)]">/ Acme</span>
-        </div>
-      </button>
+          <motion.div
+            whileHover={{ rotate: 12 }}
+            transition={{ type: "spring", stiffness: 300, damping: 18 }}
+            className="grid size-7 place-items-center rounded-md bg-gradient-to-br from-[oklch(0.82_0.18_55)] via-[oklch(0.78_0.17_35)] to-[oklch(0.70_0.18_15)] text-[12px] font-bold text-[oklch(0.16_0.005_250)]"
+          >
+            ⏣
+          </motion.div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[13.5px] font-semibold tracking-tight text-[var(--color-text)]">
+              rejira
+            </span>
+            <span className="text-[12px] text-[var(--color-text-subtle)]">/ {workspace?.name ?? "Acme"}</span>
+          </div>
+        </button>
+        {switcherOpen && workspaces.length > 1 && (
+          <div className="absolute left-4 top-12 z-50 w-48 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-1)] shadow-[var(--shadow-popover)] py-1">
+            {workspaces.map((ws) => (
+              <button
+                key={ws.id}
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set("w", ws.slug);
+                  window.location.href = url.toString();
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-[var(--color-text)] hover:bg-[var(--color-surface-2)]"
+              >
+                <span className="grid size-5 place-items-center rounded bg-[var(--color-accent)] text-[10px] font-bold text-[var(--color-accent-fg)]">
+                  {ws.name[0]}
+                </span>
+                {ws.name}
+                {ws.slug === workspace?.slug && (
+                  <span className="ml-auto text-[11px] text-[var(--color-text-subtle)]">Active</span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+        {switcherOpen && (
+          <div className="fixed inset-0 z-40" onClick={() => setSwitcherOpen(false)} />
+        )}
+      </div>
 
       {/* Search / command */}
       <button
