@@ -1,5 +1,4 @@
-// Phase 3 — Stream 3B: Sign-up form.
-
+// Phase 3 — Sign-up form.
 "use client";
 
 import { useState } from "react";
@@ -11,26 +10,31 @@ export function SignUpForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      await signUp.email({
-        name,
-        email,
-        password,
-        callbackURL: "/inbox",
-      });
-      window.location.href = "/inbox";
+      await signUp.email({ name, email, password, callbackURL: "/inbox" });
+      setDone(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      setError(msg);
+      setError(msg || "Sign up failed — check console for details");
       console.error("[sign-up]", err);
     } finally {
       setLoading(false);
     }
+  }
+
+  if (done) {
+    return (
+      <div className="auth-success text-center py-4">
+        <p className="mb-2">Account created!</p>
+        <a href="/sign-in" className="auth-link">Sign in →</a>
+      </div>
+    );
   }
 
   return (
@@ -38,37 +42,18 @@ export function SignUpForm() {
       {error && <div className="auth-error">{error}</div>}
       <label className="auth-field">
         <span>Full name</span>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Aria Vance"
-          required
-          autoComplete="name"
-        />
+        <input type="text" value={name} onChange={(e) => setName(e.target.value)}
+          placeholder="Aria Vance" required autoComplete="name" />
       </label>
       <label className="auth-field">
         <span>Email</span>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="aria@acme.dev"
-          required
-          autoComplete="email"
-        />
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+          placeholder="aria@acme.dev" required autoComplete="email" />
       </label>
       <label className="auth-field">
         <span>Password</span>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Min 12 characters"
-          required
-          minLength={12}
-          autoComplete="new-password"
-        />
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+          placeholder="Min 12 characters" required minLength={12} autoComplete="new-password" />
       </label>
       <button type="submit" className="auth-button" disabled={loading}>
         {loading ? "Creating account..." : "Create account"}
