@@ -1,13 +1,22 @@
 // Phase 3 — Option 2: Better Auth hosted in Next.js.
-//
-// Must run in Node.js runtime — dash plugin needs crypto, etc.
 export const runtime = "nodejs";
 
 import { getAuthInstance } from "@/lib/auth/server";
-import { toNextJsHandler } from "better-auth/next-js";
 
-const instance = getAuthInstance();
-const handler = toNextJsHandler(instance);
+let _handler: any = null;
 
-export const GET = handler.GET;
-export const POST = handler.POST;
+export async function GET(request: Request) {
+  if (!_handler) {
+    const { toNextJsHandler } = await import("better-auth/next-js");
+    _handler = toNextJsHandler(getAuthInstance());
+  }
+  return _handler.GET(request);
+}
+
+export async function POST(request: Request) {
+  if (!_handler) {
+    const { toNextJsHandler } = await import("better-auth/next-js");
+    _handler = toNextJsHandler(getAuthInstance());
+  }
+  return _handler.POST(request);
+}
