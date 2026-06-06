@@ -5,7 +5,7 @@ import type { NextRequest } from "next/server";
 const PUBLIC = [
   "/sign-in", "/sign-up", "/forgot-password", "/reset-password",
   "/verify-email", "/two-factor",
-  "/api/auth", "/api/debug", "/api/test-adapter",
+  "/api/auth", "/api/check", "/api/debug", "/api/test-adapter",
   "/invite",
 ];
 
