@@ -25,3 +25,5 @@ export const {
   forgetPassword,
   resetPassword,
 } = authClient;
+
+export { isOAuthConfigured } from "./oauth-config";

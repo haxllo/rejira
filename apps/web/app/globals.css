@@ -440,3 +440,43 @@ input[placeholder="Filter shortcuts…"]:focus {
 .auth-footer a:hover {
   text-decoration: underline;
 }
+
+/* 3C — OAuth buttons */
+
+.oauth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.oauth-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.oauth-button:hover {
+  border-color: hsl(243 75% 59%);
+  background: var(--color-bg-layer-3);
+}
+
+.oauth-icon {
+  font-size: 16px;
+  font-weight: 700;
+  color: hsl(243 75% 59%);
+}
+
+.auth-separator:empty {
+  display: none;
+}

@@ -139,7 +139,29 @@ export const createAuthOptions = (
     },
   },
 
-  // ─── Plugins (each sub-phase adds more) ──────────────────
+  // ─── OAuth providers (3C) ──────────────────────────────
+  // Google + GitHub. Credentials from Convex env vars.
+  // Callback URL pattern: {baseURL}/api/auth/callback/{provider}
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+      disableDefaultCallback: false,
+    },
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID ?? "",
+      clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
+      disableDefaultCallback: false,
+    },
+  },
+
+  // ─── Account linking (3C) ────────────────────────────────
+  // When a new OAuth user has the same email as an existing
+  // user, link the OAuth account to the existing user.
+  accountLinking: {
+    enabled: true,
+    trustedProviders: ["google", "github"],
+  },
   // 3A: just the Convex plugin (required for the auth config
   // provider to validate session cookies).
   // 3B: + magicLink, emailOtp
