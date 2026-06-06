@@ -15,6 +15,7 @@ import type * as _lib_tenancy from "../_lib/tenancy.js";
 import type * as _tests_convex_auth_harness from "../_tests/convex_auth_harness.js";
 import type * as _tests_setup from "../_tests/setup.js";
 import type * as auth from "../auth.js";
+import type * as auth_adapter from "../auth_adapter.js";
 import type * as http from "../http.js";
 import type * as seed from "../seed.js";
 import type * as tenancy_probe from "../tenancy_probe.js";
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   "_tests/convex_auth_harness": typeof _tests_convex_auth_harness;
   "_tests/setup": typeof _tests_setup;
   auth: typeof auth;
+  auth_adapter: typeof auth_adapter;
   http: typeof http;
   seed: typeof seed;
   tenancy_probe: typeof tenancy_probe;

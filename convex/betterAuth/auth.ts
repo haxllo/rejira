@@ -70,14 +70,6 @@ export const createAuthOptions = (
         text: `Verify your email: ${url}`,
       });
     },
-    sendResetPassword: async ({ user, url }: { user: { name: string; email: string }; url: string }) => {
-      await sendEmail({
-        to: user.email,
-        subject: "Reset your password — Rejira",
-        html: renderEmailTemplate("reset", { name: user.name, url }),
-        text: `Reset your password: ${url}`,
-      });
-    },
   },
 
   // ─── Custom user fields (Phase 2 mock data carried over) ─
