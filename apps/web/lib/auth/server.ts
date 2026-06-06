@@ -14,14 +14,20 @@ function getAuthInstance() {
   if (_authInstance) return _authInstance;
 
   function getClient() {
-    const url = process.env.CONVEX_URL ?? "";
-    const adminKey = process.env.CONVEX_ADMIN_KEY ?? "";
+    const url = process.env.CONVEX_URL ?? "MISSING";
+    const adminKey = process.env.CONVEX_ADMIN_KEY ?? "MISSING";
+    if (url === "MISSING" || adminKey === "MISSING") {
+      console.error("[auth-adapter] CONVEX_URL or CONVEX_ADMIN_KEY not set", { url: url === "MISSING" ? null : url.substring(0, 20) + "...", hasKey: adminKey !== "MISSING" });
+    }
     return new (ConvexHttpClient as any)(url, { adminAuth: adminKey }) as ConvexHttpClient;
   }
 
   function call(path: string, args: Record<string, any>) {
     const client = getClient();
-    return (client as any).function(`auth_adapter:${path}`, undefined, args);
+    return (client as any).function(`auth_adapter:${path}`, undefined, args).catch((e: any) => {
+      console.error(`[auth-adapter] call failed: ${path}`, e?.message ?? e);
+      throw e;
+    });
   }
 
   const q = (p: string, a: Record<string, any>) => call(p, a);
