@@ -1,7 +1,4 @@
 // Phase 3 — Stream 3I: Auth proxy.
-//
-// Redirects unauthenticated users to sign-in.
-
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -12,7 +9,7 @@ const PUBLIC = [
   "/invite",
 ];
 
-export default function proxy(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   if (path === "/" || PUBLIC.some((p) => path.startsWith(p))) {
     return NextResponse.next();
@@ -26,7 +23,3 @@ export default function proxy(request: NextRequest) {
   }
   return NextResponse.next();
 }
-
-export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
-};
