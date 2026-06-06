@@ -1,6 +1,6 @@
 # Phase 3 — Better Auth integration
 
-**Status:** in progress (3A–3D done, dash connected, production deploy ready)
+**Status:** complete (3A–3K implemented, dash connected, deployed to production)
 
 **Architecture:** Better Auth in Next.js (`apps/web/app/api/auth/[...all]/route.ts`) using `ConvexHttpClient` + `adminAuth` to call `convex/auth_adapter.ts` public endpoints. Env vars: `CONVEX_URL`, `CONVEX_ADMIN_KEY` (deploy key with `runInternalQueries` + `runInternalMutations`), `BETTER_AUTH_SECRET`, `BETTER_AUTH_API_KEY`, `BETTER_AUTH_URL`.
 
