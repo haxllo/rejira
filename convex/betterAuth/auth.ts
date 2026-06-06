@@ -16,6 +16,7 @@ import { convex } from "@convex-dev/better-auth/plugins";
 import type { GenericCtx } from "@convex-dev/better-auth/utils";
 import type { BetterAuthOptions } from "better-auth";
 import { betterAuth } from "better-auth";
+import { magicLink } from "better-auth/plugins";
 import { dash } from "@better-auth/infra";
 import { components } from "../_generated/api";
 import type { DataModel } from "../_generated/dataModel";
@@ -54,14 +55,30 @@ export const createAuthOptions = (
   database: authComponent.adapter(ctx),
 
   // ─── Email + password (3B) ─────────────────────────────
-  // Enabled in 3B. Keep the config minimal here; 3B adds
-  // `sendResetPassword` and the email verification handler.
   emailAndPassword: {
     enabled: true,
-    // Don't require email verification on sign-up by default.
-    // 3B flips this to `true` once the verify-email flow lands.
     requireEmailVerification: false,
     minPasswordLength: 12,
+
+    // 3B: Console-log emails in dev; enable Resend in production
+    // via the RESEND_API_KEY Convex env var.
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your email — Rejira",
+        html: renderEmailTemplate("verify", { name: user.name, url }),
+        text: `Verify your email: ${url}`,
+      });
+    },
+
+    sendResetPassword: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your password — Rejira",
+        html: renderEmailTemplate("reset", { name: user.name, url }),
+        text: `Reset your password: ${url}`,
+      });
+    },
   },
 
   // ─── Custom user fields (Phase 2 mock data carried over) ─
@@ -135,6 +152,16 @@ export const createAuthOptions = (
     dash({
       apiKey: process.env.BETTER_AUTH_API_KEY,
     }),
+    magicLink({
+      sendMagicLink: async ({ email, url }) => {
+        await sendEmail({
+          to: email,
+          subject: "Sign in to Rejira",
+          html: renderEmailTemplate("magic-link", { name: email, url }),
+          text: `Sign in to Rejira: ${url}`,
+        });
+      },
+    }),
   ],
 });
 
@@ -147,3 +174,65 @@ export const options = createAuthOptions({} as GenericCtx<DataModel>);
 export const createAuth = (ctx: GenericCtx<DataModel>) => {
   return betterAuth(createAuthOptions(ctx));
 };
+
+// ─── 3B: Email sending helpers ─────────────────────────────
+
+async function sendEmail(payload: {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+}) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (apiKey) {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: process.env.RESEND_FROM ?? "Rejira <noreply@rejira.app>",
+        to: payload.to,
+        subject: payload.subject,
+        html: payload.html,
+        text: payload.text,
+      }),
+    });
+    if (!res.ok) {
+      console.error("[auth] Resend send failed:", await res.text());
+    }
+    return;
+  }
+  console.log(`\n${"-".repeat(50)}`);
+  console.log(`[auth] EMAIL → ${payload.to}`);
+  console.log(`[auth] SUBJECT: ${payload.subject}`);
+  console.log(`[auth] BODY: ${payload.text.slice(0, 200)}`);
+  console.log(`${"-".repeat(50)}\n`);
+}
+
+function renderEmailTemplate(
+  type: "verify" | "reset" | "magic-link",
+  props: { name: string; url: string },
+): string {
+  if (type === "verify") {
+    return `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#1a1a1f;color:#e4e4e7;border-radius:8px">
+      <h2 style="color:#fff;margin-top:0">Verify your email</h2>
+      <p style="color:#a1a1aa">Hi ${props.name}, click below to verify your email.</p>
+      <a href="${props.url}" style="display:inline-block;padding:12px 24px;background:#4f46e5;color:#fff;border-radius:6px;text-decoration:none;margin-top:12px">Verify Email</a>
+    </div>`;
+  }
+  if (type === "magic-link") {
+    return `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#1a1a1f;color:#e4e4e7;border-radius:8px">
+      <h2 style="color:#fff;margin-top:0">Sign in to Rejira</h2>
+      <p style="color:#a1a1aa">Hi ${props.name}, click below to sign in instantly.</p>
+      <a href="${props.url}" style="display:inline-block;padding:12px 24px;background:#4f46e5;color:#fff;border-radius:6px;text-decoration:none;margin-top:12px">Sign In</a>
+      <p style="color:#52525b;font-size:12px;margin-top:24px">This link expires in 5 minutes and can only be used once.</p>
+    </div>`;
+  }
+  return `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#1a1a1f;color:#e4e4e7;border-radius:8px">
+    <h2 style="color:#fff;margin-top:0">Reset your password</h2>
+    <p style="color:#a1a1aa">Hi ${props.name}, click below to reset your password.</p>
+    <a href="${props.url}" style="display:inline-block;padding:12px 24px;background:#4f46e5;color:#fff;border-radius:6px;text-decoration:none;margin-top:12px">Reset Password</a>
+  </div>`;
+}
