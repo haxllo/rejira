@@ -17,8 +17,12 @@ export function SignUpForm() {
     setError("");
     setLoading(true);
     try {
-      await signUp.email({ name, email, password, callbackURL: "/inbox" });
-      setDone(true);
+      const result = await signUp.email({ name, email, password, callbackURL: "/inbox" });
+      if ((result as any)?.error) {
+        setError((result as any).error?.message ?? (result as any).error?.statusText ?? "Sign up failed");
+      } else {
+        setDone(true);
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg || "Sign up failed — check console for details");
