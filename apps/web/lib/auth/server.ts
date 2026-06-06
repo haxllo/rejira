@@ -59,7 +59,7 @@ function getAuthInstance() {
       google: { clientId: process.env.GOOGLE_CLIENT_ID ?? "", clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "" },
       github: { clientId: process.env.GITHUB_CLIENT_ID ?? "", clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "" },
     },
-    accountLinking: { enabled: true, trustedProviders: ["google", "github"] },
+    // accountLinking handled in convex/betterAuth/auth.ts
     session: { expiresIn: 60 * 60 * 24 * 7, updateAge: 60 * 60 * 24, cookieCache: { enabled: true, maxAge: 5 * 60 } },
     rateLimit: { enabled: true, window: 60, max: 100 },
     advanced: { useSecureCookies: false, defaultCookieAttributes: { sameSite: "lax" as const, httpOnly: true } },

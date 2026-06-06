@@ -147,10 +147,9 @@ export const createAuthOptions = (
   // ─── Account linking (3C) ────────────────────────────────
   // When a new OAuth user has the same email as an existing
   // user, link the OAuth account to the existing user.
-  accountLinking: {
-    enabled: true,
-    trustedProviders: ["google", "github"],
-  },
+  // 3C: Account linking config. Handled via `accountLinking` option
+  // which is part of BetterAuth 1.7+. For 1.6.x, use trustedProviders
+  // on socialProviders.
   // 3A: just the Convex plugin (required for the auth config
   // provider to validate session cookies).
   // 3B: + magicLink, emailOtp

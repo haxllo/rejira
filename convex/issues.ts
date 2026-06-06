@@ -36,13 +36,13 @@ export const list = query({
       filtered = filtered.filter((i) => i.projectId === args.projectId);
     }
     if (args.status?.length) {
-      filtered = filtered.filter((i) => args.status!.includes(i.status));
+      filtered = filtered.filter((i) => (args.status as string[]).includes(i.status));
     }
     if (args.priority?.length) {
-      filtered = filtered.filter((i) => args.priority!.includes(i.priority));
+      filtered = filtered.filter((i) => (args.priority as string[]).includes(i.priority));
     }
     if (args.assigneeId) {
-      filtered = filtered.filter((i) => i.assigneeIds.includes(args.assigneeId));
+      filtered = filtered.filter((i) => i.assigneeIds.includes(args.assigneeId!));
     }
     if (args.limit) {
       filtered = filtered.slice(0, args.limit);

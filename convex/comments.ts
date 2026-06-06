@@ -10,7 +10,9 @@ export const listByIssue = query({
     if (!issue) return [];
     await requireWorkspace(ctx, issue.workspaceId);
     return ctx.db.query("comments")
-      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
+      .withIndex("by_workspace_issue", (q) =>
+        q.eq("workspaceId", issue.workspaceId).eq("issueId", args.issueId),
+      )
       .order("asc")
       .collect();
   },
