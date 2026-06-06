@@ -1,0 +1,41 @@
+{
+  "name": "jira-redesign",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npm --prefix apps/web run dev",
+    "build": "npm --prefix apps/web run build",
+    "start": "npm --prefix apps/web run start",
+    "lint": "npm --prefix apps/web run lint",
+    "typecheck": "npm --prefix apps/web run typecheck",
+    "convex:dev": "npx convex dev",
+    "convex:deploy": "npx convex deploy",
+    "convex:run": "npx convex run",
+    "convex:seed": "npx convex run seed:seed",
+    "convex:data": "npx convex data",
+    "convex:dashboard": "npx convex dashboard",
+    "convex:test": "vitest run",
+    "convex:codegen": "npx convex codegen"
+  },
+  "workspaces": [
+    "apps/*"
+  ],
+  "dependencies": {
+    "@better-auth/infra": "^0.2.13",
+    "@convex-dev/better-auth": "^0.12.2",
+    "@tailwindcss/postcss": "^4.3.0",
+    "better-auth": "^1.6.14",
+    "convex": "^1.40.0",
+    "kysely": "^0.28.8",
+    "tailwindcss": "^4.3.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
+    "@types/node": "^22.19.20",
+    "convex-test": "^0.0.53",
+    "playwright": "^1.60.0",
+    "vitest": "^4.1.8"
+  }
+}

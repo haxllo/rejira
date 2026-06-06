@@ -1,0 +1,264 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Jira Redesign — Design Tokens (CSS-first, Tailwind v4)
+   OKLCH for perceptual uniformity. Dark-first.
+   ============================================================ */
+
+@theme {
+  /* Surfaces (5 levels of depth) */
+  --color-bg: oklch(0.16 0.005 250);
+  --color-surface-1: oklch(0.19 0.006 250);
+  --color-surface-2: oklch(0.22 0.007 250);
+  --color-surface-3: oklch(0.26 0.008 250);
+  --color-overlay: oklch(0.10 0.004 250 / 0.72);
+  --color-hover: oklch(1 0 0 / 0.04);
+  --color-active: oklch(1 0 0 / 0.08);
+
+  /* Borders */
+  --color-border: oklch(1 0 0 / 0.08);
+  --color-border-strong: oklch(1 0 0 / 0.14);
+  --color-border-focus: oklch(0.72 0.18 40);
+
+  /* Text */
+  --color-text: oklch(0.98 0.002 250);
+  --color-text-muted: oklch(0.72 0.005 250);
+  --color-text-subtle: oklch(0.55 0.005 250);
+  --color-text-faint: oklch(0.40 0.005 250);
+  --color-text-inverse: oklch(0.16 0.005 250);
+
+  /* Brand accent — warm amber, deliberately NOT Jira blue */
+  --color-accent: oklch(0.78 0.17 55);
+  --color-accent-hover: oklch(0.82 0.17 55);
+  --color-accent-fg: oklch(0.16 0.005 250);
+  --color-accent-soft: oklch(0.78 0.17 55 / 0.12);
+
+  /* Semantic */
+  --color-success: oklch(0.78 0.16 150);
+  --color-warning: oklch(0.82 0.15 80);
+  --color-danger: oklch(0.68 0.20 25);
+  --color-info: oklch(0.78 0.12 240);
+
+  /* Priority (icon + chip) */
+  --color-prio-urgent: oklch(0.68 0.20 25);
+  --color-prio-high: oklch(0.78 0.16 50);
+  --color-prio-medium: oklch(0.78 0.10 90);
+  --color-prio-low: oklch(0.70 0.04 250);
+  --color-prio-none: oklch(0.55 0.005 250);
+
+  /* Workflow status */
+  --color-status-backlog: oklch(0.55 0.005 250);
+  --color-status-todo: oklch(0.72 0.10 250);
+  --color-status-progress: oklch(0.78 0.14 200);
+  --color-status-review: oklch(0.78 0.14 310);
+  --color-status-done: oklch(0.78 0.16 150);
+  --color-status-cancel: oklch(0.50 0.005 250);
+
+  /* Label palette (deterministic from name hash) */
+  --color-label-1: oklch(0.72 0.15 25);
+  --color-label-2: oklch(0.78 0.15 60);
+  --color-label-3: oklch(0.80 0.16 100);
+  --color-label-4: oklch(0.78 0.16 150);
+  --color-label-5: oklch(0.78 0.14 200);
+  --color-label-6: oklch(0.72 0.15 260);
+  --color-label-7: oklch(0.70 0.16 310);
+  --color-label-8: oklch(0.72 0.16 350);
+
+  /* Typography */
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "JetBrains Mono", monospace;
+  --font-display: "Geist", ui-sans-serif, system-ui;
+
+  --text-2xs: 10px;
+  --text-2xs--line-height: 14px;
+  --text-xs: 11px;
+  --text-xs--line-height: 16px;
+  --text-sm: 12px;
+  --text-sm--line-height: 18px;
+  --text-base: 13px;
+  --text-base--line-height: 20px;
+  --text-md: 14px;
+  --text-md--line-height: 22px;
+  --text-lg: 16px;
+  --text-lg--line-height: 24px;
+  --text-xl: 20px;
+  --text-xl--line-height: 28px;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 32px;
+  --text-3xl: 32px;
+  --text-3xl--line-height: 40px;
+
+  /* Spacing (8pt) */
+  --spacing-px: 1px;
+  --spacing-0_5: 2px;
+  --spacing-1: 4px;
+  --spacing-1_5: 6px;
+  --spacing-2: 8px;
+  --spacing-2_5: 10px;
+  --spacing-3: 12px;
+  --spacing-3_5: 14px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-7: 28px;
+  --spacing-8: 32px;
+  --spacing-9: 36px;
+  --spacing-10: 40px;
+  --spacing-11: 44px;
+  --spacing-12: 48px;
+  --spacing-14: 56px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+
+  /* Radii */
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+  --radius-3xl: 16px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px 0 oklch(0 0 0 / 0.25);
+  --shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.25), 0 1px 1px 0 oklch(0 0 0 / 0.15);
+  --shadow-md: 0 4px 8px -2px oklch(0 0 0 / 0.4), 0 2px 4px -1px oklch(0 0 0 / 0.25);
+  --shadow-lg: 0 12px 24px -4px oklch(0 0 0 / 0.5), 0 4px 8px -2px oklch(0 0 0 / 0.3);
+  --shadow-popover: 0 8px 24px -4px oklch(0 0 0 / 0.5);
+  --shadow-drawer: -16px 0 32px -8px oklch(0 0 0 / 0.5);
+  --shadow-focus: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-border-focus);
+
+  /* Motion (springs only, no easings) */
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --duration-micro: 120ms;
+  --duration-enter: 220ms;
+  --duration-layout: 320ms;
+  --duration-exit: 160ms;
+}
+
+/* ============================================================
+   Base layer
+   ============================================================ */
+
+* {
+  border-color: var(--color-border);
+}
+
+html, body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--text-base--line-height);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "cv11", "cv02", "cv03", "cv04";
+}
+
+body {
+  font-synthesis: none;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Scrollbars (subtle, in-token) */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: oklch(1 0 0 / 0.08);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: oklch(1 0 0 / 0.16);
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+/* Selection */
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+}
+
+/* Focus ring (universal, always visible on keyboard) */
+:where(button, a, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* cmdk + cheatsheet search inputs are the primary affordance; focus state is implicit */
+[cmdk-input]:focus-visible,
+[cmdk-input]:focus,
+input[placeholder="Filter shortcuts…"]:focus-visible,
+input[placeholder="Filter shortcuts…"]:focus {
+  outline: none;
+}
+
+/* Optimistic mutation pulse: brief glow on rows/cards that just mutated */
+@keyframes pending-pulse {
+  0% { background-color: var(--color-accent-soft); }
+  100% { background-color: transparent; }
+}
+.pending-pulse {
+  animation: pending-pulse 600ms ease-out;
+}
+
+/* Mono numerics for issue keys, IDs, counts */
+.font-mono, .tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Density modifier: applied at the shell level */
+[data-density="compact"] {
+  --row-h: 28px;
+  --pad-x: 12px;
+  --group-h: 26px;
+  --card-pad: 8px;
+  --row-font: 12px;
+}
+[data-density="default"] {
+  --row-h: 36px;
+  --pad-x: 14px;
+  --group-h: 30px;
+  --card-pad: 10px;
+  --row-font: 12.5px;
+}
+[data-density="roomy"] {
+  --row-h: 48px;
+  --pad-x: 18px;
+  --group-h: 34px;
+  --card-pad: 14px;
+  --row-font: 13.5px;
+}
+
+/* Subtle ambient noise overlay (optional, off by default) */
+.noise::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
