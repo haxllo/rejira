@@ -17,8 +17,10 @@ import type * as _tests_setup from "../_tests/setup.js";
 import type * as auth from "../auth.js";
 import type * as auth_adapter from "../auth_adapter.js";
 import type * as http from "../http.js";
+import type * as memberships from "../memberships.js";
 import type * as seed from "../seed.js";
 import type * as tenancy_probe from "../tenancy_probe.js";
+import type * as workspaces from "../workspaces.js";
 
 import type {
   ApiFromModules,
@@ -36,8 +38,10 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   auth_adapter: typeof auth_adapter;
   http: typeof http;
+  memberships: typeof memberships;
   seed: typeof seed;
   tenancy_probe: typeof tenancy_probe;
+  workspaces: typeof workspaces;
 }>;
 
 /**
