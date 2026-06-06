@@ -225,7 +225,7 @@ export const seed = internalMutation(async (ctx) => {
       count: r.count,
       users: r.users
         .map((uid) => userIdByExternal.get(uid))
-        .filter((x): x is Id<"users"> => x !== undefined),
+        .filter((x): x is string => x !== undefined),
     }));
     await ensureComment(ctx, {
       externalId: c.id,
@@ -311,10 +311,10 @@ async function ensureMembership(
   ctx: MutationCtx,
   m: {
     externalId: string;
-    userId: Id<"users">;
+    userId: string;
     workspaceId: Id<"workspaces">;
     role: "owner" | "admin" | "member" | "guest";
-    invitedBy?: Id<"users">;
+    invitedBy?: string;
     joinedAt: number;
   },
 ) {
@@ -336,7 +336,7 @@ async function ensureProject(
     description: string;
     iconLetter: string;
     iconColor: string;
-    lead: Id<"users">;
+    lead: string;
   },
 ) {
   const existing = await ctx.db
@@ -353,7 +353,7 @@ async function ensureProjectMember(
     externalId: string;
     workspaceId: Id<"workspaces">;
     projectId: Id<"projects">;
-    userId: Id<"users">;
+    userId: string;
   },
 ) {
   const existing = await ctx.db
@@ -425,7 +425,7 @@ async function ensureIssue(
       | "done"
       | "cancelled";
     priority: "urgent" | "high" | "medium" | "low" | "none";
-    assigneeIds: Id<"users">[];
+    assigneeIds: string[];
     labelIds: Id<"labels">[];
     estimatePoints?: number;
     dueDate?: string;
@@ -434,7 +434,7 @@ async function ensureIssue(
     pr?: { number: number; repo: string; status: "open" | "merged" | "closed" };
     urlCount: number;
     attachmentCount: number;
-    authorId: Id<"users">;
+    authorId: string;
     createdAt: number;
     updatedAt: number;
   },
@@ -452,7 +452,7 @@ async function ensureIssueAssignee(
   ia: {
     workspaceId: Id<"workspaces">;
     issueId: Id<"issues">;
-    userId: Id<"users">;
+    userId: string;
   },
 ) {
   // No externalId on the join table; idempotency via the implicit
@@ -487,10 +487,10 @@ async function ensureComment(
     externalId: string;
     workspaceId: Id<"workspaces">;
     issueId: Id<"issues">;
-    authorId: Id<"users">;
+    authorId: string;
     body: string;
     createdAt: number;
-    reactions: { emoji: string; count: number; users: Id<"users">[] }[];
+    reactions: { emoji: string; count: number; users: string[] }[];
   },
 ) {
   const existing = await ctx.db
@@ -506,7 +506,7 @@ async function ensureNotification(
   n: {
     externalId: string;
     workspaceId: Id<"workspaces">;
-    userId: Id<"users">;
+    userId: string;
     type:
       | "assignment"
       | "mention"
@@ -517,7 +517,7 @@ async function ensureNotification(
       | "review"
       | "status";
     issueId?: Id<"issues">;
-    actorId?: Id<"users">;
+    actorId?: string;
     actorName: string;
     preview?: string;
     read: boolean;
@@ -538,7 +538,7 @@ async function ensureActivity(
   a: {
     externalId: string;
     workspaceId: Id<"workspaces">;
-    actorId: Id<"users">;
+    actorId: string;
     verb:
       | "created"
       | "status_changed"

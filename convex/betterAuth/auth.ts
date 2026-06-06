@@ -16,8 +16,7 @@ import { convex } from "@convex-dev/better-auth/plugins";
 import type { GenericCtx } from "@convex-dev/better-auth/utils";
 import type { BetterAuthOptions } from "better-auth";
 import { betterAuth } from "better-auth";
-import { magicLink } from "better-auth/plugins";
-import { dash } from "@better-auth/infra";
+import { magicLink } from "better-auth/plugins/magic-link";
 import { components } from "../_generated/api";
 import type { DataModel } from "../_generated/dataModel";
 import authConfig from "../auth.config";
@@ -59,10 +58,11 @@ export const createAuthOptions = (
     enabled: true,
     requireEmailVerification: false,
     minPasswordLength: 12,
+  },
 
-    // 3B: Console-log emails in dev; enable Resend in production
-    // via the RESEND_API_KEY Convex env var.
-    sendVerificationEmail: async ({ user, url }) => {
+  // ─── Email verification (3B) ────────────────────────────
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url }: { user: { name: string; email: string }; url: string }) => {
       await sendEmail({
         to: user.email,
         subject: "Verify your email — Rejira",
@@ -70,8 +70,7 @@ export const createAuthOptions = (
         text: `Verify your email: ${url}`,
       });
     },
-
-    sendResetPassword: async ({ user, url }) => {
+    sendResetPassword: async ({ user, url }: { user: { name: string; email: string }; url: string }) => {
       await sendEmail({
         to: user.email,
         subject: "Reset your password — Rejira",
@@ -146,12 +145,10 @@ export const createAuthOptions = (
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-      disableDefaultCallback: false,
     },
     github: {
       clientId: process.env.GITHUB_CLIENT_ID ?? "",
       clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
-      disableDefaultCallback: false,
     },
   },
 
@@ -171,9 +168,6 @@ export const createAuthOptions = (
   //     we own workspaces/memberships)
   plugins: [
     convex({ authConfig }),
-    dash({
-      apiKey: process.env.BETTER_AUTH_API_KEY,
-    }),
     magicLink({
       sendMagicLink: async ({ email, url }) => {
         await sendEmail({
