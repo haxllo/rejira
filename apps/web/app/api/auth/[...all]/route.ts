@@ -1,9 +1,26 @@
 // Phase 3 — Option 2: Better Auth hosted in Next.js.
 //
-// Better Auth runs directly in Next.js (full Node.js runtime).
-// Data persists to Convex via convexBetterAuthNextJs + auth_adapter.
+// Lazy — Better Auth only initialized on first request.
 
-import { toNextJsHandler } from "better-auth/next-js";
-import { authInstance } from "@/lib/auth/server";
+import { getAuthInstance } from "@/lib/auth/server";
 
-export const { GET, POST } = toNextJsHandler(authInstance);
+let _handler: { GET: (r: Request) => Promise<Response>; POST: (r: Request) => Promise<Response> } | null = null;
+
+async function getHandler() {
+  if (!_handler) {
+    const { toNextJsHandler } = await import("better-auth/next-js");
+    const instance = getAuthInstance();
+    _handler = toNextJsHandler(instance);
+  }
+  return _handler;
+}
+
+export async function GET(request: Request) {
+  const h = await getHandler();
+  return h.GET(request);
+}
+
+export async function POST(request: Request) {
+  const h = await getHandler();
+  return h.POST(request);
+}
