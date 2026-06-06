@@ -7,7 +7,8 @@ import { ViewHeader } from "@/components/views/view-header";
 import { Avatar } from "@/components/primitives/avatar";
 import { StatusDot } from "@/components/primitives/status";
 import { PriorityIcon } from "@/components/primitives/priority";
-import { PROJECTS, CYCLES, ISSUES, USERS, userById } from "@/lib/mock";
+import { PROJECTS, CYCLES, USERS, userById } from "@/lib/mock";
+import { useIssues } from "@/lib/state/issues";
 import { getStatusLabel } from "@/components/primitives/status";
 import { useUI } from "@/lib/state/ui";
 import { relativeTime, dateWithYear } from "@/lib/utils/date";
@@ -29,7 +30,8 @@ export default function ProjectLandingPage({
   if (!project) return notFound();
 
   const openDrawer = useUI((s) => s.openDrawer);
-  const issues = ISSUES.filter((i) => i.projectId === project.id);
+  const allIssues = useIssues((s) => s.issues);
+  const issues = allIssues.filter((i) => i.projectId === project.id);
   const open = issues.filter((i) => i.status !== "done" && i.status !== "cancelled");
   const recent = [...issues].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 6);
   const projectCycles = CYCLES.filter((c) => c.projectId === project.id);
@@ -75,7 +77,7 @@ export default function ProjectLandingPage({
           ) : (
             <ul className="flex flex-col gap-2">
               {projectCycles.map((c) => {
-                const cIssues = ISSUES.filter((i) => i.cycleId === c.id);
+                const cIssues = allIssues.filter((i) => i.cycleId === c.id);
                 const total = cIssues.length;
                 const done = cIssues.filter((i) => i.status === "done").length;
                 const pct = total ? Math.round((done / total) * 100) : 0;

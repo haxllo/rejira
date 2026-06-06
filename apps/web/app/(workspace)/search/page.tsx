@@ -4,7 +4,8 @@ import * as React from "react";
 import { motion } from "motion/react";
 import { ViewHeader } from "@/components/views/view-header";
 import { GroupedList, type Group } from "@/components/views/grouped-list";
-import { ISSUES, USERS, type Issue } from "@/lib/mock";
+import { USERS, type Issue } from "@/lib/mock";
+import { useIssues } from "@/lib/state/issues";
 import { getStatusLabel } from "@/components/primitives/status";
 import { Avatar } from "@/components/primitives/avatar";
 import { LabelChip } from "@/components/primitives/label";
@@ -27,10 +28,12 @@ export default function SearchPage() {
     return () => clearTimeout(id);
   }, []);
 
+  const allIssues = useIssues((s) => s.issues);
+
   const results = React.useMemo(() => {
     if (!q.trim()) return [] as Issue[];
     const needle = q.toLowerCase();
-    return ISSUES.filter(
+    return allIssues.filter(
       (i) =>
         i.title.toLowerCase().includes(needle) ||
         i.key.toLowerCase().includes(needle) ||

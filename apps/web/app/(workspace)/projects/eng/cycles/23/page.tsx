@@ -4,7 +4,8 @@ import * as React from "react";
 import { motion } from "motion/react";
 import { ViewHeader } from "@/components/views/view-header";
 import { CycleBoard } from "@/components/views/cycle-board";
-import { ISSUES, cycleById, projectById, type StatusKey } from "@/lib/mock";
+import { cycleById, projectById, type StatusKey } from "@/lib/mock";
+import { useIssues } from "@/lib/state/issues";
 import { getStatusLabel } from "@/components/primitives/status";
 import { dateWithYear, relativeTime } from "@/lib/utils/date";
 import { useUI } from "@/lib/state/ui";
@@ -15,9 +16,8 @@ export default function CyclePage() {
   const project = projectById("p_eng");
   const openDrawer = useUI((s) => s.openDrawer);
 
-  const issues = React.useMemo(
-    () => ISSUES.filter((i) => i.cycleId === "c_23"),
-    [],
+  const issues = useIssues((s) =>
+    s.issues.filter((i) => i.cycleId === "c_23"),
   );
   const totalPoints = issues.reduce((acc, i) => acc + (i.estimatePoints ?? 0), 0);
   const donePoints = issues

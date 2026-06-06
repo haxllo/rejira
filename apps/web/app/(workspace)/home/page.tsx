@@ -3,17 +3,19 @@
 import * as React from "react";
 import { motion } from "motion/react";
 import { ViewHeader } from "@/components/views/view-header";
-import { PROJECTS, CYCLES, ISSUES } from "@/lib/mock";
+import { PROJECTS, CYCLES } from "@/lib/mock";
+import { useIssues } from "@/lib/state/issues";
 import { TrendingUpIcon, ArrowUpRightIcon, CircleCheckIcon, ClockIcon, SparklesIcon } from "@/components/icons";
 
 export default function HomePage() {
   const me = "Aria";
-  const myIssues = ISSUES.filter((i) => i.assigneeIds.includes("u_aria") && i.status !== "done" && i.status !== "cancelled");
-  const upcoming = [...ISSUES]
+  const issues = useIssues((s) => s.issues);
+  const myIssues = issues.filter((i) => i.assigneeIds.includes("u_aria") && i.status !== "done" && i.status !== "cancelled");
+  const upcoming = [...issues]
     .filter((i) => i.dueDate && i.status !== "done" && i.status !== "cancelled")
     .sort((a, b) => a.dueDate!.localeCompare(b.dueDate!))
     .slice(0, 5);
-  const recent = [...ISSUES].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 5);
+  const recent = [...issues].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 5);
 
   return (
     <div className="flex h-full flex-col">
@@ -66,7 +68,7 @@ export default function HomePage() {
                 </span>
                 <span className="flex-1 truncate text-[var(--color-text-muted)]">{p.name}</span>
                 <span className="text-[10.5px] text-[var(--color-text-faint)]">
-                  {ISSUES.filter((i) => i.projectId === p.id && i.status !== "done").length} open
+                  {issues.filter((i) => i.projectId === p.id && i.status !== "done").length} open
                 </span>
               </li>
             ))}
