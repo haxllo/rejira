@@ -23,8 +23,11 @@ export function SignUpForm() {
         password,
         callbackURL: "/inbox",
       });
+      window.location.href = "/inbox";
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Sign up failed");
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+      console.error("[sign-up]", err);
     } finally {
       setLoading(false);
     }
