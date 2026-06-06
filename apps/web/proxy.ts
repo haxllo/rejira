@@ -1,7 +1,6 @@
-// Phase 3 — Stream 3I: Auth middleware.
+// Phase 3 — Stream 3I: Auth proxy.
 //
 // Redirects unauthenticated users to sign-in.
-// Public paths: sign-in, sign-up, auth API, invite accept, root.
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -13,12 +12,11 @@ const PUBLIC = [
   "/invite",
 ];
 
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   if (path === "/" || PUBLIC.some((p) => path.startsWith(p))) {
     return NextResponse.next();
   }
-  // Check for session cookie (Better Auth sets this)
   const hasSession = request.cookies.has("better-auth.session_token") ||
     request.cookies.has("__Secure-better-auth.session_token");
   if (!hasSession) {

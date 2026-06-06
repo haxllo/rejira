@@ -42,6 +42,8 @@ type IssuesState = {
   bulkAddLabel: (ids: string[], labelId: LabelId) => void;
   /** Legacy: undo a specific issue's most recent mutation (per-issue HISTORY). */
   undo: (id: string) => void;
+  /** Replace all issues from an external data source (Convex/mock). */
+  syncData: (incoming: Issue[]) => void;
   /** Reset to initial data (for tests). */
   reset: () => void;
 };
@@ -316,6 +318,8 @@ export const useIssues = create<IssuesState>((set, get) => ({
       );
       return { issues };
     }),
+
+  syncData: (incoming) => set({ issues: incoming }),
 
   reset: () => set({ issues: INITIAL_ISSUES }),
 }));
