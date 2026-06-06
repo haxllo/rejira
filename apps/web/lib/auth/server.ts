@@ -17,7 +17,7 @@ function getAuthInstance() {
     const url = process.env.CONVEX_URL ?? "";
     const adminKey = process.env.CONVEX_ADMIN_KEY ?? "";
     const client = new (ConvexHttpClient as any)(url) as ConvexHttpClient;
-    if (adminKey) client.setAdminAuth(adminKey, url);
+    if (adminKey) (client as any).setAdminAuth(adminKey, url);
     return client;
   }
 
