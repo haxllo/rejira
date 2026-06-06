@@ -1,6 +1,7 @@
 # Phase 3 — Better Auth integration
 
-**Status:** in progress (3A backend done, web scaffolding done, 20 tests passing)
+**Status:** in progress (3A–3D done, Option 2 implemented — Better Auth hosted in Next.js)
+**Architecture change:** Better Auth moved from Convex HTTP actions → Next.js API route (`apps/web/app/api/auth/[...all]/route.ts`). The Convex adapter persists auth data via `convex/auth_adapter.ts` public endpoints + `ConvexHttpClient`. This enables the dash() plugin (Node.js runtime) which was blocked by Convex's V8 isolate.
 **Goal:** Replace the Phase 2 demo session (`ME_EXTERNAL_ID = "u_aria"`) with a real, production-grade authentication and identity layer. Users can sign up, sign in, manage sessions, invite teammates to workspaces, and the existing UI seamlessly reads the real signed-in user instead of the demo constant.
 
 **Scope philosophy:** This is the most consequential phase. It touches security, data isolation, email infrastructure, every protected route, and the seed. A real-world SaaS auth layer has **hundreds** of edge cases (CSRF, rate limiting, breach detection, 2FA recovery, expired invite tokens, GDPR deletion, etc.). I am breaking the work into **11 sub-phases (3A–3K)** so that each one ships behind tests that must pass before the next begins. No sub-phase is optional.
