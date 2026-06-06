@@ -4,6 +4,7 @@
 
 import { betterAuth } from "better-auth";
 import { magicLink } from "better-auth/plugins";
+import { dash } from "@better-auth/infra";
 import { nextCookies } from "better-auth/next-js";
 import { ConvexHttpClient } from "convex/browser";
 
@@ -74,6 +75,9 @@ function getAuthInstance() {
     },
     plugins: [
       nextCookies(),
+      dash({
+        apiKey: process.env.BETTER_AUTH_API_KEY,
+      }),
       magicLink({
         sendMagicLink: async ({ email, url }: { email: string; url: string }) => {
           if (process.env.RESEND_API_KEY) {
