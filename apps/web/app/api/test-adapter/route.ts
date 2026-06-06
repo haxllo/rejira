@@ -8,7 +8,8 @@ export async function GET() {
     const url = process.env.CONVEX_URL ?? "";
     const adminKey = process.env.CONVEX_ADMIN_KEY ?? "";
 
-    const client = new (ConvexHttpClient as any)(url, { adminAuth: adminKey });
+    const client = new (ConvexHttpClient as any)(url);
+    if (adminKey) client.setAdminAuth(adminKey, url);
 
     // Try calling auth_adapter:findOne
     const result = await (client as any).function("auth_adapter:findOne", undefined, {
