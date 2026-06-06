@@ -37,7 +37,6 @@ import {
   labelById,
   subIssues,
   USERS,
-  ME_ID,
   type Issue,
   type StatusKey,
   type Comment,
@@ -479,7 +478,8 @@ function ActivityBody({ activity }: { activity: Activity }) {
 }
 
 function ReplyBox({ issue }: { issue: Issue }) {
-  const me = USERS.find((u) => u.id === ME_ID)!;
+  const meId = USERS[0]?.id ?? "u_aria";
+  const me = USERS.find((u) => u.id === meId)!;
   return (
     <div className="mt-6 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] p-2.5">
       <div className="flex items-start gap-2">

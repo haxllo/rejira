@@ -3,12 +3,12 @@
 import * as React from "react";
 import { motion } from "motion/react";
 import { ViewHeader } from "@/components/views/view-header";
-import { PROJECTS, CYCLES, ISSUES, ME_ID } from "@/lib/mock";
+import { PROJECTS, CYCLES, ISSUES } from "@/lib/mock";
 import { TrendingUpIcon, ArrowUpRightIcon, CircleCheckIcon, ClockIcon, SparklesIcon } from "@/components/icons";
 
 export default function HomePage() {
   const me = "Aria";
-  const myIssues = ISSUES.filter((i) => i.assigneeIds.includes(ME_ID) && i.status !== "done" && i.status !== "cancelled");
+  const myIssues = ISSUES.filter((i) => i.assigneeIds.includes("u_aria") && i.status !== "done" && i.status !== "cancelled");
   const upcoming = [...ISSUES]
     .filter((i) => i.dueDate && i.status !== "done" && i.status !== "cancelled")
     .sort((a, b) => a.dueDate!.localeCompare(b.dueDate!))

@@ -1,9 +1,4 @@
 import type { User } from "./types";
-import { ME_EXTERNAL_ID } from "../auth/demo-session";
-
-// TODO Phase 3: delete this re-export. The constant will live in
-// `useSession().userId` (Better Auth) and won't be hard-coded anymore.
-export const ME_ID = ME_EXTERNAL_ID;
 
 export const USERS: User[] = [
   { id: "u_aria", name: "Aria Vance", email: "aria@acme.dev", role: "admin", status: "online", avatarColor: "oklch(0.72 0.18 25)" },

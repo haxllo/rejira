@@ -19,14 +19,16 @@ import {
   CircleCheckIcon,
   CircleIcon,
 } from "@/components/icons";
-import { PROJECTS, ME_ID, INBOX, issuesAssignedTo } from "@/lib/mock";
+import { PROJECTS, INBOX, issuesAssignedTo } from "@/lib/mock";
+import { useCurrentUserId } from "@/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
 import { Kbd } from "@/components/primitives/kbd";
 
 export function PrimaryNav() {
   const path = usePathname() ?? "";
   const unread = INBOX.filter((i) => !i.read).length;
-  const myIssuesCount = issuesAssignedTo(ME_ID).length;
+  const meId = useCurrentUserId();
+  const myIssuesCount = issuesAssignedTo(meId).length;
 
   return (
     <nav className="flex w-[244px] shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-bg)] py-3">

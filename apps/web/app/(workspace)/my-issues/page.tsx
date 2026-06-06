@@ -5,7 +5,8 @@ import { ViewHeader } from "@/components/views/view-header";
 import { FilterChips, FilterChipsFromState, buildFilterChips } from "@/components/views/filter-chips";
 import { GroupedList, type Group } from "@/components/views/grouped-list";
 import { FilterPopover } from "@/components/views/filter-popover";
-import { USERS, ME_ID, type StatusKey } from "@/lib/mock";
+import { useCurrentUserId, useCurrentUser } from "@/hooks/useCurrentUser";
+import { USERS, type StatusKey } from "@/lib/mock";
 import { getStatusLabel, StatusDot } from "@/components/primitives/status";
 import { CircleAlertIcon, InboxIcon, PlusIcon } from "@/components/icons";
 import { dueIsOverdue } from "@/lib/utils/date";
@@ -28,11 +29,12 @@ export default function MyIssuesPage() {
 function MyIssuesBody() {
   const openDrawer = useUI((s) => s.openDrawer);
   const issues = useIssues((s) => s.issues);
-  const me = USERS.find((u) => u.id === ME_ID)!;
+  const meId = useCurrentUserId();
+  const me = USERS.find((u) => u.id === meId)!;
 
   // Pre-filter to my issues
   const mine = React.useMemo(
-    () => issues.filter((i) => i.assigneeIds.includes(ME_ID) && !i.archived),
+    () => issues.filter((i) => i.assigneeIds.includes(meId) && !i.archived),
     [issues],
   );
 

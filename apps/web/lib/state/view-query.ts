@@ -1,9 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { Issue, StatusKey, PriorityKey, LabelId, UserId } from "@/lib/mock";
-import { ME_ID, labelById, userById } from "@/lib/mock";
-
+import { labelById, userById, USERS, type StatusKey, type PriorityKey, type UserId, type LabelId, type Issue } from "@/lib/mock";
 /**
  * URL-encoded filter state for a list view.
  *
@@ -139,7 +137,7 @@ function matchAssignee(filter: FilterState["assignee"], assigneeIds: UserId[]): 
   if (filter.length === 0) return true;
   for (const f of filter) {
     if (f === "none" && assigneeIds.length === 0) return true;
-    if (f === "me" && assigneeIds.includes(ME_ID)) return true;
+    if (f === "me" && assigneeIds.includes("u_aria")) return true;
     if (typeof f === "string" && f !== "me" && f !== "none" && assigneeIds.includes(f)) return true;
   }
   return false;

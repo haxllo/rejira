@@ -8,14 +8,14 @@ import { CommandIcon, SearchIcon, InboxIcon, SparklesIcon, BellIcon, HelpCircleI
 import { Kbd } from "@/components/primitives/kbd";
 import { Avatar } from "@/components/primitives/avatar";
 import { useUI } from "@/lib/state/ui";
-import { ME_ID, USERS } from "@/lib/mock";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
 
 export function TopBar() {
   const router = useRouter();
   const path = usePathname();
   const setCommandOpen = useUI((s) => s.setCommandOpen);
-  const me = USERS.find((u) => u.id === ME_ID)!;
+  const me = useCurrentUser();
 
   return (
     <header

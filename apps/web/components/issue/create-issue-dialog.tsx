@@ -17,7 +17,7 @@ import {
 import { useUI } from "@/lib/state/ui";
 import { useIssues } from "@/lib/state/issues";
 import { apply } from "@/lib/state/mutations";
-import { PROJECTS, USERS, ME_ID, type StatusKey, type PriorityKey } from "@/lib/mock";
+import { PROJECTS, USERS, type StatusKey, type PriorityKey } from "@/lib/mock";
 import { StatusDot, getStatusLabel } from "@/components/primitives/status";
 import { PriorityIcon, getPriorityLabel } from "@/components/primitives/priority";
 import { Avatar } from "@/components/primitives/avatar";
@@ -33,7 +33,7 @@ export function CreateIssueDialog() {
   const [projectId, setProjectId] = React.useState("p_eng");
   const [status, setStatus] = React.useState<StatusKey>("todo");
   const [priority, setPriority] = React.useState<PriorityKey>("none");
-  const [assigneeIds, setAssigneeIds] = React.useState<string[]>([ME_ID]);
+  const [assigneeIds, setAssigneeIds] = React.useState<string[]>(["u_aria"]);
   const titleRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
@@ -42,7 +42,7 @@ export function CreateIssueDialog() {
       setProjectId("p_eng");
       setStatus("todo");
       setPriority("none");
-      setAssigneeIds([ME_ID]);
+      setAssigneeIds(["u_aria"]);
       setTimeout(() => titleRef.current?.focus(), 60);
     }
   }, [open]);
@@ -59,7 +59,7 @@ export function CreateIssueDialog() {
       status,
       priority,
       assigneeIds,
-      authorId: ME_ID,
+      authorId: "u_aria",
       labelIds: [],
     });
     const created = useIssues.getState().issues.find((i) => i.id === newId)!;
