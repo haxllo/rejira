@@ -6,6 +6,7 @@ import { XIcon, Trash2Icon, FlagIcon, UserIcon, TagIcon } from "@/components/ico
 import { useUI } from "@/lib/state/ui";
 import { useIssues } from "@/lib/state/issues";
 import { apply } from "@/lib/state/mutations";
+import { convexSetStatus, convexSetPriority, convexBulkArchive } from "@/lib/state/convex-mutations";
 import { StatusDot, getStatusLabel } from "@/components/primitives/status";
 import { PriorityIcon, getPriorityLabel } from "@/components/primitives/priority";
 import { USERS, PROJECTS, LABELS, type StatusKey, type PriorityKey, type LabelId, type ProjectId, type UserId } from "@/lib/mock";
@@ -216,6 +217,7 @@ function bulkSetStatus(ids: string[], status: StatusKey) {
     },
     retry: () => useIssues.getState().bulkSetStatus(ids, status),
   });
+  ids.forEach((id) => convexSetStatus(id, status));
 }
 
 function bulkSetPriority(ids: string[], priority: PriorityKey) {
@@ -237,6 +239,7 @@ function bulkSetPriority(ids: string[], priority: PriorityKey) {
     },
     retry: () => ids.forEach((id) => useIssues.getState().setPriority(id, priority)),
   });
+  ids.forEach((id) => convexSetPriority(id, priority));
 }
 
 function bulkAssign(ids: string[], userId: UserId) {
@@ -326,4 +329,5 @@ function bulkArchive(ids: string[]) {
     },
     retry: () => useIssues.getState().bulkArchive(ids),
   });
+  convexBulkArchive(ids);
 }

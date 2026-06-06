@@ -50,6 +50,7 @@ import { relativeTime, dateWithYear, timeOnly, dueLabel, dueIsOverdue } from "@/
 import { useUI } from "@/lib/state/ui";
 import { useIssues } from "@/lib/state/issues";
 import { apply } from "@/lib/state/mutations";
+import { convexSetStatus, convexSetPriority, convexSetTitle, convexSetDescription } from "@/lib/state/convex-mutations";
 import { cn } from "@/lib/utils";
 
 const STATUS_ORDER: StatusKey[] = ["backlog", "todo", "in_progress", "in_review", "done", "cancelled"];
@@ -75,6 +76,10 @@ export function IssueDrawer() {
           affectedIds: [issue.id],
           undo: () => useIssues.getState().setStatus(issue.id, prev),
           retry: () => useIssues.getState().setStatus(issue.id, target),
+        });
+        // Convex sync
+        convexSetStatus(issue.id, target).catch(() => {
+          useIssues.getState().setStatus(issue.id, prev);
         });
       }
     };
@@ -203,6 +208,9 @@ function TitleSection({ issue }: { issue: Issue }) {
                 undo: () => useIssues.getState().setTitle(issue.id, prev),
                 retry: () => useIssues.getState().setTitle(issue.id, next),
               });
+              convexSetTitle(issue.id, next).catch(() => {
+                useIssues.getState().setTitle(issue.id, prev);
+              });
             }
           }}
           onKeyDown={(e) => {
@@ -326,6 +334,9 @@ function DescriptionSection({ issue }: { issue: Issue }) {
                 affectedIds: [issue.id],
                 undo: () => useIssues.getState().setDescription(issue.id, prev),
                 retry: () => useIssues.getState().setDescription(issue.id, value),
+              });
+              convexSetDescription(issue.id, value).catch(() => {
+                useIssues.getState().setDescription(issue.id, prev);
               });
             }
           }}
@@ -667,6 +678,9 @@ function StatusPicker({ current, issueId }: { current: StatusKey; issueId: strin
                         undo: () => useIssues.getState().setStatus(issueId, prev),
                         retry: () => useIssues.getState().setStatus(issueId, s),
                       });
+                      convexSetStatus(issueId, s).catch(() => {
+                        useIssues.getState().setStatus(issueId, prev);
+                      });
                     }
                     setOpen(false);
                   }}
@@ -705,6 +719,9 @@ function PriorityPicker({ current, issueId }: { current: Issue["priority"]; issu
                 affectedIds: [issueId],
                 undo: () => useIssues.getState().setPriority(issueId, prev),
                 retry: () => useIssues.getState().setPriority(issueId, p),
+              });
+              convexSetPriority(issueId, p).catch(() => {
+                useIssues.getState().setPriority(issueId, prev);
               });
             }
           }}

@@ -191,6 +191,17 @@ export const setTitle = mutation({
   },
 });
 
+export const setDescription = mutation({
+  args: { issueId: v.id("issues"), description: v.string() },
+  handler: async (ctx, args) => {
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue) throw new Error("Issue not found");
+    await requireRole(ctx, issue.workspaceId, "member");
+    await ctx.db.patch(args.issueId, { description: args.description, updatedAt: Date.now() });
+    return ctx.db.get(args.issueId);
+  },
+});
+
 export const archive = mutation({
   args: { issueId: v.id("issues") },
   handler: async (ctx, args) => {

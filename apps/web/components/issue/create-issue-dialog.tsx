@@ -17,6 +17,7 @@ import {
 import { useUI } from "@/lib/state/ui";
 import { useIssues } from "@/lib/state/issues";
 import { apply } from "@/lib/state/mutations";
+import { convexCreateIssue } from "@/lib/state/convex-mutations";
 import { PROJECTS, USERS, type StatusKey, type PriorityKey } from "@/lib/mock";
 import { StatusDot, getStatusLabel } from "@/components/primitives/status";
 import { PriorityIcon, getPriorityLabel } from "@/components/primitives/priority";
@@ -72,6 +73,15 @@ export function CreateIssueDialog() {
       viewAction: { label: "View", run: () => useUI.getState().openDrawer(newId) },
     });
     close();
+    // Convex sync
+    convexCreateIssue({
+      workspaceId: "", // populated from Convex data after Phase 4E
+      projectId,
+      title: t, description: "",
+      status, priority, assigneeIds,
+    }).catch(() => {
+      useIssues.getState().archiveIssue(newId);
+    });
   };
 
   return (
