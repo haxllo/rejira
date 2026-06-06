@@ -21,8 +21,11 @@ export function SignInForm() {
         password,
         callbackURL: "/inbox",
       });
+      window.location.href = "/onboarding";
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Sign in failed");
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+      console.error("[sign-in]", err);
     } finally {
       setLoading(false);
     }
