@@ -1,5 +1,7 @@
 // Phase 3 — Stream 3D: Two-factor setup page.
 
+"use client";
+
 import { TwoFactorSetup } from "@/components/auth/two-factor-setup";
 
 export default function TwoFactorSetupPage() {

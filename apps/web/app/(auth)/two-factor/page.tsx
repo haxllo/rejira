@@ -1,5 +1,7 @@
 // Phase 3 — Stream 3D: Two-factor challenge page.
 
+"use client";
+
 import { TwoFactorForm } from "@/components/auth/two-factor-form";
 
 export default function TwoFactorPage() {

@@ -5,10 +5,10 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function VerifyEmailPage() {
+function VerifyHandler() {
   const params = useSearchParams();
   const token = params.get("token");
   const [status, setStatus] = useState<"verifying" | "success" | "error">("verifying");
@@ -38,7 +38,6 @@ export default function VerifyEmailPage() {
 
   return (
     <>
-      <h1 className="auth-title">Email verification</h1>
       {status === "verifying" && <p className="auth-loading">Verifying your email...</p>}
       {status === "success" && <p className="auth-success">Email verified! Redirecting to sign in...</p>}
       {status === "error" && (
@@ -49,6 +48,17 @@ export default function VerifyEmailPage() {
           </p>
         </div>
       )}
+    </>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <>
+      <h1 className="auth-title">Email verification</h1>
+      <Suspense fallback={<p className="auth-loading">Loading...</p>}>
+        <VerifyHandler />
+      </Suspense>
     </>
   );
 }
