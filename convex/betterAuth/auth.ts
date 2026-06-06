@@ -185,6 +185,7 @@ export const createAuthOptions = (
       },
     }),
   ],
+  // 3D: + twoFactor() after `npx auth generate` re-generates the schema
 });
 
 // `options` is read by the `npx auth generate` CLI to produce

@@ -4,6 +4,8 @@
 
 import { useState } from "react";
 import { authClient } from "@/lib/auth/client";
+// Use the correct Better Auth password reset request method
+const requestReset = (authClient as any).requestPasswordReset || (authClient as any).forgetPassword;
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -16,7 +18,7 @@ export function ForgotPasswordForm() {
     setError("");
     setLoading(true);
     try {
-      await authClient.forgetPassword({
+      await requestReset({
         email,
         redirectTo: "/reset-password",
       });
