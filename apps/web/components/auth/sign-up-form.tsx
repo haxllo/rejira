@@ -17,15 +17,18 @@ export function SignUpForm() {
     setError("");
     setLoading(true);
     try {
-      const result = await signUp.email({ name, email, password, callbackURL: "/inbox" });
-      if ((result as any)?.error) {
-        setError((result as any).error?.message ?? (result as any).error?.statusText ?? "Sign up failed");
+      const res = await signUp.email({ name, email, password, callbackURL: "/inbox" }) as any;
+      if (res?.error) {
+        setError(res.error.message ?? res.error.statusText ?? "Sign up failed");
+      } else if (!res?.data) {
+        setError("Sign up failed — unexpected response. Check console.");
+        console.error("[sign-up] unexpected", res);
       } else {
         setDone(true);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      setError(msg || "Sign up failed — check console for details");
+      setError(msg || "Sign up failed. Check console.");
       console.error("[sign-up]", err);
     } finally {
       setLoading(false);
