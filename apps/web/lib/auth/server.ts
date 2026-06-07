@@ -5,6 +5,19 @@ import { dash } from "@better-auth/infra";
 import { nextCookies } from "better-auth/next-js";
 import { ConvexHttpClient } from "convex/browser";
 
+function convertDates(obj: any): any {
+  if (obj instanceof Date) return obj.getTime();
+  if (Array.isArray(obj)) return obj.map(convertDates);
+  if (obj && typeof obj === "object") {
+    const out: Record<string, any> = {};
+    for (const key of Object.keys(obj)) {
+      out[key] = convertDates(obj[key]);
+    }
+    return out;
+  }
+  return obj;
+}
+
 let _authInstance: any = null;
 
 function getAuthInstance() {
@@ -17,10 +30,7 @@ function getAuthInstance() {
   if (adminKey) (client as any).setAdminAuth(adminKey);
 
   function call(path: string, args: Record<string, any>) {
-    const safe = JSON.parse(JSON.stringify(args, (_key, value) => {
-      if (value instanceof Date) return value.getTime();
-      return value;
-    }));
+    const safe = convertDates(args);
     return (client as any).function(`auth_adapter:${path}`, undefined, safe)
       .catch((e: any) => { throw e; });
   }
