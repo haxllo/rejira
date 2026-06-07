@@ -10,7 +10,7 @@ async function getHandler() {
     const { toNextJsHandler } = await import("better-auth/next-js");
     try {
       const instance = getAuthInstance();
-      _handler = toNextJsHandler(instance);
+      _handler = toNextJsHandler(instance as any);
     } catch (e: any) {
       console.error("[auth] Init error:", e?.message ?? e, e?.stack?.split("\n").slice(0, 3));
       throw e;

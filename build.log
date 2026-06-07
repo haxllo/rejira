@@ -1,0 +1,59 @@
+
+> web@0.1.0 build
+> next build
+
+ÔÜá Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of G:\ciqada2\Projects\jira redesign\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * G:\ciqada2\Projects\jira redesign\apps\web\package-lock.json
+
+Ôû▓ Next.js 16.2.7 (Turbopack)
+- Experiments (use with caution):
+  ┬À optimizePackageImports
+
+  Creating an optimized production build ...
+(node:11372) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+> Build error occurred
+Error: Turbopack build failed with 2 errors:
+./apps/web/components/issue/issue-drawer.tsx:82:6
+'const' declarations must be initialized
+  80 |         window.addEventListener("keydown", onKey);
+  81 |     return () => window.removeEventListener("keydown", onKey);
+> 82 |   }, [issue]);
+     |      ^^^^^^^
+  83 |
+  84 |   return (
+  85 |     <AnimatePresence>
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./apps/web/components/issue/issue-drawer.tsx
+    ./apps/web/app/(workspace)/layout.tsx
+
+
+./apps/web/components/issue/issue-drawer.tsx:82:13
+Expected a semicolon
+  80 |         window.addEventListener("keydown", onKey);
+  81 |     return () => window.removeEventListener("keydown", onKey);
+> 82 |   }, [issue]);
+     |             ^
+  83 |
+  84 |   return (
+  85 |     <AnimatePresence>
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./apps/web/components/issue/issue-drawer.tsx
+    ./apps/web/app/(workspace)/layout.tsx
+
+
+    at <unknown> (./apps/web/components/issue/issue-drawer.tsx:82:6)
+    at <unknown> (./apps/web/components/issue/issue-drawer.tsx:82:13)

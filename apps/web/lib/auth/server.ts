@@ -1,14 +1,11 @@
-// Phase 3 — Better Auth with Supabase PostgreSQL.
-import { betterAuth } from "better-auth";
+// Phase 3 — Better Auth (memory adapter for now, PG pending).
+import { betterAuth } from "better-auth/minimal";
 import { magicLink } from "better-auth/plugins";
-import { dash } from "@better-auth/infra";
 import { nextCookies } from "better-auth/next-js";
-
-const DATABASE_URL = process.env.DATABASE_URL ?? process.env.SUPABASE_DB_URL ?? "";
 
 let _authInstance: ReturnType<typeof betterAuth> | null = null;
 
-function getAuthInstance() {
+function getAuthInstance(): any {
   if (_authInstance) return _authInstance;
 
   _authInstance = betterAuth({
@@ -17,9 +14,8 @@ function getAuthInstance() {
     secret: process.env.BETTER_AUTH_SECRET ?? "",
     basePath: "/api/auth",
 
-    database: DATABASE_URL
-      ? { provider: "postgresql" as const, url: DATABASE_URL }
-      : undefined,
+    // TODO: Replace with PostgreSQL Pool after Kysely version compat resolved.
+    // database: new Pool({ connectionString: process.env.DATABASE_URL }),
 
     emailAndPassword: { enabled: true, requireEmailVerification: false, minPasswordLength: 12 },
     socialProviders: {
@@ -31,10 +27,9 @@ function getAuthInstance() {
     advanced: { useSecureCookies: false, defaultCookieAttributes: { sameSite: "lax" as const, httpOnly: true } },
     plugins: [
       nextCookies(),
-      dash({ apiKey: process.env.BETTER_AUTH_API_KEY }),
       magicLink({ sendMagicLink: async () => {} }),
     ],
-  });
+  }) as any;
 
   return _authInstance;
 }
