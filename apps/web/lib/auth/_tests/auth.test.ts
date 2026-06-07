@@ -131,10 +131,10 @@ describe('getSession', () => {
     const mockUser = { id: 'user-1', email: 'test@test.com', emailVerified: true };
     const mockSession = { id: 'session-1', userId: 'user-1', expiresAt: Date.now() + 86400000 };
 
-    (auth.api.getSession as ReturnType<typeof vi.fn>).mockResolvedValue({
+    vi.mocked(auth.api.getSession).mockResolvedValue({
       user: mockUser,
       session: mockSession,
-    });
+    } as never);
 
     const { getSession } = await import('@/lib/auth/get-session');
     const result = await getSession();
@@ -146,7 +146,7 @@ describe('getSession', () => {
 
   it('returns null when no session token is present', async () => {
     const { auth } = await import('@/lib/auth/server');
-    (auth.api.getSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    vi.mocked(auth.api.getSession).mockResolvedValue(null as never);
 
     const { getSession } = await import('@/lib/auth/get-session');
     const result = await getSession();
@@ -160,10 +160,10 @@ describe('requireAuth', () => {
     const { auth } = await import('@/lib/auth/server');
     const mockUser = { id: 'user-1', email: 'test@test.com', emailVerified: true };
 
-    (auth.api.getSession as ReturnType<typeof vi.fn>).mockResolvedValue({
+    vi.mocked(auth.api.getSession).mockResolvedValue({
       user: mockUser,
       session: { id: 's1', userId: 'user-1', expiresAt: 0 },
-    });
+    } as never);
 
     const { requireAuth } = await import('@/lib/auth/require-auth');
     const user = await requireAuth();
@@ -174,7 +174,7 @@ describe('requireAuth', () => {
 
   it('redirects to /sign-in for unauthenticated calls', async () => {
     const { auth } = await import('@/lib/auth/server');
-    (auth.api.getSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    vi.mocked(auth.api.getSession).mockResolvedValue(null as never);
 
     await expect(async () => {
       const { requireAuth } = await import('@/lib/auth/require-auth');
@@ -186,10 +186,10 @@ describe('requireAuth', () => {
     const { auth } = await import('@/lib/auth/server');
     const mockUser = { id: 'user-1', email: 'test@test.com', emailVerified: false };
 
-    (auth.api.getSession as ReturnType<typeof vi.fn>).mockResolvedValue({
+    vi.mocked(auth.api.getSession).mockResolvedValue({
       user: mockUser,
       session: { id: 's1', userId: 'user-1', expiresAt: 0 },
-    });
+    } as never);
 
     await expect(async () => {
       const { requireAuth } = await import('@/lib/auth/require-auth');

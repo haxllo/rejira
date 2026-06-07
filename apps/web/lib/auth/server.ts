@@ -1,7 +1,6 @@
 import 'server-only';
 
 import { betterAuth } from 'better-auth';
-import { emailAndPassword } from 'better-auth/plugins';
 import { nextCookies } from 'better-auth/next-js';
 import { Pool } from 'pg';
 

@@ -26,7 +26,12 @@ export type AuthClient = typeof authClient;
 
 export const { signIn, signUp, signOut, useSession, getSession } = authClient;
 
-export const forgetPassword = authClient.forgetPassword;
-export const resetPassword = authClient.resetPassword;
+export function forgetPassword(params: { email: string; redirectTo?: string }) {
+  return (authClient as unknown as Record<string, CallableFunction>).forgetPassword(params) as Promise<{ error?: { message?: string } }>;
+}
+
+export function resetPassword(params: { newPassword: string; token?: string }) {
+  return authClient.resetPassword(params);
+}
 
 export { isOAuthConfigured } from './oauth-config';

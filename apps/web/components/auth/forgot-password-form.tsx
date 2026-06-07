@@ -3,9 +3,7 @@
 "use client";
 
 import { useState } from "react";
-import { authClient } from "@/lib/auth/client";
-// Use the correct Better Auth password reset request method
-const requestReset = (authClient as any).requestPasswordReset || (authClient as any).forgetPassword;
+import { forgetPassword } from "@/lib/auth/client";
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -18,9 +16,9 @@ export function ForgotPasswordForm() {
     setError("");
     setLoading(true);
     try {
-      await requestReset({
+      await forgetPassword({
         email,
-        redirectTo: "/reset-password",
+        redirectTo: '/reset-password',
       });
       setSent(true);
     } catch (err: unknown) {
