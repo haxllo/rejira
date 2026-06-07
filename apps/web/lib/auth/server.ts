@@ -17,9 +17,10 @@ function getAuthInstance() {
   if (adminKey) (client as any).setAdminAuth(adminKey);
 
   function call(path: string, args: Record<string, any>) {
-    const safe = JSON.parse(JSON.stringify(args, (_, v) =>
-      v instanceof Date ? v.getTime() : v
-    ));
+    const safe = JSON.parse(JSON.stringify(args, (_key, value) => {
+      if (value instanceof Date) return value.getTime();
+      return value;
+    }));
     return (client as any).function(`auth_adapter:${path}`, undefined, safe)
       .catch((e: any) => { throw e; });
   }
