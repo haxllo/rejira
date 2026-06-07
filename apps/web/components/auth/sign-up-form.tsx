@@ -14,22 +14,19 @@ export function SignUpForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
     try {
-      const res = await signUp.email({ name, email, password, callbackURL: "/inbox" }) as any;
-      if (res?.error) {
-        setError(res.error.message ?? res.error.statusText ?? "Sign up failed");
-      } else if (!res?.data) {
-        setError("Sign up failed — unexpected response. Check console.");
-        console.error("[sign-up] unexpected", res);
+      const res = await signUp.email({ name, email, password, callbackURL: '/inbox' });
+      if (res && 'error' in res && res.error) {
+        setError(res.error.message ?? res.error.statusText ?? 'Sign up failed');
       } else {
         setDone(true);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      setError(msg || "Sign up failed. Check console.");
-      console.error("[sign-up]", err);
+      setError(msg || 'Sign up failed. Check console.');
+      console.error('[sign-up]', err);
     } finally {
       setLoading(false);
     }

@@ -7,32 +7,33 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { authClient } from "@/lib/auth/client";
 
 function VerifyHandler() {
   const params = useSearchParams();
   const token = params.get("token");
-  const [status, setStatus] = useState<"verifying" | "success" | "error">("verifying");
-  const [error, setError] = useState("");
+  const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!token) {
-      setStatus("error");
-      setError("No verification token found.");
+      setStatus('error');
+      setError('No verification token found.');
       return;
     }
-    fetch(`/api/auth/verify-email?token=${token}`, { method: "POST" })
-      .then(async (res) => {
-        if (res.ok) {
-          setStatus("success");
-          setTimeout(() => { window.location.href = "/sign-in"; }, 2000);
+    authClient.verifyEmail({ query: { token } })
+      .then((res) => {
+        if (res && 'error' in res && res.error) {
+          setStatus('error');
+          setError(res.error.message ?? 'This link is invalid or has expired.');
         } else {
-          setStatus("error");
-          setError("This link is invalid or has expired.");
+          setStatus('success');
+          setTimeout(() => { window.location.href = '/sign-in'; }, 2000);
         }
       })
       .catch(() => {
-        setStatus("error");
-        setError("Something went wrong. Please try again.");
+        setStatus('error');
+        setError('Something went wrong. Please try again.');
       });
   }, [token]);
 

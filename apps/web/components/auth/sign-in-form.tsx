@@ -13,22 +13,19 @@ export function SignInForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
     try {
-      const res = await signIn.email({ email, password, callbackURL: "/inbox" }) as any;
-      if (res?.error) {
-        setError(res.error.message ?? res.error.statusText ?? "Sign in failed");
-      } else if (!res?.data) {
-        setError("Sign in failed — unexpected response. Check console.");
-        console.error("[sign-in] unexpected", res);
+      const res = await signIn.email({ email, password, callbackURL: '/inbox' });
+      if (res && 'error' in res && res.error) {
+        setError(res.error.message ?? res.error.statusText ?? 'Sign in failed');
       } else {
         setDone(true);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      setError(msg || "Sign in failed. Check console.");
-      console.error("[sign-in]", err);
+      setError(msg || 'Sign in failed. Check console.');
+      console.error('[sign-in]', err);
     } finally {
       setLoading(false);
     }
