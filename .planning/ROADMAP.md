@@ -101,27 +101,18 @@ Plans (streams):
   10. Audit log captures all auth events in `audit_log` (append-only, pg_cron never deletes)
   11. User can request GDPR data export (JSON, all workspaces) and account deletion (soft 30 days, then hard)
   12. ~218 tests pass (Vitest + Playwright + pgTAP)
-**Status**: Not started (will be ready to plan after Phase 2)
-**Detailed plan**: `PHASE_3_PLAN.md` (1035 lines, 17 streams: 3A–3Q)
+**Status**: Ready to execute (planned — 7 GSD plans, 5 waves)
+**Detailed plan**: `PHASE_3_PLAN.md` (1220 lines, 17 streams consolidated into 7 GSD plans)
+**Plans:** 7 plans
 
-Plans (streams):
-- [ ] 03-A: Better Auth core + pg.Pool adapter (`apps/web/app/api/auth/[...all]/route.ts`)
-- [ ] 03-B: Organization plugin (mapped to our `workspaces`/`memberships`/`invitations`/`teams` schema)
-- [ ] 03-C: Email + password (sign-up, sign-in, verification, password reset)
-- [ ] 03-D: Magic link auth (Resend transport + ConsoleTransport fallback)
-- [ ] 03-E: Sessions + cookie cache JWE (7d / 1d / 5m)
-- [ ] 03-F: 2FA (TOTP with backup codes) + passkey (WebAuthn)
-- [ ] 03-G: Invites (signed token, accept flow, role assignment)
-- [ ] 03-H: Onboarding wizard (5 steps) + workspace switcher
-- [ ] 03-I: Settings pages (account, workspace, members, security)
-- [ ] 03-J: Hardening (rate limits via Upstash Redis, HIBP password check, CSRF, origin checks)
-- [ ] 03-K: IP tracking + user-agent fingerprinting; suspicious activity alerts
-- [ ] 03-L: Audit log via database hooks (`tg_emit_audit_log()` trigger on auth tables)
-- [ ] 03-M: GDPR: data export + soft 30d delete + pg_cron hard delete
-- [ ] 03-N: Workspace security policies (require 2FA, password min length, session timeout)
-- [ ] 03-O: OAuth (Google, GitHub) — pre-configured providers
-- [ ] 03-P: i18n for emails (React Email templates, 6 locales) + accessibility (axe-core, keyboard-only)
-- [ ] 03-Q: Observability (Sentry auth events, PostHog sign-in funnel) + production deploy
+Plans:
+- [ ] 03-01-PLAN.md — Better Auth core + pg.Pool + email/password auth (sign-up, sign-in, verification, reset) + auth UI forms + email transport
+- [ ] 03-02-PLAN.md — Magic link + OAuth (Google, GitHub) + session management (IP/UA binding, device tracking) + TOTP 2FA with backup codes
+- [ ] 03-03-PLAN.md — Organization plugin mapped to workspaces/memberships/invitations tables + member invites + role management + workspace switcher
+- [ ] 03-04-PLAN.md — Account settings UI (profile, security, sessions, data, notifications) + 5-step onboarding wizard
+- [ ] 03-05-PLAN.md — Production hardening (rate limits, HIBP, password policy) + audit log + GDPR export/deletion + passkeys (WebAuthn) + Sentry/PostHog observability
+- [ ] 03-06-PLAN.md — App cutover: replace ME_ID demo session with real Better Auth sessions + middleware route protection + RequireAuth component
+- [ ] 03-07-PLAN.md — i18n (6 locales) + accessibility (axe-core, keyboard) + security headers (CSP, HSTS) + workspace security policy + deploy runbooks + test suite consolidation
 
 ### Phase 4: Drizzle queries & mutations
 **Goal**: Every mutation in the UI hits a real Postgres function behind Drizzle. RBAC enforced at the RLS layer. The app is now a real multi-tenant backend. State survives reloads, is shared across users, respects permissions, and the realtime channel keeps everyone in sync. This is the GA-ready backend — closed-beta can promote to open-beta after this lands.
@@ -268,7 +259,7 @@ Phases execute in numeric order: 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 0. Foundation | 7/7 | Complete | 2026-06-07 |
 | 1. Interactions | 7/7 | Complete | 2026-06-07 |
 | 2. Data layer (Supabase + Drizzle) | 0/14 | Ready to execute | - |
-| 3. Auth & Identity (Better Auth) | 0/17 | Not started | - |
+| 3. Auth & Identity (Better Auth) | 0/7 | Ready to execute | - |
 | 4. Drizzle queries & mutations | 0/10 | Not started | - |
 | 5. Live & resilience | 0/9 | Not started | - |
 | 6. Search & AI | 0/6 | Not started | - |
