@@ -1,70 +1,153 @@
-// Phase 3 — Stream 3E: Accept invite page.
+'use client';
 
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
-
-function AcceptHandler() {
-  const { token } = useParams<{ token: string }>();
-  const [status, setStatus] = useState<"accepting" | "success" | "error">("accepting");
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (!token) return;
-    fetch("/api/auth/session")
-      .then((r) => r.ok ? r.json() : null)
-      .then((session) => {
-        if (!session?.user) {
-          window.location.href = `/sign-in?next=/invite/${token}`;
-          return;
-        }
-        return fetch(`/api/function`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            path: "memberships:acceptInvite",
-            format: "convex_encoded_json",
-            args: [{ token }],
-          }),
-        });
-      })
-      .then(async (r) => {
-        if (!r) return;
-        if (r.ok) {
-          setStatus("success");
-          setTimeout(() => { window.location.href = "/inbox"; }, 2000);
-        } else {
-          setStatus("error");
-          const err = await r.json();
-          setError(err?.message ?? "Failed to accept invitation");
-        }
-      })
-      .catch(() => {
-        setStatus("error");
-        setError("Something went wrong");
-      });
-  }, [token]);
-
-  return (
-    <div style={{ maxWidth: 480, margin: "80px auto", textAlign: "center", padding: 40, background: "var(--color-bg-layer-2)", borderRadius: 12, border: "1px solid var(--color-border)" }}>
-      {status === "accepting" && <p style={{ fontSize: 16 }}>Accepting invitation...</p>}
-      {status === "success" && <p style={{ color: "hsl(150 60% 60%)", fontSize: 16 }}>Joined! Redirecting...</p>}
-      {status === "error" && (
-        <>
-          <p style={{ color: "hsl(0 80% 70%)", fontSize: 16 }}>Could not accept invitation</p>
-          <p style={{ color: "var(--color-fg-muted)", fontSize: 14, marginTop: 8 }}>{error}</p>
-        </>
-      )}
-    </div>
-  );
-}
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useSession } from '@/lib/auth/client';
 
 export default function AcceptInvitePage() {
+  const params = useParams();
+  const router = useRouter();
+  const { data: session, isPending: sessionLoading } = useSession();
+  const token = params?.token as string;
+
+  const [status, setStatus] = useState<'loading' | 'success' | 'expired' | 'invalid' | 'needs-auth'>('loading');
+  const [workspaceName, setWorkspaceName] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (sessionLoading) return;
+
+    if (!session?.user) {
+      setStatus('needs-auth');
+      return;
+    }
+
+    async function accept() {
+      try {
+        const { acceptInvite } = await import('@/lib/auth/invites');
+        const result = await acceptInvite(token);
+        setWorkspaceName((result as Record<string, unknown>).workspaceName as string || 'the workspace');
+        setStatus('success');
+        setTimeout(() => {
+          router.push('/');
+        }, 2000);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Unknown error';
+        if (msg.toLowerCase().includes('expired')) {
+          setStatus('expired');
+        } else {
+          setStatus('invalid');
+          setError(msg);
+        }
+      }
+    }
+
+    accept();
+  }, [token, session, sessionLoading, router]);
+
   return (
-    <Suspense fallback={<p style={{ textAlign: "center", marginTop: 80 }}>Loading...</p>}>
-      <AcceptHandler />
-    </Suspense>
+    <div style={{
+      maxWidth: 480,
+      margin: '80px auto',
+      textAlign: 'center',
+      padding: 40,
+      background: 'var(--color-surface-1)',
+      borderRadius: 12,
+      border: '1px solid var(--color-border)',
+    }}>
+      {status === 'loading' && (
+        <div>
+          <p style={{ fontSize: 16, color: 'var(--color-text)' }}>Accepting invitation...</p>
+          <p style={{ color: 'var(--color-text-subtle)', fontSize: 13, marginTop: 12 }}>
+            Verifying your invitation token...
+          </p>
+        </div>
+      )}
+
+      {status === 'needs-auth' && (
+        <div>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12, color: 'var(--color-text)' }}>
+            Sign in to accept
+          </h2>
+          <p style={{ color: 'var(--color-text-subtle)', fontSize: 13, marginBottom: 24 }}>
+            You need to sign in or create an account to accept this invitation.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+            <a
+              href={`/sign-in?callbackUrl=/invite/${token}`}
+              style={{
+                display: 'inline-block',
+                padding: '10px 24px',
+                background: 'var(--color-accent)',
+                color: 'var(--color-accent-fg)',
+                borderRadius: 6,
+                fontWeight: 600,
+                fontSize: 14,
+                textDecoration: 'none',
+              }}
+            >
+              Sign In
+            </a>
+            <a
+              href={`/sign-up?callbackUrl=/invite/${token}`}
+              style={{
+                display: 'inline-block',
+                padding: '10px 24px',
+                background: 'var(--color-surface-2)',
+                color: 'var(--color-text)',
+                borderRadius: 6,
+                fontWeight: 600,
+                fontSize: 14,
+                textDecoration: 'none',
+                border: '1px solid var(--color-border)',
+              }}
+            >
+              Sign Up
+            </a>
+          </div>
+        </div>
+      )}
+
+      {status === 'success' && (
+        <div>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8, color: 'hsl(140 60% 70%)' }}>
+            You&apos;re in!
+          </h2>
+          <p style={{ color: 'var(--color-text)', fontSize: 14 }}>
+            You&apos;ve joined {workspaceName || 'the workspace'}.
+          </p>
+          <p style={{ color: 'var(--color-text-subtle)', fontSize: 13, marginTop: 8 }}>
+            Redirecting to your workspace...
+          </p>
+        </div>
+      )}
+
+      {status === 'expired' && (
+        <div>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8, color: 'hsl(0 80% 70%)' }}>
+            Invitation expired
+          </h2>
+          <p style={{ color: 'var(--color-text-subtle)', fontSize: 13 }}>
+            This invitation has expired. Ask the workspace owner to send a new one.
+          </p>
+        </div>
+      )}
+
+      {status === 'invalid' && (
+        <div>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8, color: 'hsl(0 80% 70%)' }}>
+            Invalid invitation
+          </h2>
+          <p style={{ color: 'var(--color-text-subtle)', fontSize: 13 }}>
+            This invitation is no longer valid.
+          </p>
+          {error && (
+            <p style={{ color: 'var(--color-text-subtle)', fontSize: 11, marginTop: 8, wordBreak: 'break-all' }}>
+              {error}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
