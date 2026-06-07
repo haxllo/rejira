@@ -2,8 +2,11 @@ import 'server-only';
 
 import { betterAuth } from 'better-auth';
 import { nextCookies } from 'better-auth/next-js';
+import { organization, admin, jwt, magicLink, genericOAuth } from 'better-auth/plugins';
+import { google, github } from 'better-auth/social-providers';
 import { Pool } from 'pg';
 import { sendEmail } from './email';
+import { accountLinkingConfig } from './account-linking';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL_SESSION!,
@@ -69,7 +72,71 @@ export const auth = betterAuth({
       },
     },
   },
-  plugins: [nextCookies()],
+  account: {
+    accountLinking: {
+      enabled: accountLinkingConfig.enabled,
+      trustedProviders: accountLinkingConfig.trustedProviders,
+      allowUnlinking: accountLinkingConfig.allowUnlinking,
+    },
+  },
+  plugins: [
+    nextCookies(),
+    organization({
+      schema: {
+        organization: { modelName: 'workspaces' },
+        member:        { modelName: 'memberships' },
+        invitation:    { modelName: 'invitations' },
+        team:          { modelName: 'teams' },
+      },
+      allowUserToCreateOrganization: true,
+      organizationLimit: 10,
+      invitationExpiresIn: 604800,
+      sendInvitationEmail: async ({ email, invitation }) => {
+        await sendEmail({
+          to: email,
+          subject: `You've been invited to join ${(invitation as Record<string, unknown>).organizationName ?? 'a workspace'} on rejira`,
+          template: 'workspace-invite',
+          data: {
+            email,
+            workspaceName: ((invitation as Record<string, unknown>).organizationName ?? 'a workspace') as string,
+            inviteUrl: ((invitation as Record<string, unknown>).url ?? '') as string,
+            role: ((invitation as Record<string, unknown>).role ?? 'member') as string,
+          },
+        });
+      },
+    }),
+    admin(),
+    jwt({
+      jwtClaims: {
+        sub: '{{user.external_id}}',
+      },
+    }),
+    magicLink({
+      sendMagicLink: async ({ email, url }) => {
+        await sendEmail({
+          to: email,
+          subject: 'Sign in to rejira',
+          template: 'magic-link',
+          data: { name: email.split('@')[0], url, email },
+        });
+      },
+      expiresIn: 900,
+    }),
+    genericOAuth({
+      config: [
+        google({
+          clientId: process.env.GOOGLE_CLIENT_ID!,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+          redirectURI: `${process.env.BETTER_AUTH_URL!}/api/auth/callback/google`,
+        }),
+        github({
+          clientId: process.env.GITHUB_CLIENT_ID!,
+          clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+          redirectURI: `${process.env.BETTER_AUTH_URL!}/api/auth/callback/github`,
+        }),
+      ],
+    }),
+  ],
   trustedOrigins: [process.env.BETTER_AUTH_URL!],
   rateLimit: {
     enabled: true,

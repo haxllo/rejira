@@ -1,13 +1,10 @@
 // Phase 3 — Stream 3C: OAuth sign-in buttons.
-//
-// Renders Google and GitHub sign-in buttons. Each button calls
-// `signIn.social({ provider })` from the Better Auth client.
-// Hidden when OAuth credentials are not configured.
 
 "use client";
 
-import { signIn } from "@/lib/auth/client";
-import { isOAuthConfigured } from "@/lib/auth/oauth-config";
+import { useState } from 'react';
+import { signIn } from '@/lib/auth/client';
+import { isOAuthConfigured } from '@/lib/auth/oauth-config';
 
 export function OAuthButtons() {
   if (!isOAuthConfigured()) return null;
@@ -25,15 +22,29 @@ export function OAuthButtons() {
   );
 }
 
-function OAuthButton({ provider, label }: { provider: string; label: string }) {
+function OAuthButton({ provider, label }: { provider: 'google' | 'github'; label: string }) {
+  const [loading, setLoading] = useState(false);
+  const disabled = !isOAuthConfigured(provider);
+
+  async function handleClick() {
+    setLoading(true);
+    try {
+      await signIn.social({ provider, callbackURL: '/inbox' });
+    } catch (err: unknown) {
+      console.error(`[oauth-${provider}]`, err);
+      setLoading(false);
+    }
+  }
+
   return (
     <button
       type="button"
       className="oauth-button"
-      onClick={() => signIn.social({ provider, callbackURL: "/inbox" })}
+      onClick={handleClick}
+      disabled={disabled || loading}
     >
-      <span className="oauth-icon">{provider === "google" ? "G" : "GH"}</span>
-      {label}
+      <span className="oauth-icon">{provider === 'google' ? 'G' : 'GH'}</span>
+      {loading ? 'Connecting...' : label}
     </button>
   );
 }

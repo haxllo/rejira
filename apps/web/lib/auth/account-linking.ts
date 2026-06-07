@@ -1,26 +1,42 @@
-// Phase 3 — Stream 3C: Account linking by email.
-//
-// Better Auth supports account linking natively via the `accountLinking`
-// option. When a new OAuth user signs in with an email that matches
-// an existing user, the OAuth `account` row is linked to the existing
-// `user` row instead of creating a duplicate.
-//
-// This module provides the linking configuration and a helper to check
-// if linking is enabled for a given provider.
-
 export const accountLinkingConfig = {
   enabled: true,
-  // Only trust Google and GitHub — email/password and magic link can't
-  // be linked automatically because the user hasn't proved email ownership
-  // on those providers (they could have typed any email).
-  trustedProviders: ["google", "github"] as string[],
-
-  // Allow users to link multiple OAuth accounts to the same user.
-  // When disabled, a second Google account with the same email would
-  // be rejected rather than linking.
+  trustedProviders: ['google', 'github'] as string[],
   allowUnlinking: true,
 };
 
 export function isProviderTrusted(provider: string): boolean {
   return accountLinkingConfig.trustedProviders.includes(provider);
+}
+
+export async function linkAccount(userId: string, provider: string): Promise<boolean> {
+  if (!isProviderTrusted(provider)) {
+    throw new Error(`Provider "${provider}" is not trusted for automatic account linking`);
+  }
+  try {
+    const { authClient } = await import('./client');
+    const result = await (authClient as Record<string, CallableFunction>).linkSocialAccount({ userId, provider });
+    return result?.ok ?? false;
+  } catch {
+    return false;
+  }
+}
+
+export async function unlinkAccount(accountId: string): Promise<boolean> {
+  try {
+    const { authClient } = await import('./client');
+    const result = await (authClient as Record<string, CallableFunction>).unlinkAccount({ accountId });
+    return result?.ok ?? false;
+  } catch {
+    return false;
+  }
+}
+
+export async function getLinkedAccounts(userId: string): Promise<Array<{ id: string; provider: string; providerAccountId: string }>> {
+  try {
+    const { authClient } = await import('./client');
+    const result = await (authClient as Record<string, CallableFunction>).listAccounts();
+    return (result?.data ?? result ?? []) as Array<{ id: string; provider: string; providerAccountId: string }>;
+  } catch {
+    return [];
+  }
 }

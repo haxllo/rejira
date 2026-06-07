@@ -1,23 +1,17 @@
-// Phase 3 — Stream 3C: OAuth provider configurations.
-//
-// Google and GitHub OAuth providers. Credentials are read from env vars.
-// The callback URL pattern is {baseURL}/api/auth/callback/{provider}.
-//
-// Account linking is handled by Better Auth's built-in `accountLinking`
-// option (see convex/betterAuth/auth.ts).
-
 export const googleProvider = {
-  clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+  clientId: process.env.GOOGLE_CLIENT_ID ?? '',
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+  redirectURI: `${process.env.BETTER_AUTH_URL!}/api/auth/callback/google`,
 };
 
 export const githubProvider = {
-  clientId: process.env.GITHUB_CLIENT_ID ?? "",
-  clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
+  clientId: process.env.GITHUB_CLIENT_ID ?? '',
+  clientSecret: process.env.GITHUB_CLIENT_SECRET ?? '',
+  redirectURI: `${process.env.BETTER_AUTH_URL!}/api/auth/callback/github`,
 };
 
-export function isOAuthConfigured(): boolean {
-  return Boolean(
-    process.env.GOOGLE_CLIENT_ID || process.env.GITHUB_CLIENT_ID,
-  );
+export function isOAuthConfigured(provider?: 'google' | 'github'): boolean {
+  if (provider === 'google') return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+  if (provider === 'github') return Boolean(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET);
+  return Boolean(process.env.GOOGLE_CLIENT_ID || process.env.GITHUB_CLIENT_ID);
 }

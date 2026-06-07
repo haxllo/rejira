@@ -16,9 +16,10 @@ export function MagicLinkForm() {
     setError("");
     setLoading(true);
     try {
-      const res = await signIn.magicLink({ email, callbackURL: "/inbox" }) as any;
-      if (res?.error) {
-        setError(res.error.message ?? res.error.statusText ?? "Failed to send magic link");
+      const res = await signIn.magicLink({ email, callbackURL: '/inbox' });
+      if (res && 'error' in res && res.error) {
+        const err = res.error as { message?: string; statusText?: string };
+        setError(err.message ?? err.statusText ?? 'Failed to send magic link');
       } else {
         setSent(true);
       }
