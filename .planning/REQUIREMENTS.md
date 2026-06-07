@@ -7,9 +7,9 @@
 
 ### Authentication & Identity (Phase 3)
 
-- [ ] **AUTH-01**: User can sign up with email and password (min 12 chars, HIBP-checked)
-- [ ] **AUTH-02**: User receives email verification after signup via Resend
-- [ ] **AUTH-03**: User can reset password via email link
+- [x] **AUTH-01**: User can sign up with email and password (min 12 chars, HIBP-checked) — HIBP deferred to Plan 03-05
+- [x] **AUTH-02**: User receives email verification after signup via Resend (ConsoleTransport in dev)
+- [x] **AUTH-03**: User can reset password via email link
 - [ ] **AUTH-04**: User session persists across browser refresh for 7 days (cookie cache JWE 5 min)
 - [ ] **AUTH-05**: User can sign in via Google OAuth
 - [ ] **AUTH-06**: User can sign in via GitHub OAuth

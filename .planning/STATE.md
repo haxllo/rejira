@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-06-07)
 
 **Core value:** Linear-grade speed for a Jira-shaped workspace. Every interaction must hit its interaction budget; if a feature slows the budget or adds a config screen, it doesn't ship.
-**Current focus:** Phase 2 — Data layer (Supabase Postgres + Drizzle)
+**Current focus:** Phase 3 — Auth & Identity (Better Auth)
 
 ## Current Position
 
-Phase: 2 of 8 (Data layer — Supabase + Drizzle)
-Plan: 0 of 14 in current phase
-Status: Ready to plan
-Last activity: 2026-06-07 — GSD project initialized; PHASE_0+1 complete; Convex removed; PLAN/PHASE_2/3/4_PLAN rewritten
+Phase: 3 of 8 (Auth & Identity — Better Auth + Supabase)
+Plan: 01 of 7 in current phase
+Status: Plan 03-01 complete; Better Auth server, email/password auth, auth UI shipped
+Last activity: 2026-06-07 — Phase 3 Plan 01 executed; Better Auth core with pg.Pool, email/password auth with verification and reset, 6 auth pages, 22 tests
 
-Progress: [██░░░░░░░░] 16% (14/89 plans: phases 0–1 done, phase 2 ready)
+Progress: [████░░░░░░] 33% (29/89 plans: phases 0–2 done, phase 3: 1/7)
 
 ## Performance Metrics
 
@@ -29,8 +29,8 @@ Progress: [██░░░░░░░░] 16% (14/89 plans: phases 0–1 done, 
 |-------|-------|-------|----------|
 | 0. Foundation | 7/7 | 7 | ~25 min |
 | 1. Interactions | 7/7 | 7 | ~25 min |
-| 2. Data layer | 0/14 | 14 | TBD |
-| 3. Auth & Identity | 0/17 | 17 | TBD |
+| 2. Data layer | 14/14 | 14 | ~10 min |
+| 3. Auth & Identity | 1/7 | 7 | ~54 min |
 | 4. Drizzle queries | 0/10 | 10 | TBD |
 | 5. Live & resilience | 0/9 | 9 | TBD |
 | 6. Search & AI | 0/6 | 6 | TBD |
