@@ -4,8 +4,8 @@
 
 "use client";
 
-import { useState } from "react";
-import { getBackupCodes } from "@/lib/auth/backup-codes";
+import { useState } from 'react';
+import { getBackupCodes } from '@/lib/auth/backup-codes';
 
 export default function BackupCodesPage() {
   const [codes, setCodes] = useState<string[]>([]);
@@ -15,7 +15,9 @@ export default function BackupCodesPage() {
     setLoading(true);
     try {
       const result = await getBackupCodes();
-      setCodes((result as any)?.backupCodes ?? []);
+      if (result && 'backupCodes' in result) {
+        setCodes((result as { backupCodes: string[] }).backupCodes);
+      }
     } catch {
       setCodes([]);
     } finally {

@@ -1,18 +1,25 @@
-// Phase 3 — Stream 3D: Backup codes generation and verification.
-//
-// Better Auth manages backup codes through its twoFactor plugin.
-// This module provides helpers for the UI to display and use them.
-
-import { twoFactorApi } from "./two-factor";
+import { authClient } from './client';
 
 export async function generateBackupCodes(password: string) {
-  return twoFactorApi.generateBackupCodes({ password });
+  const api = authClient.twoFactor;
+  return (api as Record<string, CallableFunction>).generateBackupCodes({ password }) as Promise<{
+    backupCodes: string[];
+  }>;
 }
 
 export async function getBackupCodes() {
-  return (twoFactorApi as any).viewBackupCodes();
+  const api = authClient.twoFactor;
+  return (api as Record<string, CallableFunction>).viewBackupCodes() as Promise<{
+    backupCodes: string[];
+  }>;
 }
 
 export async function verifyBackupCode(code: string) {
-  return twoFactorApi.verifyBackupCode({ code });
+  const api = authClient.twoFactor;
+  return (api as Record<string, CallableFunction>).verifyBackupCode({ code });
+}
+
+export async function getRemainingBackupCodes(): Promise<number> {
+  const result = await getBackupCodes();
+  return result?.backupCodes?.length ?? 0;
 }

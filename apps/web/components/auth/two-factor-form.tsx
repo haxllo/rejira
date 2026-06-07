@@ -1,21 +1,32 @@
 "use client";
-import { useState } from "react";
-import { authClient } from "@/lib/auth/client";
+import { useState } from 'react';
+import { verifyTwoFactor } from '@/lib/auth/two-factor';
 
 export function TwoFactorForm({ onSuccess }: { onSuccess?: () => void }) {
-  const [code, setCode] = useState("");
-  const [error, setError] = useState("");
+  const [code, setCode] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [remaining, setRemaining] = useState(3);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
     try {
-      await authClient.twoFactor.verifyTotp({ code });
-      onSuccess?.();
+      const result = await verifyTwoFactor(code);
+      if (result && 'error' in result) {
+        const newRemaining = remaining - 1;
+        setRemaining(newRemaining);
+        if (newRemaining <= 0) {
+          setError('Account locked for 15 minutes. Too many failed attempts.');
+        } else {
+          setError(`Invalid code. ${newRemaining} attempt${newRemaining !== 1 ? 's' : ''} remaining.`);
+        }
+      } else {
+        onSuccess?.();
+      }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Invalid code");
+      setError(err instanceof Error ? err.message : 'Invalid code');
     } finally {
       setLoading(false);
     }

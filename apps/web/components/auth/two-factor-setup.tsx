@@ -1,22 +1,31 @@
 "use client";
-import { useState } from "react";
-import { enableTwoFactor } from "@/lib/auth/two-factor";
+import { useState } from 'react';
+import { enableTwoFactor } from '@/lib/auth/two-factor';
+
+interface TwoFactorSecret {
+  totpURI: string;
+  secret: string;
+}
 
 export function TwoFactorSetup({ onDone }: { onDone?: () => void }) {
-  const [password, setPassword] = useState("");
-  const [secret, setSecret] = useState<{ totpURI: string; secret: string } | null>(null);
-  const [error, setError] = useState("");
+  const [password, setPassword] = useState('');
+  const [secret, setSecret] = useState<TwoFactorSecret | null>(null);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleEnable(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
     try {
-      const result = await enableTwoFactor(password) as any;
-      setSecret(result as { totpURI: string; secret: string });
+      const result = await enableTwoFactor(password);
+      if (result && 'totpURI' in result) {
+        setSecret(result as TwoFactorSecret);
+      } else if (result && 'error' in result) {
+        setError((result as Record<string, unknown>).error as string ?? 'Failed to enable 2FA');
+      }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to enable 2FA");
+      setError(err instanceof Error ? err.message : 'Failed to enable 2FA');
     } finally {
       setLoading(false);
     }
@@ -60,7 +69,7 @@ export function TwoFactorSetup({ onDone }: { onDone?: () => void }) {
         />
       </label>
       <button type="submit" className="auth-button" disabled={loading}>
-        {loading ? "Setting up..." : "Enable 2FA"}
+        {loading ? 'Setting up...' : 'Enable 2FA'}
       </button>
     </form>
   );

@@ -2,7 +2,7 @@ import 'server-only';
 
 import { betterAuth } from 'better-auth';
 import { nextCookies } from 'better-auth/next-js';
-import { organization, admin, jwt, magicLink, genericOAuth } from 'better-auth/plugins';
+import { organization, admin, jwt, magicLink, genericOAuth, twoFactor } from 'better-auth/plugins';
 import { google, github } from 'better-auth/social-providers';
 import { Pool } from 'pg';
 import { sendEmail } from './email';
@@ -121,6 +121,16 @@ export const auth = betterAuth({
         });
       },
       expiresIn: 900,
+    }),
+    twoFactor({
+      issuer: 'rejira',
+      otpOptions: {
+        digits: 6,
+        period: 30,
+      },
+      backupCodeOptions: {
+        length: 10,
+      },
     }),
     genericOAuth({
       config: [
