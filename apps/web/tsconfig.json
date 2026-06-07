@@ -23,8 +23,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "convex/_generated/api": ["../../convex/_generated/api"]
+      "@/*": ["./*"]
     },
     "skipLibCheck": true
   },

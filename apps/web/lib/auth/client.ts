@@ -15,7 +15,7 @@ function getBaseUrl() {
 }
 
 export const authClient = createAuthClient({
-  baseURL: getBaseUrl(),
+  baseURL: function getBaseUrl() { return typeof window !== "undefined" ? window.location.origin : "http://localhost:3000"; }(),
   basePath: "/api/auth",
   plugins: [
     magicLinkClient(),

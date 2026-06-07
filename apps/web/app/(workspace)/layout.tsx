@@ -10,7 +10,6 @@ import { CreateIssueDialog } from "@/components/issue/create-issue-dialog";
 import { GlobalShortcuts } from "@/components/shell/global-shortcuts";
 import { BulkActionBar } from "@/components/views/bulk-action-bar";
 import { RouteChangeSelectionReset } from "@/components/shell/route-change-selection-reset";
-import { DataSyncProvider } from "@/components/DataSyncProvider";
 
 export default function WorkspaceLayout({
   children,
@@ -18,8 +17,7 @@ export default function WorkspaceLayout({
   children: React.ReactNode;
 }) {
   return (
-    <DataSyncProvider>
-      <div className="flex h-dvh flex-col">
+    <div className="flex h-dvh flex-col">
         <RouteChangeSelectionReset />
         <GlobalShortcuts />
         <Suspense fallback={<div className="h-12 border-b border-[var(--color-border)]" />}>
@@ -38,7 +36,6 @@ export default function WorkspaceLayout({
         <Cheatsheet />
         <ToastHost />
         <BulkActionBar />
-      </div>
-    </DataSyncProvider>
+    </div>
   );
 }
