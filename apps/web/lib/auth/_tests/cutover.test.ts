@@ -263,6 +263,7 @@ describe('cutover — ME_ID removal', () => {
     // Verify that demo-session.ts no longer exports ME_ID.
     // After cutover, the file should be deleted entirely.
     try {
+      // @ts-expect-error — demo-session.ts is deleted; import should fail
       await import('@/lib/auth/demo-session');
       // File still exists — this is RED: the file must be deleted
       expect.fail('demo-session.ts still exists — must be deleted during cutover');

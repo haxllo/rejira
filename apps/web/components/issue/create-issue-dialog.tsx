@@ -17,6 +17,7 @@ import {
 import { useUI } from "@/lib/state/ui";
 import { useIssues } from "@/lib/state/issues";
 import { apply } from "@/lib/state/mutations";
+import { useCurrentUserId } from "@/hooks/useCurrentUser";
 import { PROJECTS, USERS, type StatusKey, type PriorityKey } from "@/lib/mock";
 import { StatusDot, getStatusLabel } from "@/components/primitives/status";
 import { PriorityIcon, getPriorityLabel } from "@/components/primitives/priority";
@@ -29,11 +30,13 @@ const PRIORITY_ORDER: PriorityKey[] = ["urgent", "high", "medium", "low", "none"
 export function CreateIssueDialog() {
   const open = useUI((s) => s.createIssueOpen);
   const close = useUI((s) => s.closeCreateIssue);
+  const currentUserId = useCurrentUserId();
+  const defaultUserIds = React.useMemo(() => currentUserId ? [currentUserId] : [], [currentUserId]);
   const [title, setTitle] = React.useState("");
   const [projectId, setProjectId] = React.useState("p_eng");
   const [status, setStatus] = React.useState<StatusKey>("todo");
   const [priority, setPriority] = React.useState<PriorityKey>("none");
-  const [assigneeIds, setAssigneeIds] = React.useState<string[]>(["u_aria"]);
+  const [assigneeIds, setAssigneeIds] = React.useState<string[]>(defaultUserIds);
   const titleRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
@@ -42,10 +45,10 @@ export function CreateIssueDialog() {
       setProjectId("p_eng");
       setStatus("todo");
       setPriority("none");
-      setAssigneeIds(["u_aria"]);
+      setAssigneeIds(defaultUserIds);
       setTimeout(() => titleRef.current?.focus(), 60);
     }
-  }, [open]);
+  }, [open, defaultUserIds]);
 
   const project = PROJECTS.find((p) => p.id === projectId)!;
 
@@ -59,7 +62,7 @@ export function CreateIssueDialog() {
       status,
       priority,
       assigneeIds,
-      authorId: "u_aria",
+      authorId: currentUserId ?? "u_unknown",
       labelIds: [],
     });
     const created = useIssues.getState().issues.find((i) => i.id === newId)!;

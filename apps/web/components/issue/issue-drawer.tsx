@@ -42,6 +42,7 @@ import {
   type Comment,
   type Activity,
 } from "@/lib/mock";
+import { useCurrentUserId } from "@/hooks/useCurrentUser";
 import { StatusDot, getStatusLabel } from "@/components/primitives/status";
 import { PriorityIcon, getPriorityLabel } from "@/components/primitives/priority";
 import { Avatar } from "@/components/primitives/avatar";
@@ -478,8 +479,9 @@ function ActivityBody({ activity }: { activity: Activity }) {
 }
 
 function ReplyBox({ issue }: { issue: Issue }) {
-  const meId = USERS[0]?.id ?? "u_aria";
-  const me = USERS.find((u) => u.id === meId)!;
+  const meId = useCurrentUserId();
+  const me = meId ? USERS.find((u) => u.id === meId) : USERS[0];
+  if (!me) return null;
   return (
     <div className="mt-6 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] p-2.5">
       <div className="flex items-start gap-2">

@@ -28,7 +28,7 @@ export function PrimaryNav() {
   const path = usePathname() ?? "";
   const unread = INBOX.filter((i) => !i.read).length;
   const meId = useCurrentUserId();
-  const myIssuesCount = issuesAssignedTo(meId).length;
+  const myIssuesCount = meId ? issuesAssignedTo(meId).length : 0;
 
   return (
     <nav className="flex w-[244px] shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-bg)] py-3">

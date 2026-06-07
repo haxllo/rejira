@@ -1,15 +1,16 @@
-import { Suspense } from "react";
-import { TopBar } from "@/components/shell/top-bar";
-import { PrimaryNav } from "@/components/shell/primary-nav";
-import { CommandPalette } from "@/components/shell/command-palette";
-import { StatusBar } from "@/components/shell/status-bar";
-import { ToastHost } from "@/components/shell/toast";
-import { IssueDrawer } from "@/components/issue/issue-drawer";
-import { Cheatsheet } from "@/components/shell/cheatsheet";
-import { CreateIssueDialog } from "@/components/issue/create-issue-dialog";
-import { GlobalShortcuts } from "@/components/shell/global-shortcuts";
-import { BulkActionBar } from "@/components/views/bulk-action-bar";
-import { RouteChangeSelectionReset } from "@/components/shell/route-change-selection-reset";
+import { Suspense } from 'react';
+import { TopBar } from '@/components/shell/top-bar';
+import { PrimaryNav } from '@/components/shell/primary-nav';
+import { CommandPalette } from '@/components/shell/command-palette';
+import { StatusBar } from '@/components/shell/status-bar';
+import { ToastHost } from '@/components/shell/toast';
+import { IssueDrawer } from '@/components/issue/issue-drawer';
+import { Cheatsheet } from '@/components/shell/cheatsheet';
+import { CreateIssueDialog } from '@/components/issue/create-issue-dialog';
+import { GlobalShortcuts } from '@/components/shell/global-shortcuts';
+import { BulkActionBar } from '@/components/views/bulk-action-bar';
+import { RouteChangeSelectionReset } from '@/components/shell/route-change-selection-reset';
+import { RequireAuth } from '@/components/auth/require-auth';
 
 export default function WorkspaceLayout({
   children,
@@ -17,7 +18,8 @@ export default function WorkspaceLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-dvh flex-col">
+    <RequireAuth>
+      <div className="flex h-dvh flex-col">
         <RouteChangeSelectionReset />
         <GlobalShortcuts />
         <Suspense fallback={<div className="h-12 border-b border-[var(--color-border)]" />}>
@@ -36,6 +38,7 @@ export default function WorkspaceLayout({
         <Cheatsheet />
         <ToastHost />
         <BulkActionBar />
-    </div>
+      </div>
+    </RequireAuth>
   );
 }

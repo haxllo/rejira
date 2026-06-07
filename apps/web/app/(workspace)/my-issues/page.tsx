@@ -30,12 +30,13 @@ function MyIssuesBody() {
   const openDrawer = useUI((s) => s.openDrawer);
   const issues = useIssues((s) => s.issues);
   const meId = useCurrentUserId();
-  const me = USERS.find((u) => u.id === meId)!;
+  const me = meId ? USERS.find((u) => u.id === meId) : USERS[0];
+  const meName = me?.name ?? 'You';
 
   // Pre-filter to my issues
   const mine = React.useMemo(
-    () => issues.filter((i) => i.assigneeIds.includes(meId) && !i.archived),
-    [issues],
+    () => meId ? issues.filter((i) => i.assigneeIds.includes(meId) && !i.archived) : [],
+    [issues, meId],
   );
 
   // Seed URL with "me" + "not done" defaults
@@ -92,7 +93,7 @@ function MyIssuesBody() {
     <div className="flex h-full flex-col">
       <ViewHeader
         title="My Issues"
-        description={`${filtered.length} open issues assigned to ${me.name.split(" ")[0]}`}
+        description={`${filtered.length} open issues assigned to ${meName.split(" ")[0]}`}
         count={filtered.length}
         primary={
           <div className="flex items-center gap-2">

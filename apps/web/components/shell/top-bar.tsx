@@ -50,7 +50,7 @@ export function TopBar() {
           className="flex size-7 items-center justify-center rounded-md hover:bg-[var(--color-hover)]"
           aria-label="Account"
         >
-          <Avatar name={me.name} size="sm" />
+          <Avatar name={me?.name ?? 'User'} size="sm" />
         </button>
       </div>
     </header>

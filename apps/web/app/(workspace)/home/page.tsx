@@ -5,12 +5,18 @@ import { motion } from "motion/react";
 import { ViewHeader } from "@/components/views/view-header";
 import { PROJECTS, CYCLES } from "@/lib/mock";
 import { useIssues } from "@/lib/state/issues";
+import { useCurrentUser, useCurrentUserId } from "@/hooks/useCurrentUser";
 import { TrendingUpIcon, ArrowUpRightIcon, CircleCheckIcon, ClockIcon, SparklesIcon } from "@/components/icons";
 
 export default function HomePage() {
-  const me = "Aria";
+  const user = useCurrentUser();
+  const userId = useCurrentUserId();
+  const me = user?.name ?? "there";
   const issues = useIssues((s) => s.issues);
-  const myIssues = issues.filter((i) => i.assigneeIds.includes("u_aria") && i.status !== "done" && i.status !== "cancelled");
+  const myIssues = React.useMemo(() => {
+    if (!userId) return [];
+    return issues.filter((i) => i.assigneeIds.includes(userId) && i.status !== "done" && i.status !== "cancelled");
+  }, [issues, userId]);
   const upcoming = [...issues]
     .filter((i) => i.dueDate && i.status !== "done" && i.status !== "cancelled")
     .sort((a, b) => a.dueDate!.localeCompare(b.dueDate!))

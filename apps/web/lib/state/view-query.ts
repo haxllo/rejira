@@ -133,11 +133,11 @@ function matchDue(due: DueFilter[], dueDate?: string): boolean {
   return false;
 }
 
-function matchAssignee(filter: FilterState["assignee"], assigneeIds: UserId[]): boolean {
+function matchAssignee(filter: FilterState["assignee"], assigneeIds: UserId[], currentUserId?: string | null): boolean {
   if (filter.length === 0) return true;
   for (const f of filter) {
     if (f === "none" && assigneeIds.length === 0) return true;
-    if (f === "me" && assigneeIds.includes("u_aria")) return true;
+    if (f === "me" && currentUserId && assigneeIds.includes(currentUserId)) return true;
     if (typeof f === "string" && f !== "me" && f !== "none" && assigneeIds.includes(f)) return true;
   }
   return false;
@@ -162,13 +162,13 @@ function matchSearch(q: string, i: Issue): boolean {
   );
 }
 
-export function applyFilter(state: FilterState, issues: Issue[]): Issue[] {
+export function applyFilter(state: FilterState, issues: Issue[], currentUserId?: string | null): Issue[] {
   return issues.filter((i) => {
     if (!state.archived && i.archived) return false;
     if (state.status.length && !state.status.includes(i.status)) return false;
     if (state.priority.length && !state.priority.includes(i.priority)) return false;
     if (!matchDue(state.due, i.dueDate)) return false;
-    if (!matchAssignee(state.assignee, i.assigneeIds)) return false;
+    if (!matchAssignee(state.assignee, i.assigneeIds, currentUserId)) return false;
     if (!matchLabel(state.label, i.labelIds)) return false;
     if (!matchSearch(state.search, i)) return false;
     return true;
@@ -303,11 +303,12 @@ export function useFilteredIssues(
   sortKey: SortKey,
   sortDir: SortDir,
   source: Issue[],
+  currentUserId?: string | null,
 ): { filtered: Issue[]; sorted: Issue[]; groups: ReturnType<typeof applyGroup> } {
   return useMemo(() => {
-    const filtered = applyFilter(state, source);
+    const filtered = applyFilter(state, source, currentUserId);
     const sorted = applySort(filtered, sortKey, sortDir);
     const groups = applyGroup(group, sorted);
     return { filtered, sorted, groups };
-  }, [state, group, sortKey, sortDir, source]);
+  }, [state, group, sortKey, sortDir, source, currentUserId]);
 }
