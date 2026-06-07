@@ -9,7 +9,7 @@ A 9-phase brownfield rewrite that takes a runnable Next.js 16 + React 19 + Tailw
 - [x] **Phase 0: Foundation** - Runnable Next.js app, design system, IA shell, 3 primary screens with mock data
 - [x] **Phase 1: Interactions** - `apply()` pipeline, URL-synced filters, density, drag, multi-select, toast undo
 - [ ] **Phase 2: Data layer (Supabase + Drizzle)** - 16-table multi-tenant schema, RLS, Storage, Realtime, pgvector, pg_cron
-- [~] **Phase 3: Auth & Identity (Better Auth)** - Sessions (3/7 plans), workspaces, invites, 2FA, OAuth, magic link, GDPR delete
+- [~] **Phase 3: Auth & Identity (Better Auth)** - Sessions (4/7 plans), workspaces, invites, 2FA, OAuth, magic link, GDPR delete
 - [ ] **Phase 4: Drizzle queries & mutations** - All `apply()` calls replaced; realtime wiring; `lib/mock/` data deleted
 - [ ] **Phase 5: Live & resilience** - Presence, live updates, Yjs collab, Sentry, security headers, mobile
 - [ ] **Phase 6: Search & AI** - pgvector embeddings, hybrid BM25+cosine, `⌘K` semantic, AI triage, cost cap
@@ -101,7 +101,7 @@ Plans (streams):
   10. Audit log captures all auth events in `audit_log` (append-only, pg_cron never deletes)
   11. User can request GDPR data export (JSON, all workspaces) and account deletion (soft 30 days, then hard)
   12. ~218 tests pass (Vitest + Playwright + pgTAP)
-**Status**: In progress (3/7 plans complete — 03-01, 03-02, 03-03)
+**Status**: In progress (4/7 plans complete — 03-01, 03-02, 03-03, 03-04)
 **Detailed plan**: `PHASE_3_PLAN.md` (1220 lines, 17 streams consolidated into 7 GSD plans)
 **Plans:** 7 plans
 
@@ -109,7 +109,7 @@ Plans:
 - [x] 03-01-PLAN.md — Better Auth core + pg.Pool + email/password auth (sign-up, sign-in, verification, reset) + auth UI forms + email transport
 - [x] 03-02-PLAN.md — Magic link + OAuth (Google, GitHub) + session management (IP/UA binding, device tracking) + TOTP 2FA with backup codes
 - [x] 03-03-PLAN.md — Organization plugin mapped to workspaces/memberships/invitations tables + member invites + role management + workspace switcher
-- [ ] 03-04-PLAN.md — Account settings UI (profile, security, sessions, data, notifications) + 5-step onboarding wizard
+- [x] 03-04-PLAN.md — Account settings UI (profile, security, sessions, data, notifications) + 5-step onboarding wizard
 - [ ] 03-05-PLAN.md — Production hardening (rate limits, HIBP, password policy) + audit log + GDPR export/deletion + passkeys (WebAuthn) + Sentry/PostHog observability
 - [ ] 03-06-PLAN.md — App cutover: replace ME_ID demo session with real Better Auth sessions + middleware route protection + RequireAuth component
 - [ ] 03-07-PLAN.md — i18n (6 locales) + accessibility (axe-core, keyboard) + security headers (CSP, HSTS) + workspace security policy + deploy runbooks + test suite consolidation
@@ -259,7 +259,7 @@ Phases execute in numeric order: 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 0. Foundation | 7/7 | Complete | 2026-06-07 |
 | 1. Interactions | 7/7 | Complete | 2026-06-07 |
 | 2. Data layer (Supabase + Drizzle) | 0/14 | Ready to execute | - |
-| 3. Auth & Identity (Better Auth) | 0/7 | Ready to execute | - |
+| 3. Auth & Identity (Better Auth) | 4/7 | Ready to execute | - |
 | 4. Drizzle queries & mutations | 0/10 | Not started | - |
 | 5. Live & resilience | 0/9 | Not started | - |
 | 6. Search & AI | 0/6 | Not started | - |

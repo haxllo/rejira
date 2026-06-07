@@ -163,9 +163,9 @@
 
 ### Onboarding & Settings (Phase 3 + Phase 8)
 
-- [ ] **ONB-01**: 5-step first-run wizard (workspace name, project name, first issue, invite teammates, theme)
-- [ ] **ONB-02**: 7-day activation checklist
-- [ ] **ONB-03**: Settings pages: account, workspace, members, billing, integrations, security
+- [x] **ONB-01**: 5-step first-run wizard (workspace name, project name, first issue, invite teammates, theme)
+- [x] **ONB-02**: 7-day activation checklist
+- [x] **ONB-03**: Settings pages: account, workspace, members, billing, integrations, security
 - [ ] **ONB-04**: Workspace owner can set workspace-level policies (2FA required, password min length, etc.)
 
 ### Billing (Phase 8)
@@ -246,7 +246,7 @@ Deferred to post-GA. Tracked but not in current roadmap.
 | PERF-01..05 | Phase 8 (8.2, 8.3, 8.10) | Pending |
 | A11Y-01..04 | Phase 8 (8.1) | Pending |
 | I18N-01..04 | Phase 3 (3P) + Phase 8 (8.7) | Pending |
-| ONB-01..04 | Phase 3 (3H) + Phase 8 (8.6) | Pending |
+| ONB-01..04 | Phase 3 (3H) + Phase 8 (8.6) | In progress |
 | BILL-01..04 | Phase 8 (8.5) | Pending |
 
 **Coverage:**

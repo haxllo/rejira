@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-06-07)
 ## Current Position
 
 Phase: 3 of 8 (Auth & Identity — Better Auth + Supabase)
-Plan: 03 of 7 in current phase
-Status: Plan 03-03 complete; organization plugin mapped to workspaces/memberships/invitations/teams, workspace CRUD, member invitations with signed tokens, role management (owner/admin/member/guest), workspace switcher in TopBar replacing Phase 1 ?w= hack; 27 new tests
-Last activity: 2026-06-07 — Phase 3 Plan 03 executed; organization plugin, member invites, role management, workspace switcher
+Plan: 04 of 7 in current phase
+Status: Plan 03-04 complete; account settings UI (profile, security, sessions, data, notifications pages + 6 interactive form components), 5-step onboarding wizard (welcome -> workspace -> invite -> project -> done) with spring-motion transitions, useWorkspace hook replacing Phase 1 ?w= hack with Better Auth useActiveOrganization, useDefaultWorkspace hook, 16 new tests (8 onboarding + 8 settings)
+Last activity: 2026-06-07 — Phase 3 Plan 04 executed; settings pages, onboarding wizard, updated workspace hook
 
-Progress: [█████░░░░░] 35% (31/89 plans: phases 0–2 done, phase 3: 3/7)
+Progress: [██████░░░░] 36% (32/89 plans: phases 0–2 done, phase 3: 4/7)
 
 ## Performance Metrics
 
@@ -30,7 +30,7 @@ Progress: [█████░░░░░] 35% (31/89 plans: phases 0–2 done, 
 | 0. Foundation | 7/7 | 7 | ~25 min |
 | 1. Interactions | 7/7 | 7 | ~25 min |
 | 2. Data layer | 14/14 | 14 | ~10 min |
-| 3. Auth & Identity | 3/7 | 7 | ~40 min |
+| 3. Auth & Identity | 4/7 | 7 | ~35 min |
 | 4. Drizzle queries | 0/10 | 10 | TBD |
 | 5. Live & resilience | 0/9 | 9 | TBD |
 | 6. Search & AI | 0/6 | 6 | TBD |
@@ -53,6 +53,7 @@ Recent decisions (full log in PROJECT.md):
 - **Phase 3A (03-01)**: Better Auth 1.6.14 core with pg.Pool, email/password auth, 6 auth pages, 22 tests
 - **Phase 3B-C-D (03-02)**: Magic link plugin + genericOAuth (Google, GitHub) + session device tracking (IP/UA SHA-256) + TOTP 2FA (twoFactor plugin, issuer 'rejira') + backup codes, 31 new tests
 - **Phase 3E-F-G (03-03)**: Organization plugin mapped to workspaces/memberships/invitations/teams via modelName, JWT claims sub={{user.external_id}} for RLS, workspace CRUD helpers, member invitations with signed tokens (7-day expiry), role management (owner/admin/member/guest), workspace switcher replacing ?w= hack, settings members page with role editing, invite accept page with auth gate, 27 new tests (80 total)
+- **Phase 3H-I (03-04)**: Account settings UI with card-grid navigation (6 hub cards, 5 sub-pages), interactive form components (profile with avatar color picker, password with strength indicator, email with dual-verification info, 2FA with enable/disable flow), 5-step onboarding wizard with spring-motion slide transitions and horizontal pill progress indicator, useWorkspace hook replacing Phase 1 ?w= hack with Better Auth useActiveOrganization, notification preferences page, data export and account deletion with confirmation modal (30-day soft-delete), 16 new tests (96 total)
 - **GSD config**: YOLO mode, Fine granularity (8–12 phases; we have 9), Sequential execution, Git tracking enabled, Research on, Plan Check on, Verifier off, Smart model profile
 
 ### Pending Todos
@@ -77,5 +78,5 @@ Items acknowledged and carried forward:
 ## Session Continuity
 
 Last session: 2026-06-07
-Stopped at: Completed 03-03-PLAN.md — organization plugin, member invites, role management, workspace switcher
+Stopped at: Completed 03-04-PLAN.md — account settings UI, onboarding wizard, workspace hook replacement
 Resume file: None
