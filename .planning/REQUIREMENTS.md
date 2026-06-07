@@ -10,13 +10,13 @@
 - [x] **AUTH-01**: User can sign up with email and password (min 12 chars, HIBP-checked) — HIBP deferred to Plan 03-05
 - [x] **AUTH-02**: User receives email verification after signup via Resend (ConsoleTransport in dev)
 - [x] **AUTH-03**: User can reset password via email link
-- [ ] **AUTH-04**: User session persists across browser refresh for 7 days (cookie cache JWE 5 min)
-- [ ] **AUTH-05**: User can sign in via Google OAuth
-- [ ] **AUTH-06**: User can sign in via GitHub OAuth
-- [ ] **AUTH-07**: User can sign in via magic link (passwordless)
-- [ ] **AUTH-08**: User can enable TOTP-based 2FA with backup codes
+- [x] **AUTH-04**: User session persists across browser refresh for 7 days (cookie cache JWE 5 min)
+- [x] **AUTH-05**: User can sign in via Google OAuth
+- [x] **AUTH-06**: User can sign in via GitHub OAuth
+- [x] **AUTH-07**: User can sign in via magic link (passwordless)
+- [x] **AUTH-08**: User can enable TOTP-based 2FA with backup codes
 - [ ] **AUTH-09**: User can enable passkey (WebAuthn) as a 2FA method
-- [ ] **AUTH-10**: User session is tracked with IP and user agent; suspicious activity surfaced
+- [x] **AUTH-10**: User session is tracked with IP and user agent; suspicious activity surfaced
 - [ ] **AUTH-11**: All Better Auth endpoints are rate-limited (per-IP + per-account)
 - [ ] **AUTH-12**: All Better Auth endpoints enforce CSRF + origin checks
 
