@@ -42,9 +42,22 @@ vi.mock('better-auth', async (importOriginal) => {
   };
 });
 
-vi.mock('better-auth/plugins', () => ({
-  emailAndPassword: vi.fn().mockReturnValue({ id: 'emailAndPassword' }),
-}));
+vi.mock('better-auth/plugins', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('better-auth/plugins')>();
+  return {
+    ...actual,
+    organization: vi.fn(function (config: Record<string, unknown>) {
+      return { id: 'organization', options: config };
+    }),
+    admin: vi.fn(function () {
+      return { id: 'admin' };
+    }),
+    jwt: vi.fn(function (config: Record<string, unknown>) {
+      return { id: 'jwt', options: config };
+    }),
+    emailAndPassword: vi.fn().mockReturnValue({ id: 'emailAndPassword' }),
+  };
+});
 
 vi.mock('better-auth/next-js', () => ({
   nextCookies: vi.fn().mockReturnValue({ id: 'nextCookies' }),
@@ -55,6 +68,29 @@ vi.mock('better-auth/next-js', () => ({
 }));
 
 vi.mock('server-only', () => ({}));
+
+vi.mock('better-auth/social-providers', () => ({
+  google: vi.fn().mockReturnValue({ id: 'google' }),
+  github: vi.fn().mockReturnValue({ id: 'github' }),
+}));
+
+vi.mock('@/lib/auth/account-linking', () => ({
+  accountLinkingConfig: {
+    enabled: true,
+    trustedProviders: ['google', 'github'],
+    allowUnlinking: true,
+  },
+}));
+
+vi.mock('@/lib/auth/email', () => ({
+  sendEmail: vi.fn().mockResolvedValue({ ok: true }),
+}));
+
+vi.mock('@/lib/email/transport', () => ({
+  transport: {
+    send: vi.fn().mockResolvedValue({ ok: true }),
+  },
+}));
 
 vi.mock('next/headers', () => ({
   headers: vi.fn().mockResolvedValue(new Headers()),
@@ -72,6 +108,10 @@ beforeAll(() => {
   process.env.BETTER_AUTH_SECRET = 'test-secret-min-32-chars-long';
   process.env.BETTER_AUTH_URL = 'http://localhost:3000';
   process.env.DATABASE_URL_SESSION = 'postgresql://test:test@localhost:5432/test';
+  process.env.GOOGLE_CLIENT_ID = 'test-google-id';
+  process.env.GOOGLE_CLIENT_SECRET = 'test-google-secret';
+  process.env.GITHUB_CLIENT_ID = 'test-github-id';
+  process.env.GITHUB_CLIENT_SECRET = 'test-github-secret';
 });
 
 describe('auth server', () => {
