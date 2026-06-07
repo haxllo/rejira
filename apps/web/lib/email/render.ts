@@ -3,6 +3,7 @@ import 'server-only';
 import type { EmailPayload } from './transport';
 import { welcomeTemplate, verifyEmailTemplate, resetPasswordTemplate, magicLinkTemplate } from './templates/index';
 import { passwordChangedTemplate } from './templates/password-changed';
+import { newDeviceTemplate } from './templates/new-device';
 
 type TemplateFn = (props: Record<string, string>) => { html: string; text: string };
 
@@ -12,6 +13,13 @@ const templates: Record<string, TemplateFn> = {
   'reset-password': (props) => resetPasswordTemplate({ name: props.name, url: props.url }),
   'magic-link': (props) => magicLinkTemplate({ name: props.name, url: props.url }),
   'password-changed': (props) => passwordChangedTemplate({ name: props.name }),
+  'new-device': (props) => newDeviceTemplate({
+    name: props.name,
+    browser: props.browser,
+    os: props.os,
+    location: props.location,
+    timestamp: props.timestamp,
+  }),
 };
 
 export function render(name: string, props: Record<string, string>): EmailPayload | null {
