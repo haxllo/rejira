@@ -17,7 +17,10 @@ function getAuthInstance() {
   if (adminKey) (client as any).setAdminAuth(adminKey);
 
   function call(path: string, args: Record<string, any>) {
-    return (client as any).function(`auth_adapter:${path}`, undefined, args)
+    const safe = JSON.parse(JSON.stringify(args, (_, v) =>
+      v instanceof Date ? v.getTime() : v
+    ));
+    return (client as any).function(`auth_adapter:${path}`, undefined, safe)
       .catch((e: any) => { throw e; });
   }
 
@@ -25,7 +28,7 @@ function getAuthInstance() {
   const m = q;
 
   function makeAdapter(): any {
-    return {
+    const adapter: any = {
       id: "convex-nextjs",
       create: async (d: any) => m("create", { model: d.model, data: d.data, select: d.select }),
       findOne: async (d: any) => q("findOne", { model: d.model, where: d.where, select: d.select }),
@@ -44,9 +47,9 @@ function getAuthInstance() {
         return n;
       },
       consumeOne: async (d: any) => { const doc = await q("findOne", { model: d.model, where: d.where }); if (doc) await m("deleteOne", { model: d.model, where: d.where }); return doc; },
-      transaction: async () => { throw new Error("Tx not supported"); },
+      transaction: async (cb: any) => cb(adapter),
     };
-  }
+    return adapter;
 
   _authInstance = betterAuth({
     appName: "Rejira",
