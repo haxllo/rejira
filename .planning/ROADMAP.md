@@ -9,7 +9,7 @@ A 9-phase brownfield rewrite that takes a runnable Next.js 16 + React 19 + Tailw
 - [x] **Phase 0: Foundation** - Runnable Next.js app, design system, IA shell, 3 primary screens with mock data
 - [x] **Phase 1: Interactions** - `apply()` pipeline, URL-synced filters, density, drag, multi-select, toast undo
 - [ ] **Phase 2: Data layer (Supabase + Drizzle)** - 16-table multi-tenant schema, RLS, Storage, Realtime, pgvector, pg_cron
-- [~] **Phase 3: Auth & Identity (Better Auth)** - Sessions (6/7 plans), workspaces, invites, 2FA, OAuth, magic link, GDPR delete
+- [~] **Phase 3: Auth & Identity (Better Auth)** - Sessions (7/7 plans), workspaces, invites, 2FA, OAuth, magic link, GDPR delete ✅
 - [ ] **Phase 4: Drizzle queries & mutations** - All `apply()` calls replaced; realtime wiring; `lib/mock/` data deleted
 - [ ] **Phase 5: Live & resilience** - Presence, live updates, Yjs collab, Sentry, security headers, mobile
 - [ ] **Phase 6: Search & AI** - pgvector embeddings, hybrid BM25+cosine, `⌘K` semantic, AI triage, cost cap
@@ -101,7 +101,7 @@ Plans (streams):
   10. Audit log captures all auth events in `audit_log` (append-only, pg_cron never deletes)
   11. User can request GDPR data export (JSON, all workspaces) and account deletion (soft 30 days, then hard)
   12. ~218 tests pass (Vitest + Playwright + pgTAP)
-**Status**: In progress (6/7 plans complete — 03-01, 03-02, 03-03, 03-04, 03-05, 03-06)
+**Status**: Complete (7/7 plans) — all 7 GSD plans executed (03-01 through 03-07). Phase 3 delivers full Better Auth integration: email/password, magic link, Google/GitHub OAuth, TOTP 2FA, passkeys, workspaces, invites, role management, account settings, onboarding, rate limiting, HIBP, audit log, GDPR, observability, cutover from demo sessions, i18n (6 locales), security headers, workspace security policies, deploy runbooks, and consolidated test suite (~139 Vitest tests).
 **Detailed plan**: `PHASE_3_PLAN.md` (1220 lines, 17 streams consolidated into 7 GSD plans)
 **Plans:** 7 plans
 
@@ -112,7 +112,7 @@ Plans:
 - [x] 03-04-PLAN.md — Account settings UI (profile, security, sessions, data, notifications) + 5-step onboarding wizard
 - [x] 03-05-PLAN.md — Production hardening (rate limits, HIBP, password policy) + audit log + GDPR export/deletion + passkeys (WebAuthn) + Sentry/PostHog observability
 - [x] 03-06-PLAN.md — App cutover: replace ME_ID demo session with real Better Auth sessions + middleware route protection + RequireAuth component
-- [ ] 03-07-PLAN.md — i18n (6 locales) + accessibility (axe-core, keyboard) + security headers (CSP, HSTS) + workspace security policy + deploy runbooks + test suite consolidation
+- [x] 03-07-PLAN.md — i18n (6 locales) + accessibility (axe-core, keyboard) + security headers (CSP, HSTS) + workspace security policy + deploy runbooks + test suite consolidation
 
 ### Phase 4: Drizzle queries & mutations
 **Goal**: Every mutation in the UI hits a real Postgres function behind Drizzle. RBAC enforced at the RLS layer. The app is now a real multi-tenant backend. State survives reloads, is shared across users, respects permissions, and the realtime channel keeps everyone in sync. This is the GA-ready backend — closed-beta can promote to open-beta after this lands.

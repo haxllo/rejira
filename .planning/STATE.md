@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-06-07)
 ## Current Position
 
 Phase: 3 of 8 (Auth & Identity — Better Auth + Supabase)
-Plan: 06 of 7 in current phase
-Status: Plan 03-06 complete; THE CUTOVER — demo-session.ts deleted, ME_ID constant removed, all 15+ components read real Better Auth sessions, Next.js middleware protects all workspace routes (cookie presence check + security headers), client-side RequireAuth wrapper with loading skeleton, useCurrentUser returns null when no session (no mock fallback), 8 cutover tests pass (131 total)
-Last activity: 2026-06-08 — Phase 3 Plan 06 executed; cutover to real Better Auth sessions
+Plan: 07 of 7 in current phase
+Status: Phase 3 COMPLETE — all 7 plans executed. Plan 03-07 delivers: i18n (6 locales for UI + email with Accept-Language detection), security headers (CSP, HSTS, X-Frame-Options, Permissions-Policy), per-workspace security policies (2FA requirements, email domains, session age), production deploy and rollback runbooks, consolidated STRIDE threat model, Vitest + Playwright configs, E2E scaffolding (i18n, a11y, keyboard), Dependabot + Codecov CI, 8 workspace-policy tests (139 total Vitest tests). Phase 3 is launch-ready.
+Last activity: 2026-06-08 — Phase 3 Plan 07 executed; i18n, security, deploy runbooks, workspace policies, test consolidation
 
-Progress: [██████░░░░] 38% (34/89 plans: phases 0–2 done, phase 3: 6/7)
+Progress: [██████░░░░] 39% (35/89 plans: phases 0–3 done, phase 4 next)
 
 ## Performance Metrics
 
@@ -30,7 +30,7 @@ Progress: [██████░░░░] 38% (34/89 plans: phases 0–2 done, 
 | 0. Foundation | 7/7 | 7 | ~25 min |
 | 1. Interactions | 7/7 | 7 | ~25 min |
 | 2. Data layer | 14/14 | 14 | ~10 min |
-| 3. Auth & Identity | 6/7 | 7 | ~20 min |
+| 3. Auth & Identity | 7/7 | 7 | ~20 min |
 | 4. Drizzle queries | 0/10 | 10 | TBD |
 | 5. Live & resilience | 0/9 | 9 | TBD |
 | 6. Search & AI | 0/6 | 6 | TBD |
@@ -56,6 +56,7 @@ Recent decisions (full log in PROJECT.md):
 - **Phase 3H-I (03-04)**: Account settings UI with card-grid navigation (6 hub cards, 5 sub-pages), interactive form components (profile with avatar color picker, password with strength indicator, email with dual-verification info, 2FA with enable/disable flow), 5-step onboarding wizard with spring-motion slide transitions and horizontal pill progress indicator, useWorkspace hook replacing Phase 1 ?w= hack with Better Auth useActiveOrganization, notification preferences page, data export and account deletion with confirmation modal (30-day soft-delete), 16 new tests (96 total)
 - **Phase 3J-K (03-05)**: Production hardening: Upstash Redis rate limiter with sliding window per-endpoint policies, HIBP k-anonymity breach check with prefix cache, async password validation with zxcvbn-style strength meter, Drizzle-based audit log with 21 event types, GDPR soft-delete with 30-day grace + pg_cron hard-delete (migrations 0018/0019), anomaly detection, WebAuthn passkey plugin (enroll + sign-in + list + remove), Sentry + PostHog observability with graceful degradation, email bounce webhook with Resend HMAC verification, 38 new tests (123 passing total)
 - **Phase 3L (03-06)**: THE CUTOVER — replaced Phase 1 demo session (ME_ID constant) with real Better Auth sessions across all workspace pages; created Next.js middleware for route protection (cookie-only fast path + security headers); built client-side RequireAuth wrapper with motion-pulse loading skeleton; created useSession/useUser convenience hooks; deleted demo-session.ts and proxy.ts; updated 15+ components to read real user from session; 8 cutover tests (131 total); zero ME_ID/ME_EXTERNAL_ID references remain in production code
+- **Phase 3M (03-07)**: Internationalization (6 locales: en, es, fr, de, ja, zh) for auth UI with dot-notation t() function and email templates; middleware Accept-Language detection with locale cookie; CSP + HSTS + security headers in next.config.ts; workspace_security_policy table with RLS and auto-insert trigger; admin-only workspace security settings page; production deploy/rollback runbooks; consolidated STRIDE threat model (24 threats); E2E scaffolding with Playwright + axe-core for WCAG 2.2 AA; Dependabot weekly npm updates; Codecov 80% target; Vitest v8 coverage with 80% thresholds; 8 new workspace-policy tests (139 total Phase 3 Vitest tests). Non-Latin locales (ja, zh) use placeholders pending human review.
 - **GSD config**: YOLO mode, Fine granularity (8–12 phases; we have 9), Sequential execution, Git tracking enabled, Research on, Plan Check on, Verifier off, Smart model profile
 
 ### Pending Todos
@@ -80,5 +81,5 @@ Items acknowledged and carried forward:
 ## Session Continuity
 
 Last session: 2026-06-08
-Stopped at: Completed 03-06-PLAN.md — cutover to real Better Auth sessions, middleware route protection, ME_ID removal
+Stopped at: Completed 03-07-PLAN.md — final Phase 3 plan: i18n (6 locales), security headers, workspace policies, deploy runbooks, test consolidation, E2E + a11y scaffolding
 Resume file: None

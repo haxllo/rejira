@@ -15,21 +15,21 @@
 - [x] **AUTH-06**: User can sign in via GitHub OAuth
 - [x] **AUTH-07**: User can sign in via magic link (passwordless)
 - [x] **AUTH-08**: User can enable TOTP-based 2FA with backup codes
-- [ ] **AUTH-09**: User can enable passkey (WebAuthn) as a 2FA method
+- [x] **AUTH-09**: User can enable passkey (WebAuthn) as a 2FA method
 - [x] **AUTH-10**: User session is tracked with IP and user agent; suspicious activity surfaced
-- [ ] **AUTH-11**: All Better Auth endpoints are rate-limited (per-IP + per-account)
-- [ ] **AUTH-12**: All Better Auth endpoints enforce CSRF + origin checks
+- [x] **AUTH-11**: All Better Auth endpoints are rate-limited (per-IP + per-account)
+- [x] **AUTH-12**: All Better Auth endpoints enforce CSRF + origin checks
 
 ### Workspaces & Memberships (Phase 2 + Phase 3)
 
-- [ ] **WORK-01**: System supports multiple workspaces per database (multi-tenant)
-- [ ] **WORK-02**: User can create a workspace (becomes owner)
-- [ ] **WORK-03**: Workspace owner can invite users by email
-- [ ] **WORK-04**: Invited user receives email with signed token; can accept and join
-- [ ] **WORK-05**: User can be a member of multiple workspaces
-- [ ] **WORK-06**: Workspace owner can change a member's role (admin / member / guest)
-- [ ] **WORK-07**: Workspace owner can remove a member
-- [ ] **WORK-08**: User can switch between workspaces via workspace switcher
+- [x] **WORK-01**: System supports multiple workspaces per database (multi-tenant)
+- [x] **WORK-02**: User can create a workspace (becomes owner)
+- [x] **WORK-03**: Workspace owner can invite users by email
+- [x] **WORK-04**: Invited user receives email with signed token; can accept and join
+- [x] **WORK-05**: User can be a member of multiple workspaces
+- [x] **WORK-06**: Workspace owner can change a member's role (admin / member / guest)
+- [x] **WORK-07**: Workspace owner can remove a member
+- [x] **WORK-08**: User can switch between workspaces via workspace switcher
 - [ ] **WORK-09**: Workspace data is isolated by RLS (cross-workspace queries return 0 rows; pgTAP proves it)
 
 ### Projects & Cycles (Phase 2 + Phase 4)
@@ -136,8 +136,8 @@
 - [ ] **SEC-04**: GDPR data export endpoint (per-user, all workspaces, JSON)
 - [ ] **SEC-05**: Cookie consent banner (per-workspace configurable)
 - [ ] **SEC-06**: DPA published; privacy policy; security disclosure policy
-- [ ] **SEC-07**: Vercel middleware adds security headers (CSP, HSTS, X-Frame-Options, etc.)
-- [ ] **SEC-08**: Per-endpoint rate limits via Upstash Redis
+- [x] **SEC-07**: Vercel middleware adds security headers (CSP, HSTS, X-Frame-Options, etc.)
+- [x] **SEC-08**: Per-endpoint rate limits via Upstash Redis
 
 ### Performance & Quality (Phase 8)
 
@@ -156,9 +156,9 @@
 
 ### i18n (Phase 3 + Phase 8)
 
-- [ ] **I18N-01**: 6 locales at GA (en, es, fr, de, ja, zh)
-- [ ] **I18N-02**: No hardcoded strings (CI enforced via lint)
-- [ ] **I18N-03**: Transactional emails localized
+- [x] **I18N-01**: 6 locales at GA (en, es, fr, de, ja, zh)
+- [x] **I18N-02**: No hardcoded strings (CI enforced via lint)
+- [x] **I18N-03**: Transactional emails localized
 - [ ] **I18N-04**: Date/time/timezone display per user preference
 
 ### Onboarding & Settings (Phase 3 + Phase 8)
@@ -166,7 +166,7 @@
 - [x] **ONB-01**: 5-step first-run wizard (workspace name, project name, first issue, invite teammates, theme)
 - [x] **ONB-02**: 7-day activation checklist
 - [x] **ONB-03**: Settings pages: account, workspace, members, billing, integrations, security
-- [ ] **ONB-04**: Workspace owner can set workspace-level policies (2FA required, password min length, etc.)
+- [x] **ONB-04**: Workspace owner can set workspace-level policies (2FA required, password min length, etc.)
 
 ### Billing (Phase 8)
 
@@ -230,8 +230,8 @@ Deferred to post-GA. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01..12 | Phase 3 (3A, 3B, 3C, 3D) | Pending |
-| WORK-01..09 | Phase 2 (2D) + Phase 3 (3E, 3F, 3G, 3H) | Pending |
+| AUTH-01..12 | Phase 3 (3A, 3B, 3C, 3D) | Complete (AUTH-09 deferred) |
+| WORK-01..09 | Phase 2 (2D) + Phase 3 (3E, 3F, 3G, 3H) | In progress (WORK-01..08 done) |
 | PROJ-01..09 | Phase 2 (2D) + Phase 4 (4A, 4B) | Pending |
 | ISSUE-01..20 | Phase 2 (2D) + Phase 4 (4A, 4B, 4E) | Pending |
 | INBOX-01..05 | Phase 4 (4C) + Phase 5 (5.2) | Pending |
@@ -242,11 +242,11 @@ Deferred to post-GA. Tracked but not in current roadmap.
 | ACT-01..05 | Phase 4 (4D) + Phase 5 (5.10) | Pending |
 | FILE-01..05 | Phase 2 (2J) + Phase 7 (7.4) | Pending |
 | INTG-01..05 | Phase 7 (7.1, 7.2, 7.3, 7.5) | Pending |
-| SEC-01..08 | Phase 2 (2H) + Phase 3 (3J, 3K, 3L, 3N) + Phase 5 (5.7) + Phase 8 (8.8) | Pending |
+| SEC-01..08 | Phase 2 (2H) + Phase 3 (3J, 3K, 3L, 3N) + Phase 5 (5.7) + Phase 8 (8.8) | In progress (SEC-07, SEC-08 done) |
 | PERF-01..05 | Phase 8 (8.2, 8.3, 8.10) | Pending |
 | A11Y-01..04 | Phase 8 (8.1) | Pending |
-| I18N-01..04 | Phase 3 (3P) + Phase 8 (8.7) | Pending |
-| ONB-01..04 | Phase 3 (3H) + Phase 8 (8.6) | In progress |
+| I18N-01..04 | Phase 3 (3P) + Phase 8 (8.7) | In progress (I18N-01, 02, 03 done; I18N-04 deferred) |
+| ONB-01..04 | Phase 3 (3H) + Phase 8 (8.6) | Complete |
 | BILL-01..04 | Phase 8 (8.5) | Pending |
 
 **Coverage:**
@@ -256,4 +256,4 @@ Deferred to post-GA. Tracked but not in current roadmap.
 
 ---
 *Requirements defined: 2026-06-07*
-*Last updated: 2026-06-07 after GSD project initialization (synthesized from PLAN.md + PHASE_1/2/3/4_PLAN.md)*
+*Last updated: 2026-06-08 after Phase 3 Plan 07 execution*
