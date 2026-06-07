@@ -48,6 +48,7 @@ vi.mock('better-auth/plugins', async (importOriginal) => {
     twoFactor: vi.fn().mockReturnValue({ id: 'two-factor' }),
     genericOAuth: vi.fn().mockReturnValue({ id: 'generic-oauth' }),
     emailAndPassword: vi.fn().mockReturnValue({ id: 'emailAndPassword' }),
+    passkey: vi.fn().mockReturnValue({ id: 'passkey' }),
   };
 });
 

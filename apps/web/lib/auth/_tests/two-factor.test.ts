@@ -40,6 +40,7 @@ vi.mock('better-auth/plugins', async (importOriginal) => {
     organization: vi.fn().mockReturnValue({ id: 'organization' }),
     admin: vi.fn().mockReturnValue({ id: 'admin' }),
     jwt: vi.fn().mockReturnValue({ id: 'jwt' }),
+    passkey: vi.fn().mockReturnValue({ id: 'passkey' }),
   };
 });
 
@@ -119,30 +120,30 @@ describe('twoFactor plugin in server', () => {
 });
 
 describe('two-factor helpers', () => {
-  it('exports enableTwoFactor as a function', () => {
-    const { enableTwoFactor } = require('@/lib/auth/two-factor');
+  it('exports enableTwoFactor as a function', async () => {
+    const { enableTwoFactor } = await import('@/lib/auth/two-factor');
     expect(typeof enableTwoFactor).toBe('function');
   });
 
-  it('exports disableTwoFactor as a function', () => {
-    const { disableTwoFactor } = require('@/lib/auth/two-factor');
+  it('exports disableTwoFactor as a function', async () => {
+    const { disableTwoFactor } = await import('@/lib/auth/two-factor');
     expect(typeof disableTwoFactor).toBe('function');
   });
 
-  it('exports verifyTwoFactor as a function', () => {
-    const { verifyTwoFactor } = require('@/lib/auth/two-factor');
+  it('exports verifyTwoFactor as a function', async () => {
+    const { verifyTwoFactor } = await import('@/lib/auth/two-factor');
     expect(typeof verifyTwoFactor).toBe('function');
   });
 });
 
 describe('backup codes helpers', () => {
-  it('exports generateBackupCodes as a function', () => {
-    const { generateBackupCodes } = require('@/lib/auth/backup-codes');
+  it('exports generateBackupCodes as a function', async () => {
+    const { generateBackupCodes } = await import('@/lib/auth/backup-codes');
     expect(typeof generateBackupCodes).toBe('function');
   });
 
-  it('exports verifyBackupCode as a function', () => {
-    const { verifyBackupCode } = require('@/lib/auth/backup-codes');
+  it('exports verifyBackupCode as a function', async () => {
+    const { verifyBackupCode } = await import('@/lib/auth/backup-codes');
     expect(typeof verifyBackupCode).toBe('function');
   });
 });

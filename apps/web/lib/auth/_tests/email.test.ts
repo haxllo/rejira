@@ -45,44 +45,44 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('password policy', () => {
-  it('rejects passwords below 12 characters', () => {
-    const result = validatePassword('Abcdef1');
+  it('rejects passwords below 12 characters', async () => {
+    const result = await validatePassword('Abcdef1');
     expect(result).not.toBeNull();
     expect(result).toContain('12');
   });
 
-  it('rejects passwords without uppercase letters', () => {
-    const result = validatePassword('abcdefghijk1');
+  it('rejects passwords without uppercase letters', async () => {
+    const result = await validatePassword('abcdefghijk1');
     expect(result).not.toBeNull();
     expect(result).toContain('uppercase');
   });
 
-  it('rejects passwords without lowercase letters', () => {
-    const result = validatePassword('ABCDEFGHIJK1');
+  it('rejects passwords without lowercase letters', async () => {
+    const result = await validatePassword('ABCDEFGHIJK1');
     expect(result).not.toBeNull();
     expect(result).toContain('lowercase');
   });
 
-  it('rejects passwords without digits', () => {
-    const result = validatePassword('Abcdefghijkl');
+  it('rejects passwords without digits', async () => {
+    const result = await validatePassword('Abcdefghijkl');
     expect(result).not.toBeNull();
     expect(result).toContain('number');
   });
 
-  it('rejects common password patterns', () => {
-    const result = validatePassword('Password1234');
+  it('rejects common password patterns', async () => {
+    const result = await validatePassword('Password1234');
     expect(result).not.toBeNull();
     expect(result).toContain('too common');
   });
 
-  it('rejects keyboard walk patterns', () => {
-    const result = validatePassword('Qwertyuiop12');
+  it('rejects keyboard walk patterns', async () => {
+    const result = await validatePassword('Qwertyuiop12');
     expect(result).not.toBeNull();
     expect(result).toContain('too common');
   });
 
-  it('accepts strong passwords meeting all criteria', () => {
-    const result = validatePassword('MyStr0ng!Pass#2026');
+  it('accepts strong passwords meeting all criteria', async () => {
+    const result = await validatePassword('MyStr0ng!Pass#2026');
     expect(result).toBeNull();
   });
 

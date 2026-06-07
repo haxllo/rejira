@@ -56,6 +56,9 @@ vi.mock('better-auth/plugins', async (importOriginal) => {
       return { id: 'jwt', options: config };
     }),
     emailAndPassword: vi.fn().mockReturnValue({ id: 'emailAndPassword' }),
+    passkey: vi.fn(function () {
+      return { id: 'passkey' };
+    }),
   };
 });
 

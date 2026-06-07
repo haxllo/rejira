@@ -49,6 +49,7 @@ vi.mock('better-auth/plugins', async (importOriginal) => {
     magicLink: vi.fn().mockReturnValue({ id: 'magic-link', version: '1.6.14' }),
     twoFactor: vi.fn().mockReturnValue({ id: 'two-factor', version: '1.6.14' }),
     genericOAuth: vi.fn().mockReturnValue({ id: 'generic-oauth', version: '1.6.14' }),
+    passkey: vi.fn().mockReturnValue({ id: 'passkey' }),
   };
 });
 
@@ -130,9 +131,9 @@ describe('magic link plugin', () => {
     expect(mlOptions.expiresIn).toBe(900);
   });
 
-  it('magic link sendMagicLink callback calls sendEmail with magic-link template', async () => {
-    const { sendEmail } = await import('@/lib/auth/email');
-    const sendEmailSpy = vi.mocked(sendEmail);
+  it('magic link sendMagicLink callback calls render with magic-link template', async () => {
+    const { render } = await import('@/lib/email/render');
+    const renderSpy = vi.mocked(render);
 
     const { magicLink } = await import('better-auth/plugins');
     const calls = (magicLink as ReturnType<typeof vi.fn>).mock.calls;
@@ -144,10 +145,10 @@ describe('magic link plugin', () => {
 
     await callback({ email: 'aria@test.com', url: 'https://rejira.app/verify?token=abc', token: 'abc123' }, {});
 
-    expect(sendEmailSpy).toHaveBeenCalledWith(
+    expect(renderSpy).toHaveBeenCalledWith(
+      'magic-link',
       expect.objectContaining({
         to: 'aria@test.com',
-        template: 'magic-link',
       }),
     );
   });

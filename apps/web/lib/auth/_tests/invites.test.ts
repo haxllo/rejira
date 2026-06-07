@@ -41,6 +41,7 @@ vi.mock('better-auth/plugins', async (importOriginal) => {
     organization: vi.fn().mockReturnValue({ id: 'organization' }),
     admin: vi.fn().mockReturnValue({ id: 'admin' }),
     jwt: vi.fn().mockReturnValue({ id: 'jwt' }),
+    passkey: vi.fn().mockReturnValue({ id: 'passkey' }),
   };
 });
 
