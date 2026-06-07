@@ -2,11 +2,13 @@ import 'server-only';
 
 import { betterAuth } from 'better-auth';
 import { nextCookies } from 'better-auth/next-js';
-import { organization, admin, jwt, magicLink, genericOAuth, twoFactor } from 'better-auth/plugins';
+import { organization, admin, jwt, magicLink, genericOAuth, twoFactor, passkey } from 'better-auth/plugins';
 import { google, github } from 'better-auth/social-providers';
 import { Pool } from 'pg';
 import { sendEmail } from './email';
 import { accountLinkingConfig } from './account-linking';
+import { emitAuditEvent } from './audit';
+import { validatePassword } from './password-policy';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL_SESSION!,
@@ -132,6 +134,11 @@ export const auth = betterAuth({
         length: 10,
       },
     }),
+    passkey({
+      rpName: 'rejira',
+      rpID: process.env.BETTER_AUTH_URL ? new URL(process.env.BETTER_AUTH_URL).hostname : 'localhost',
+      origin: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+    }),
     genericOAuth({
       config: [
         google({
@@ -153,8 +160,62 @@ export const auth = betterAuth({
     storage: 'database',
     window: 60,
     max: 30,
+    customRules: {
+      '/sign-in/email': { window: 300, max: 5 },
+      '/sign-up/email': { window: 3600, max: 5 },
+      '/forget-password': { window: 3600, max: 3 },
+      '/magic-link': { window: 3600, max: 5 },
+      '/two-factor/verify-totp': { window: 300, max: 5 },
+      '/two-factor/verify-backup-code': { window: 300, max: 5 },
+    },
   },
   databaseHooks: {
+    user: {
+      create: {
+        after: async (user: Record<string, unknown>) => {
+          try {
+            await emitAuditEvent({
+              actorId: user.id as string,
+              event: 'auth_signup',
+              metadata: { email: (user.email as string) || '' },
+            });
+          } catch {
+            // non-critical
+          }
+        },
+        before: async (user: Record<string, unknown>) => {
+          const password = user.password as string | undefined;
+          if (password) {
+            const error = await validatePassword(password);
+            if (error) {
+              throw new Error(error);
+            }
+          }
+        },
+      },
+      update: {
+        after: async (user: Record<string, unknown>) => {
+          try {
+            const changes = user as Record<string, unknown>;
+            if (changes.password) {
+              await emitAuditEvent({
+                actorId: user.id as string,
+                event: 'auth_password_change',
+              });
+            }
+            if (changes.email) {
+              await emitAuditEvent({
+                actorId: user.id as string,
+                event: 'auth_email_change',
+                metadata: { newEmail: changes.email as string },
+              });
+            }
+          } catch {
+            // non-critical
+          }
+        },
+      },
+    },
     session: {
       create: {
         after: async (session: Record<string, unknown>) => {
@@ -185,8 +246,30 @@ export const auth = betterAuth({
                 },
               });
             }
+
+            await emitAuditEvent({
+              actorId: userId,
+              event: 'auth_signin',
+              ipAddress: ip,
+              metadata: { isNewDevice: String(isNew) } as Record<string, unknown>,
+            });
           } catch {
             // non-critical: session tracking failure should not block sign-in
+          }
+        },
+      },
+      delete: {
+        after: async (session: Record<string, unknown>) => {
+          try {
+            const userId = session.userId as string;
+            if (userId) {
+              await emitAuditEvent({
+                actorId: userId,
+                event: 'auth_signout',
+              });
+            }
+          } catch {
+            // non-critical
           }
         },
       },
