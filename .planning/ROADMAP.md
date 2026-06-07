@@ -69,20 +69,20 @@ Plans:
 **Detailed plan**: `PHASE_2_PLAN.md` (1208 lines, 14 streams: 2A–2N)
 
 Plans (streams):
-- [ ] 02-A: Supabase project + local dev stack (`supabase init`, `config.toml`, local Postgres)
-- [ ] 02-B: Drizzle setup (`drizzle.config.ts`, `pg.Pool` client, `statement_timeout`, `prepare: false`)
-- [ ] 02-C: 16-table Drizzle schema (workspaces, users, memberships, projects, project_members, labels, issues, issue_assignees, cycles, cycle_issues, saved_views, comments, notifications, activity, attachments, audit_log)
-- [ ] 02-D: 13 hand-authored SQL migrations (Better Auth schema + Drizzle app schema + extensions + helpers)
-- [ ] 02-E: RLS policies for every business table (workspace-scoped reads; role-scoped writes)
-- [ ] 02-F: Postgres triggers: `tg_emit_activity()`, `tg_set_updated_at()`, `tg_soft_delete()`
-- [ ] 02-G: Supabase Storage: `avatars` + `attachments` buckets with storage RLS
-- [ ] 02-H: pgTAP test suite: 8 RLS enforcement tests + cross-tenant denial (CI gate)
-- [ ] 02-I: Supabase Realtime: `supabase_realtime` publication, `pg_notify` test, RLS-aware channel auth
-- [ ] 02-J: Storage helpers in `lib/supabase/storage.ts` (signed URLs, 1h TTL, MIME validation)
-- [ ] 02-K: pgvector extension + `issue_embeddings` schema (Phase 6 prep)
-- [ ] 02-L: pg_cron schedules: nightly housekeeping (hard-delete 30d soft-deleted rows, refresh materialized views)
-- [ ] 02-M: Seed script (`db/seed.ts`) — idempotent demo workspace, project, 50 issues
-- [ ] 02-N: CI gates + migration workflow (`.github/workflows/ci.yml` already rewritten; supabase db lint, drift, db:test)
+- [ ] 02-01: Supabase project + local dev stack (`supabase init`, `config.toml`, local Postgres; 14 db:* scripts)
+- [ ] 02-02: Drizzle setup (`drizzle.config.ts`, `pg.Pool` client, schema barrel, smoke-test `SELECT 1`)
+- [ ] 02-03: 16-table Drizzle schema + 7 pgEnums (workspaces, users, memberships, projects, project_members, labels, issues, issue_assignees, cycles, cycle_issues, saved_views, comments, notifications, activities, attachments, audit_log)
+- [ ] 02-04: RLS policies + isolation tests (3 SQL files; 5 helper functions; 8 Vitest RLS tests)
+- [ ] 02-05: DB functions & triggers (6 SQL files: `tg_set_updated_at`, `tg_assign_issue_number`, `tg_emit_activity`, user mirror, workflow_statuses, `search_vector` + GIN)
+- [ ] 02-06: Storage buckets + RLS (2 SQL files for `avatars`/`attachments`/`exports`; `lib/supabase/storage.ts` helper)
+- [ ] 02-07: Realtime publication (`supabase_realtime` on 6 hot tables; `REPLICA IDENTITY FULL`)
+- [ ] 02-08: pgvector setup (extension + HNSW index on `issues.embedding`)
+- [ ] 02-09: pg_cron + scheduled jobs (4 jobs: GDPR hard-delete, embedding refresh, orphan-attachment cleanup, nightly vacuum)
+- [ ] 02-10: Idempotent seed (`apps/web/lib/db/seed.ts`; demo workspace with 30 issues, 12 users, 4 projects, 3 cycles, 10 labels, 8 comments, 10 inbox items; `ME_ID` placeholder in `demo-session.ts`)
+- [ ] 02-11: Local dev DX + `.env.example` (bootstrap script, `/api/db-check` smoke test, README "First-time setup" section)
+- [ ] 02-12: Migration workflow (`db:diff`/`db:push:staging`/`db:push:prod` scripts; `docs/runbooks/db-migration.md`)
+- [ ] 02-13: CI gates (`.github/workflows/ci.yml` finalized with typecheck + lint + db-lint + drift + db-test + build; branch protection documented)
+- [ ] 02-14: Backups + PITR + restore drill (PITR verified in Dashboard; `docs/runbooks/restore-drill.md` + `db-failover.md`; placeholder daily backup cron)
 
 ### Phase 3: Auth & Identity (Better Auth + Supabase) 📌
 **Goal**: Users sign in to use the app. Real sessions in Postgres via Better Auth, real workspaces (organization plugin mapped to our `workspaces` table), real invites, real 2FA, real OAuth, real audit log, real GDPR delete. Closed-beta-ready: invite a handful of users, they can log in, switch workspaces, and use every page — but state still doesn't persist across the database boundary (the app still reads `lib/mock/` until Phase 4). Phase 3 is the security phase: every stream ships behind a passing test suite.
@@ -267,7 +267,7 @@ Phases execute in numeric order: 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 0. Foundation | 7/7 | Complete | 2026-06-07 |
 | 1. Interactions | 7/7 | Complete | 2026-06-07 |
-| 2. Data layer (Supabase + Drizzle) | 0/14 | Not started | - |
+| 2. Data layer (Supabase + Drizzle) | 0/14 | Ready to execute | - |
 | 3. Auth & Identity (Better Auth) | 0/17 | Not started | - |
 | 4. Drizzle queries & mutations | 0/10 | Not started | - |
 | 5. Live & resilience | 0/9 | Not started | - |
