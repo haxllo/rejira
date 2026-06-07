@@ -1,0 +1,103 @@
+{
+  "sign_in": {
+    "title": "Se connecter",
+    "subtitle": "pour continuer sur rejira",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "forgot_password": "Mot de passe oublie?",
+    "no_account": "Pas de compte? S'inscrire",
+    "magic_link_tab": "Lien magique",
+    "send_magic_link": "Envoyer le lien magique",
+    "oauth_divider": "ou continuer avec",
+    "error_invalid": "E-mail ou mot de passe invalide",
+    "error_generic": "Echec de connexion. Veuillez reessayer."
+  },
+  "sign_up": {
+    "title": "Creer votre compte",
+    "subtitle": "Commencez a gerer le travail dans rejira",
+    "name": "Nom complet",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "confirm_password": "Confirmer le mot de passe",
+    "submit": "S'inscrire",
+    "has_account": "Vous avez deja un compte? Se connecter",
+    "password_hint": "Au moins 12 caracteres avec majuscule, minuscule et un chiffre",
+    "error_password_mismatch": "Les mots de passe ne correspondent pas"
+  },
+  "forgot_password": {
+    "title": "Reinitialiser le mot de passe",
+    "subtitle": "Nous vous enverrons un lien de reinitialisation",
+    "email": "E-mail",
+    "submit": "Envoyer le lien",
+    "back_to_sign_in": "Vous vous souvenez de votre mot de passe? Se connecter",
+    "success": "Verifiez votre e-mail pour le lien de reinitialisation"
+  },
+  "reset_password": {
+    "title": "Definir un nouveau mot de passe",
+    "new_password": "Nouveau mot de passe",
+    "confirm_password": "Confirmer le mot de passe",
+    "submit": "Reinitialiser le mot de passe",
+    "success": "Mot de passe reinitialise avec succes"
+  },
+  "verify_email": {
+    "title": "Verifiez votre e-mail",
+    "verifying": "Verification de votre e-mail...",
+    "success": "E-mail verifie! Redirection...",
+    "error": "Le lien de verification est invalide ou a expire"
+  },
+  "check_email": {
+    "title": "Verifiez votre e-mail",
+    "message": "Nous avons envoye un lien de verification a {email}",
+    "resend": "Renvoyer l'e-mail de verification",
+    "spam": "Vous ne l'avez pas recu? Verifiez vos spams"
+  },
+  "two_factor": {
+    "title": "Authentification a deux facteurs",
+    "subtitle": "Entrez le code a 6 chiffres de votre application d'authentification",
+    "submit": "Verifier",
+    "use_backup": "Utiliser un code de secours",
+    "error_invalid": "Code invalide. {remaining} tentatives restantes.",
+    "locked": "Compte bloque pendant 15 minutes en raison de trop de tentatives"
+  },
+  "two_factor_setup": {
+    "title": "Configurer l'authentification a deux facteurs",
+    "step1": "Scannez le code QR avec votre application d'authentification",
+    "step2": "Entrez le code a 6 chiffres pour verifier",
+    "secret_label": "Ou entrez cette cle secrete manuellement",
+    "submit": "Verifier et activer",
+    "backup_codes_title": "Enregistrez vos codes de secours",
+    "backup_codes_warning": "Conservez-les en lieu sur. Vous ne les reverrez plus.",
+    "i_saved": "J'ai enregistre mes codes de secours"
+  },
+  "onboarding": {
+    "welcome": "Bienvenue sur rejira",
+    "welcome_message": "Bonjour {name}! Configurons votre espace de travail.",
+    "create_workspace": "Creer votre espace de travail",
+    "invite_team": "Inviter votre equipe",
+    "create_project": "Creer votre premier projet",
+    "done": "Vous etes pret!",
+    "skip": "Passer pour l'instant",
+    "continue": "Continuer",
+    "go_to_workspace": "Aller a votre espace de travail"
+  },
+  "settings": {
+    "account": "Compte",
+    "profile": "Profil",
+    "security": "Securite",
+    "sessions": "Sessions",
+    "data": "Donnees et confidentialite",
+    "notifications": "Notifications",
+    "members": "Membres"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "error": "Quelque chose s'est mal passe",
+    "success": "Succes"
+  }
+}

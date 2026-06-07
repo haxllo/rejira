@@ -1,25 +1,36 @@
-import type { Metadata, Viewport } from "next";
-import "./globals.css";
+import type { Metadata, Viewport } from 'next';
+import { cookies } from 'next/headers';
+import './globals.css';
+
+const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'de', 'ja', 'zh'];
+const DEFAULT_LOCALE = 'en';
 
 export const metadata: Metadata = {
-  title: "rejira",
-  description: "A precise, opinionated redesign of Jira — keyboard-first, real-time, AI-augmented.",
+  title: 'rejira',
+  description: 'A precise, opinionated redesign of Jira — keyboard-first, real-time, AI-augmented.',
 };
 
 export const viewport: Viewport = {
-  width: "device-width",
+  width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#1a1a1f",
+  themeColor: '#1a1a1f',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const localeCookie = cookieStore.get('locale')?.value;
+  const locale =
+    localeCookie && SUPPORTED_LOCALES.includes(localeCookie)
+      ? localeCookie
+      : DEFAULT_LOCALE;
+
   return (
-    <html lang="en" data-density="default" suppressHydrationWarning>
+    <html lang={locale} data-density="default" suppressHydrationWarning>
       <head>
         <link
           rel="preconnect"

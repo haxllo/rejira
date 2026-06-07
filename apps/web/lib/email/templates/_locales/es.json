@@ -1,0 +1,62 @@
+{
+  "welcome": {
+    "subject": "Bienvenido a rejira",
+    "heading": "Bienvenido a rejira, {name}",
+    "body": "Tu cuenta esta lista. Inicia sesion para empezar a gestionar incidencias con tu equipo.",
+    "cta": "Iniciar sesion",
+    "footer": "rejira — un reemplazo de Jira para equipos de ingenieria"
+  },
+  "verify_email": {
+    "subject": "Verifica tu correo para rejira",
+    "heading": "Verifica tu correo",
+    "body": "Hola {name}, haz clic en el boton para verificar tu direccion de correo.",
+    "cta": "Verificar correo",
+    "footer": "Si no creaste esta cuenta, puedes ignorar este correo."
+  },
+  "reset_password": {
+    "subject": "Restablece tu contrasena de rejira",
+    "heading": "Restablecer contrasena",
+    "body": "Hola {name}, haz clic en el boton para restablecer tu contrasena.",
+    "cta": "Restablecer contrasena",
+    "footer": "Si no solicitaste esto, puedes ignorar este correo."
+  },
+  "password_changed": {
+    "subject": "Tu contrasena de rejira ha sido cambiada",
+    "heading": "Contrasena cambiada",
+    "body": "Hola {name}, tu contrasena fue cambiada con exito. Si fuiste tu, no necesitas hacer nada mas.",
+    "footer": "Si no cambiaste tu contrasena, contacta a soporte inmediatamente."
+  },
+  "magic_link": {
+    "subject": "Inicia sesion en rejira",
+    "heading": "Inicia sesion en rejira",
+    "body": "Hola {name}, haz clic en el boton para iniciar sesion al instante.",
+    "cta": "Iniciar sesion",
+    "expires": "Este enlace expira en 15 minutos y solo se puede usar una vez.",
+    "footer": "Si no solicitaste esto, puedes ignorar este correo."
+  },
+  "new_device": {
+    "subject": "Nuevo inicio de sesion en rejira",
+    "heading": "Nuevo inicio de sesion en rejira",
+    "body": "Hola {name}, se detecto un nuevo inicio de sesion desde un dispositivo no reconocido.",
+    "browser": "Navegador",
+    "os": "Sistema operativo",
+    "location": "Ubicacion aproximada",
+    "time": "Hora",
+    "not_you": "Si fuiste tu, ignora este correo. Si no, cambia tu contrasena inmediatamente.",
+    "cta": "Ver sesiones activas",
+    "footer": "seguridad de rejira"
+  },
+  "workspace_invite": {
+    "subject": "Has sido invitado a {workspace}",
+    "heading": "Has sido invitado a {workspace}",
+    "body": "Has sido invitado a unirte a {workspace} en rejira como {role}.",
+    "cta": "Aceptar invitacion",
+    "expires": "Esta invitacion expira en 7 dias. Si no la esperabas, puedes ignorarla."
+  },
+  "role_changed": {
+    "subject": "Tu rol en {workspace} ha cambiado",
+    "heading": "Tu rol ha cambiado",
+    "body": "Tu rol en {workspace} ha sido cambiado a {role} por {actor}.",
+    "footer": "Si crees que esto fue un error, contacta al propietario del espacio de trabajo."
+  }
+}

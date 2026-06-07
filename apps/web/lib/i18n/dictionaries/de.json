@@ -1,0 +1,103 @@
+{
+  "sign_in": {
+    "title": "Anmelden",
+    "subtitle": "um bei rejira fortzufahren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "submit": "Anmelden",
+    "forgot_password": "Passwort vergessen?",
+    "no_account": "Kein Konto? Registrieren",
+    "magic_link_tab": "Magischer Link",
+    "send_magic_link": "Magischen Link senden",
+    "oauth_divider": "oder fortfahren mit",
+    "error_invalid": "Ungultige E-Mail oder Passwort",
+    "error_generic": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
+  },
+  "sign_up": {
+    "title": "Konto erstellen",
+    "subtitle": "Beginnen Sie mit der Arbeit in rejira",
+    "name": "Vollstandiger Name",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "confirm_password": "Passwort bestatigen",
+    "submit": "Registrieren",
+    "has_account": "Bereits ein Konto? Anmelden",
+    "password_hint": "Mindestens 12 Zeichen mit Grossbuchstabe, Kleinbuchstabe und einer Zahl",
+    "error_password_mismatch": "Passworter stimmen nicht uberein"
+  },
+  "forgot_password": {
+    "title": "Passwort zurucksetzen",
+    "subtitle": "Wir senden Ihnen einen Link zum Zurucksetzen",
+    "email": "E-Mail",
+    "submit": "Link senden",
+    "back_to_sign_in": "Passwort wieder eingefallen? Anmelden",
+    "success": "Uberprufen Sie Ihre E-Mails fur den Zurucksetzungslink"
+  },
+  "reset_password": {
+    "title": "Neues Passwort festlegen",
+    "new_password": "Neues Passwort",
+    "confirm_password": "Passwort bestatigen",
+    "submit": "Passwort zurucksetzen",
+    "success": "Passwort erfolgreich zuruckgesetzt"
+  },
+  "verify_email": {
+    "title": "E-Mail bestatigen",
+    "verifying": "E-Mail wird bestatigt...",
+    "success": "E-Mail bestatigt! Weiterleitung...",
+    "error": "Der Bestatigungslink ist ungultig oder abgelaufen"
+  },
+  "check_email": {
+    "title": "E-Mail uberprufen",
+    "message": "Wir haben einen Bestatigungslink an {email} gesendet",
+    "resend": "Bestatigungs-E-Mail erneut senden",
+    "spam": "Nicht erhalten? Uberprufen Sie Ihren Spam-Ordner"
+  },
+  "two_factor": {
+    "title": "Zwei-Faktor-Authentifizierung",
+    "subtitle": "Geben Sie den 6-stelligen Code aus Ihrer Authentifizierungs-App ein",
+    "submit": "Uberprufen",
+    "use_backup": "Einen Backup-Code verwenden",
+    "error_invalid": "Ungultiger Code. {remaining} Versuche ubrig.",
+    "locked": "Konto fur 15 Minuten aufgrund zu vieler Versuche gesperrt"
+  },
+  "two_factor_setup": {
+    "title": "Zwei-Faktor-Authentifizierung einrichten",
+    "step1": "Scannen Sie den QR-Code mit Ihrer Authentifizierungs-App",
+    "step2": "Geben Sie den 6-stelligen Code zur Uberprufung ein",
+    "secret_label": "Oder geben Sie diesen geheimen Schlussel manuell ein",
+    "submit": "Uberprufen und aktivieren",
+    "backup_codes_title": "Speichern Sie Ihre Backup-Codes",
+    "backup_codes_warning": "Bewahren Sie diese sicher auf. Sie werden sie nicht wieder sehen.",
+    "i_saved": "Ich habe meine Backup-Codes gespeichert"
+  },
+  "onboarding": {
+    "welcome": "Willkommen bei rejira",
+    "welcome_message": "Hallo {name}! Lassen Sie uns Ihren Workspace einrichten.",
+    "create_workspace": "Workspace erstellen",
+    "invite_team": "Team einladen",
+    "create_project": "Erstes Projekt erstellen",
+    "done": "Alles bereit!",
+    "skip": "Vorerst uberspringen",
+    "continue": "Weiter",
+    "go_to_workspace": "Zum Workspace"
+  },
+  "settings": {
+    "account": "Konto",
+    "profile": "Profil",
+    "security": "Sicherheit",
+    "sessions": "Sitzungen",
+    "data": "Daten & Datenschutz",
+    "notifications": "Benachrichtigungen",
+    "members": "Mitglieder"
+  },
+  "common": {
+    "loading": "Laden...",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Loschen",
+    "confirm": "Bestatigen",
+    "back": "Zuruck",
+    "error": "Etwas ist schief gelaufen",
+    "success": "Erfolg"
+  }
+}

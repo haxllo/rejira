@@ -1,0 +1,62 @@
+{
+  "welcome": {
+    "subject": "Willkommen bei rejira",
+    "heading": "Willkommen bei rejira, {name}",
+    "body": "Ihr Konto ist bereit. Melden Sie sich an, um mit Ihrem Team Tickets zu verfolgen.",
+    "cta": "Anmelden",
+    "footer": "rejira — ein Jira-Ersatz fur Entwicklungsteams"
+  },
+  "verify_email": {
+    "subject": "Bestatigen Sie Ihre E-Mail fur rejira",
+    "heading": "E-Mail bestatigen",
+    "body": "Hallo {name}, klicken Sie auf die Schaltflache, um Ihre E-Mail-Adresse zu bestatigen.",
+    "cta": "E-Mail bestatigen",
+    "footer": "Wenn Sie dieses Konto nicht erstellt haben, ignorieren Sie diese E-Mail."
+  },
+  "reset_password": {
+    "subject": "Setzen Sie Ihr rejira-Passwort zuruck",
+    "heading": "Passwort zurucksetzen",
+    "body": "Hallo {name}, klicken Sie auf die Schaltflache, um Ihr Passwort zuruckzusetzen.",
+    "cta": "Passwort zurucksetzen",
+    "footer": "Wenn Sie dies nicht angefordert haben, ignorieren Sie diese E-Mail."
+  },
+  "password_changed": {
+    "subject": "Ihr rejira-Passwort wurde geandert",
+    "heading": "Passwort geandert",
+    "body": "Hallo {name}, Ihr Passwort wurde erfolgreich geandert. Falls Sie es waren, ist keine weitere Aktion erforderlich.",
+    "footer": "Wenn Sie Ihr Passwort nicht geandert haben, kontaktieren Sie sofort den Support."
+  },
+  "magic_link": {
+    "subject": "Bei rejira anmelden",
+    "heading": "Bei rejira anmelden",
+    "body": "Hallo {name}, klicken Sie auf die Schaltflache, um sich sofort anzumelden.",
+    "cta": "Anmelden",
+    "expires": "Dieser Link lauft in 15 Minuten ab und kann nur einmal verwendet werden.",
+    "footer": "Wenn Sie dies nicht angefordert haben, ignorieren Sie diese E-Mail."
+  },
+  "new_device": {
+    "subject": "Neue Anmeldung bei rejira",
+    "heading": "Neue Anmeldung bei rejira",
+    "body": "Hallo {name}, eine neue Anmeldung wurde von einem nicht erkannten Gerat erkannt.",
+    "browser": "Browser",
+    "os": "Betriebssystem",
+    "location": "Ungefahrer Standort",
+    "time": "Zeit",
+    "not_you": "Falls Sie es waren, ignorieren Sie diese E-Mail. Falls nicht, andern Sie sofort Ihr Passwort.",
+    "cta": "Aktive Sitzungen anzeigen",
+    "footer": "rejira Sicherheit"
+  },
+  "workspace_invite": {
+    "subject": "Sie wurden zu {workspace} eingeladen",
+    "heading": "Sie wurden zu {workspace} eingeladen",
+    "body": "Sie wurden eingeladen, {workspace} auf rejira als {role} beizutreten.",
+    "cta": "Einladung annehmen",
+    "expires": "Diese Einladung lauft in 7 Tagen ab. Wenn Sie sie nicht erwartet haben, ignorieren Sie sie."
+  },
+  "role_changed": {
+    "subject": "Ihre Rolle in {workspace} wurde geandert",
+    "heading": "Ihre Rolle wurde geandert",
+    "body": "Ihre Rolle in {workspace} wurde von {actor} in {role} geandert.",
+    "footer": "Wenn Sie glauben, dass dies ein Fehler war, kontaktieren Sie den Workspace-Besitzer."
+  }
+}

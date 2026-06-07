@@ -1,20 +1,37 @@
-// Phase 3 — Stream 3J: Internationalization dictionaries.
-//
-// All auth and email strings. 3J fills in all 6 locales.
+export type Locale = 'en' | 'es' | 'fr' | 'de' | 'ja' | 'zh';
 
-const en = {
-  "auth.signIn": "Sign in",
-  "auth.signUp": "Sign up",
-  "auth.email": "Email",
-  "auth.password": "Password",
-  "auth.magicLink": "Send magic link",
-  "auth.welcome": "Welcome to Rejira",
-  "invite.subject": "You've been invited to join a workspace",
-  "invite.body": "Click the link to accept the invitation",
-};
+export const SUPPORTED_LOCALES: Locale[] = ['en', 'es', 'fr', 'de', 'ja', 'zh'];
 
-const dictionaries: Record<string, Record<string, string>> = { en };
+export const DEFAULT_LOCALE: Locale = 'en';
 
-export function t(key: string, locale = "en"): string {
-  return dictionaries[locale]?.[key] ?? dictionaries.en[key] ?? key;
+export type Dictionary = Record<string, Record<string, string>>;
+
+const localeCache: Partial<Record<Locale, Dictionary>> = {};
+
+export async function getDict(locale: Locale): Promise<Dictionary> {
+  if (localeCache[locale]) {
+    return localeCache[locale]!;
+  }
+
+  const mod = await import(`./dictionaries/${locale}.json`) as { default: Dictionary };
+  localeCache[locale] = mod.default;
+  return mod.default;
+}
+
+export function t(key: string, dict: Dictionary): string {
+  const parts = key.split('.');
+  let current: unknown = dict;
+
+  for (const part of parts) {
+    if (typeof current !== 'object' || current === null) {
+      return key;
+    }
+    current = (current as Record<string, unknown>)[part];
+  }
+
+  if (typeof current !== 'string') {
+    return key;
+  }
+
+  return current;
 }

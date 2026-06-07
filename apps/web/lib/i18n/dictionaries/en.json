@@ -1,0 +1,103 @@
+{
+  "sign_in": {
+    "title": "Sign in",
+    "subtitle": "to continue to rejira",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "forgot_password": "Forgot password?",
+    "no_account": "Don't have an account? Sign up",
+    "magic_link_tab": "Magic link",
+    "send_magic_link": "Send magic link",
+    "oauth_divider": "or continue with",
+    "error_invalid": "Invalid email or password",
+    "error_generic": "Sign in failed. Please try again."
+  },
+  "sign_up": {
+    "title": "Create your account",
+    "subtitle": "Start tracking work in rejira",
+    "name": "Full name",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm password",
+    "submit": "Sign up",
+    "has_account": "Already have an account? Sign in",
+    "password_hint": "At least 12 characters with uppercase, lowercase, and a number",
+    "error_password_mismatch": "Passwords don't match"
+  },
+  "forgot_password": {
+    "title": "Reset your password",
+    "subtitle": "We'll send you a reset link",
+    "email": "Email",
+    "submit": "Send reset link",
+    "back_to_sign_in": "Remember your password? Sign in",
+    "success": "Check your email for a reset link"
+  },
+  "reset_password": {
+    "title": "Set new password",
+    "new_password": "New password",
+    "confirm_password": "Confirm password",
+    "submit": "Reset password",
+    "success": "Password reset successfully"
+  },
+  "verify_email": {
+    "title": "Verify your email",
+    "verifying": "Verifying your email...",
+    "success": "Email verified! Redirecting...",
+    "error": "Verification link is invalid or expired"
+  },
+  "check_email": {
+    "title": "Check your email",
+    "message": "We sent a verification link to {email}",
+    "resend": "Resend verification email",
+    "spam": "Didn't receive it? Check your spam folder"
+  },
+  "two_factor": {
+    "title": "Two-factor authentication",
+    "subtitle": "Enter the 6-digit code from your authenticator app",
+    "submit": "Verify",
+    "use_backup": "Use a backup code instead",
+    "error_invalid": "Invalid code. {remaining} attempts remaining.",
+    "locked": "Account locked for 15 minutes due to too many attempts"
+  },
+  "two_factor_setup": {
+    "title": "Set up two-factor authentication",
+    "step1": "Scan the QR code with your authenticator app",
+    "step2": "Enter the 6-digit code to verify",
+    "secret_label": "Or enter this secret key manually",
+    "submit": "Verify and enable",
+    "backup_codes_title": "Save your backup codes",
+    "backup_codes_warning": "Store these securely. You won't see them again.",
+    "i_saved": "I've saved my backup codes"
+  },
+  "onboarding": {
+    "welcome": "Welcome to rejira",
+    "welcome_message": "Hi {name}! Let's set up your workspace.",
+    "create_workspace": "Create your workspace",
+    "invite_team": "Invite your team",
+    "create_project": "Create your first project",
+    "done": "You're all set!",
+    "skip": "Skip for now",
+    "continue": "Continue",
+    "go_to_workspace": "Go to your workspace"
+  },
+  "settings": {
+    "account": "Account",
+    "profile": "Profile",
+    "security": "Security",
+    "sessions": "Sessions",
+    "data": "Data & Privacy",
+    "notifications": "Notifications",
+    "members": "Members"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "back": "Back",
+    "error": "Something went wrong",
+    "success": "Success"
+  }
+}

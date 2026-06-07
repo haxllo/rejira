@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'de', 'ja', 'zh'];
+const DEFAULT_LOCALE = 'en';
+
 const PUBLIC = [
   '/sign-in',
   '/sign-up',
@@ -15,11 +18,44 @@ const PUBLIC = [
   '/',
 ];
 
+function detectLocale(request: NextRequest): string {
+  const cookieLocale = request.cookies.get('locale')?.value;
+  if (cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale)) {
+    return cookieLocale;
+  }
+
+  const acceptLanguage = request.headers.get('Accept-Language');
+  if (acceptLanguage) {
+    const preferred = acceptLanguage.split(',')[0].trim().slice(0, 2);
+    const match = SUPPORTED_LOCALES.find((l) => l === preferred);
+    if (match) return match;
+  }
+
+  return DEFAULT_LOCALE;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (PUBLIC.some((p) => pathname.startsWith(p))) {
-    return NextResponse.next();
+    const locale = detectLocale(request);
+    const response = NextResponse.next();
+    response.headers.set('x-locale', locale);
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+    const cookieLocale = request.cookies.get('locale')?.value;
+    if (!cookieLocale) {
+      response.cookies.set('locale', locale, {
+        path: '/',
+        maxAge: 31536000,
+        sameSite: 'lax',
+        httpOnly: false,
+      });
+    }
+
+    return response;
   }
 
   if (
@@ -40,11 +76,23 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(signInUrl);
   }
 
+  const locale = detectLocale(request);
   const response = NextResponse.next();
 
+  response.headers.set('x-locale', locale);
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  const cookieLocale = request.cookies.get('locale')?.value;
+  if (!cookieLocale) {
+    response.cookies.set('locale', locale, {
+      path: '/',
+      maxAge: 31536000,
+      sameSite: 'lax',
+      httpOnly: false,
+    });
+  }
 
   return response;
 }

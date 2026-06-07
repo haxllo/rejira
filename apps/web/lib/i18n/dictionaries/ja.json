@@ -1,0 +1,103 @@
+{
+  "sign_in": {
+    "title": "[JA] Sign in",
+    "subtitle": "[JA] to continue to rejira",
+    "email": "[JA] Email",
+    "password": "[JA] Password",
+    "submit": "[JA] Sign in",
+    "forgot_password": "[JA] Forgot password?",
+    "no_account": "[JA] Don't have an account? Sign up",
+    "magic_link_tab": "[JA] Magic link",
+    "send_magic_link": "[JA] Send magic link",
+    "oauth_divider": "[JA] or continue with",
+    "error_invalid": "[JA] Invalid email or password",
+    "error_generic": "[JA] Sign in failed. Please try again."
+  },
+  "sign_up": {
+    "title": "[JA] Create your account",
+    "subtitle": "[JA] Start tracking work in rejira",
+    "name": "[JA] Full name",
+    "email": "[JA] Email",
+    "password": "[JA] Password",
+    "confirm_password": "[JA] Confirm password",
+    "submit": "[JA] Sign up",
+    "has_account": "[JA] Already have an account? Sign in",
+    "password_hint": "[JA] At least 12 characters with uppercase, lowercase, and a number",
+    "error_password_mismatch": "[JA] Passwords don't match"
+  },
+  "forgot_password": {
+    "title": "[JA] Reset your password",
+    "subtitle": "[JA] We'll send you a reset link",
+    "email": "[JA] Email",
+    "submit": "[JA] Send reset link",
+    "back_to_sign_in": "[JA] Remember your password? Sign in",
+    "success": "[JA] Check your email for a reset link"
+  },
+  "reset_password": {
+    "title": "[JA] Set new password",
+    "new_password": "[JA] New password",
+    "confirm_password": "[JA] Confirm password",
+    "submit": "[JA] Reset password",
+    "success": "[JA] Password reset successfully"
+  },
+  "verify_email": {
+    "title": "[JA] Verify your email",
+    "verifying": "[JA] Verifying your email...",
+    "success": "[JA] Email verified! Redirecting...",
+    "error": "[JA] Verification link is invalid or expired"
+  },
+  "check_email": {
+    "title": "[JA] Check your email",
+    "message": "[JA] We sent a verification link to {email}",
+    "resend": "[JA] Resend verification email",
+    "spam": "[JA] Didn't receive it? Check your spam folder"
+  },
+  "two_factor": {
+    "title": "[JA] Two-factor authentication",
+    "subtitle": "[JA] Enter the 6-digit code from your authenticator app",
+    "submit": "[JA] Verify",
+    "use_backup": "[JA] Use a backup code instead",
+    "error_invalid": "[JA] Invalid code. {remaining} attempts remaining.",
+    "locked": "[JA] Account locked for 15 minutes due to too many attempts"
+  },
+  "two_factor_setup": {
+    "title": "[JA] Set up two-factor authentication",
+    "step1": "[JA] Scan the QR code with your authenticator app",
+    "step2": "[JA] Enter the 6-digit code to verify",
+    "secret_label": "[JA] Or enter this secret key manually",
+    "submit": "[JA] Verify and enable",
+    "backup_codes_title": "[JA] Save your backup codes",
+    "backup_codes_warning": "[JA] Store these securely. You won't see them again.",
+    "i_saved": "[JA] I've saved my backup codes"
+  },
+  "onboarding": {
+    "welcome": "[JA] Welcome to rejira",
+    "welcome_message": "[JA] Hi {name}! Let's set up your workspace.",
+    "create_workspace": "[JA] Create your workspace",
+    "invite_team": "[JA] Invite your team",
+    "create_project": "[JA] Create your first project",
+    "done": "[JA] You're all set!",
+    "skip": "[JA] Skip for now",
+    "continue": "[JA] Continue",
+    "go_to_workspace": "[JA] Go to your workspace"
+  },
+  "settings": {
+    "account": "[JA] Account",
+    "profile": "[JA] Profile",
+    "security": "[JA] Security",
+    "sessions": "[JA] Sessions",
+    "data": "[JA] Data & Privacy",
+    "notifications": "[JA] Notifications",
+    "members": "[JA] Members"
+  },
+  "common": {
+    "loading": "[JA] Loading...",
+    "save": "[JA] Save",
+    "cancel": "[JA] Cancel",
+    "delete": "[JA] Delete",
+    "confirm": "[JA] Confirm",
+    "back": "[JA] Back",
+    "error": "[JA] Something went wrong",
+    "success": "[JA] Success"
+  }
+}

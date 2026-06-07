@@ -1,0 +1,62 @@
+{
+  "welcome": {
+    "subject": "[JA] Welcome to rejira",
+    "heading": "[JA] Welcome to rejira, {name}",
+    "body": "[JA] Your account is ready. Sign in to start tracking issues with your team.",
+    "cta": "[JA] Sign In",
+    "footer": "[JA] rejira — a Jira replacement for engineering teams"
+  },
+  "verify_email": {
+    "subject": "[JA] Verify your email for rejira",
+    "heading": "[JA] Verify your email",
+    "body": "[JA] Hi {name}, click the button below to verify your email address.",
+    "cta": "[JA] Verify Email",
+    "footer": "[JA] If you didn't create this account, you can ignore this email."
+  },
+  "reset_password": {
+    "subject": "[JA] Reset your rejira password",
+    "heading": "[JA] Reset your password",
+    "body": "[JA] Hi {name}, click the button below to reset your password.",
+    "cta": "[JA] Reset Password",
+    "footer": "[JA] If you didn't request this, you can ignore this email."
+  },
+  "password_changed": {
+    "subject": "[JA] Your rejira password was changed",
+    "heading": "[JA] Password changed",
+    "body": "[JA] Hi {name}, your password was successfully changed. If this was you, no further action is needed.",
+    "footer": "[JA] If you did not change your password, please contact support immediately."
+  },
+  "magic_link": {
+    "subject": "[JA] Sign in to rejira",
+    "heading": "[JA] Sign in to rejira",
+    "body": "[JA] Hi {name}, click the button below to sign in instantly.",
+    "cta": "[JA] Sign In",
+    "expires": "[JA] This link expires in 15 minutes and can only be used once.",
+    "footer": "[JA] If you didn't request this, you can ignore this email."
+  },
+  "new_device": {
+    "subject": "[JA] New sign-in to rejira",
+    "heading": "[JA] New sign-in to rejira",
+    "body": "[JA] Hi {name}, a new sign-in was detected from an unrecognized device.",
+    "browser": "[JA] Browser",
+    "os": "[JA] Operating system",
+    "location": "[JA] Approximate location",
+    "time": "[JA] Time",
+    "not_you": "[JA] If this was you, you can ignore this email. If not, change your password immediately.",
+    "cta": "[JA] View active sessions",
+    "footer": "[JA] rejira security"
+  },
+  "workspace_invite": {
+    "subject": "[JA] You've been invited to join {workspace}",
+    "heading": "[JA] You've been invited to join {workspace}",
+    "body": "[JA] You've been invited to join {workspace} on rejira as a {role}.",
+    "cta": "[JA] Accept Invitation",
+    "expires": "[JA] This invitation expires in 7 days. If you weren't expecting this, you can ignore it."
+  },
+  "role_changed": {
+    "subject": "[JA] Your role in {workspace} has changed",
+    "heading": "[JA] Your role has changed",
+    "body": "[JA] Your role in {workspace} has been changed to {role} by {actor}.",
+    "footer": "[JA] If you believe this was a mistake, contact your workspace owner."
+  }
+}

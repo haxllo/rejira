@@ -1,0 +1,103 @@
+{
+  "sign_in": {
+    "title": "Iniciar sesion",
+    "subtitle": "para continuar en rejira",
+    "email": "Correo electronico",
+    "password": "Contrasena",
+    "submit": "Iniciar sesion",
+    "forgot_password": "Olvidaste tu contrasena?",
+    "no_account": "No tienes cuenta? Registrate",
+    "magic_link_tab": "Enlace magico",
+    "send_magic_link": "Enviar enlace magico",
+    "oauth_divider": "o continua con",
+    "error_invalid": "Correo o contrasena no validos",
+    "error_generic": "Error al iniciar sesion. Intenta de nuevo."
+  },
+  "sign_up": {
+    "title": "Crea tu cuenta",
+    "subtitle": "Empieza a gestionar el trabajo en rejira",
+    "name": "Nombre completo",
+    "email": "Correo electronico",
+    "password": "Contrasena",
+    "confirm_password": "Confirmar contrasena",
+    "submit": "Registrarse",
+    "has_account": "Ya tienes cuenta? Inicia sesion",
+    "password_hint": "Al menos 12 caracteres con mayuscula, minuscula y un numero",
+    "error_password_mismatch": "Las contrasenas no coinciden"
+  },
+  "forgot_password": {
+    "title": "Restablecer contrasena",
+    "subtitle": "Te enviaremos un enlace de restablecimiento",
+    "email": "Correo electronico",
+    "submit": "Enviar enlace",
+    "back_to_sign_in": "Recuerdas tu contrasena? Inicia sesion",
+    "success": "Revisa tu correo para el enlace de restablecimiento"
+  },
+  "reset_password": {
+    "title": "Establecer nueva contrasena",
+    "new_password": "Nueva contrasena",
+    "confirm_password": "Confirmar contrasena",
+    "submit": "Restablecer contrasena",
+    "success": "Contrasena restablecida con exito"
+  },
+  "verify_email": {
+    "title": "Verifica tu correo",
+    "verifying": "Verificando tu correo...",
+    "success": "Correo verificado! Redirigiendo...",
+    "error": "El enlace de verificacion no es valido o ha expirado"
+  },
+  "check_email": {
+    "title": "Revisa tu correo",
+    "message": "Enviamos un enlace de verificacion a {email}",
+    "resend": "Reenviar correo de verificacion",
+    "spam": "No lo recibiste? Revisa tu carpeta de spam"
+  },
+  "two_factor": {
+    "title": "Autenticacion de dos factores",
+    "subtitle": "Ingresa el codigo de 6 digitos de tu aplicacion autenticadora",
+    "submit": "Verificar",
+    "use_backup": "Usar un codigo de respaldo",
+    "error_invalid": "Codigo no valido. {remaining} intentos restantes.",
+    "locked": "Cuenta bloqueada por 15 minutos debido a demasiados intentos"
+  },
+  "two_factor_setup": {
+    "title": "Configurar autenticacion de dos factores",
+    "step1": "Escanea el codigo QR con tu aplicacion autenticadora",
+    "step2": "Ingresa el codigo de 6 digitos para verificar",
+    "secret_label": "O ingresa esta clave secreta manualmente",
+    "submit": "Verificar y activar",
+    "backup_codes_title": "Guarda tus codigos de respaldo",
+    "backup_codes_warning": "Guardalos de forma segura. No los veras de nuevo.",
+    "i_saved": "He guardado mis codigos de respaldo"
+  },
+  "onboarding": {
+    "welcome": "Bienvenido a rejira",
+    "welcome_message": "Hola {name}! Vamos a configurar tu espacio de trabajo.",
+    "create_workspace": "Crear tu espacio de trabajo",
+    "invite_team": "Invitar a tu equipo",
+    "create_project": "Crear tu primer proyecto",
+    "done": "Todo listo!",
+    "skip": "Omitir por ahora",
+    "continue": "Continuar",
+    "go_to_workspace": "Ir a tu espacio de trabajo"
+  },
+  "settings": {
+    "account": "Cuenta",
+    "profile": "Perfil",
+    "security": "Seguridad",
+    "sessions": "Sesiones",
+    "data": "Datos y privacidad",
+    "notifications": "Notificaciones",
+    "members": "Miembros"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "confirm": "Confirmar",
+    "back": "Volver",
+    "error": "Algo salio mal",
+    "success": "Exito"
+  }
+}

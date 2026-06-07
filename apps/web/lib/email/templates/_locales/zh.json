@@ -1,0 +1,62 @@
+{
+  "welcome": {
+    "subject": "[ZH] Welcome to rejira",
+    "heading": "[ZH] Welcome to rejira, {name}",
+    "body": "[ZH] Your account is ready. Sign in to start tracking issues with your team.",
+    "cta": "[ZH] Sign In",
+    "footer": "[ZH] rejira — a Jira replacement for engineering teams"
+  },
+  "verify_email": {
+    "subject": "[ZH] Verify your email for rejira",
+    "heading": "[ZH] Verify your email",
+    "body": "[ZH] Hi {name}, click the button below to verify your email address.",
+    "cta": "[ZH] Verify Email",
+    "footer": "[ZH] If you didn't create this account, you can ignore this email."
+  },
+  "reset_password": {
+    "subject": "[ZH] Reset your rejira password",
+    "heading": "[ZH] Reset your password",
+    "body": "[ZH] Hi {name}, click the button below to reset your password.",
+    "cta": "[ZH] Reset Password",
+    "footer": "[ZH] If you didn't request this, you can ignore this email."
+  },
+  "password_changed": {
+    "subject": "[ZH] Your rejira password was changed",
+    "heading": "[ZH] Password changed",
+    "body": "[ZH] Hi {name}, your password was successfully changed. If this was you, no further action is needed.",
+    "footer": "[ZH] If you did not change your password, please contact support immediately."
+  },
+  "magic_link": {
+    "subject": "[ZH] Sign in to rejira",
+    "heading": "[ZH] Sign in to rejira",
+    "body": "[ZH] Hi {name}, click the button below to sign in instantly.",
+    "cta": "[ZH] Sign In",
+    "expires": "[ZH] This link expires in 15 minutes and can only be used once.",
+    "footer": "[ZH] If you didn't request this, you can ignore this email."
+  },
+  "new_device": {
+    "subject": "[ZH] New sign-in to rejira",
+    "heading": "[ZH] New sign-in to rejira",
+    "body": "[ZH] Hi {name}, a new sign-in was detected from an unrecognized device.",
+    "browser": "[ZH] Browser",
+    "os": "[ZH] Operating system",
+    "location": "[ZH] Approximate location",
+    "time": "[ZH] Time",
+    "not_you": "[ZH] If this was you, you can ignore this email. If not, change your password immediately.",
+    "cta": "[ZH] View active sessions",
+    "footer": "[ZH] rejira security"
+  },
+  "workspace_invite": {
+    "subject": "[ZH] You've been invited to join {workspace}",
+    "heading": "[ZH] You've been invited to join {workspace}",
+    "body": "[ZH] You've been invited to join {workspace} on rejira as a {role}.",
+    "cta": "[ZH] Accept Invitation",
+    "expires": "[ZH] This invitation expires in 7 days. If you weren't expecting this, you can ignore it."
+  },
+  "role_changed": {
+    "subject": "[ZH] Your role in {workspace} has changed",
+    "heading": "[ZH] Your role has changed",
+    "body": "[ZH] Your role in {workspace} has been changed to {role} by {actor}.",
+    "footer": "[ZH] If you believe this was a mistake, contact your workspace owner."
+  }
+}

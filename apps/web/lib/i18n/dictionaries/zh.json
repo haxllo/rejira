@@ -1,0 +1,103 @@
+{
+  "sign_in": {
+    "title": "[ZH] Sign in",
+    "subtitle": "[ZH] to continue to rejira",
+    "email": "[ZH] Email",
+    "password": "[ZH] Password",
+    "submit": "[ZH] Sign in",
+    "forgot_password": "[ZH] Forgot password?",
+    "no_account": "[ZH] Don't have an account? Sign up",
+    "magic_link_tab": "[ZH] Magic link",
+    "send_magic_link": "[ZH] Send magic link",
+    "oauth_divider": "[ZH] or continue with",
+    "error_invalid": "[ZH] Invalid email or password",
+    "error_generic": "[ZH] Sign in failed. Please try again."
+  },
+  "sign_up": {
+    "title": "[ZH] Create your account",
+    "subtitle": "[ZH] Start tracking work in rejira",
+    "name": "[ZH] Full name",
+    "email": "[ZH] Email",
+    "password": "[ZH] Password",
+    "confirm_password": "[ZH] Confirm password",
+    "submit": "[ZH] Sign up",
+    "has_account": "[ZH] Already have an account? Sign in",
+    "password_hint": "[ZH] At least 12 characters with uppercase, lowercase, and a number",
+    "error_password_mismatch": "[ZH] Passwords don't match"
+  },
+  "forgot_password": {
+    "title": "[ZH] Reset your password",
+    "subtitle": "[ZH] We'll send you a reset link",
+    "email": "[ZH] Email",
+    "submit": "[ZH] Send reset link",
+    "back_to_sign_in": "[ZH] Remember your password? Sign in",
+    "success": "[ZH] Check your email for a reset link"
+  },
+  "reset_password": {
+    "title": "[ZH] Set new password",
+    "new_password": "[ZH] New password",
+    "confirm_password": "[ZH] Confirm password",
+    "submit": "[ZH] Reset password",
+    "success": "[ZH] Password reset successfully"
+  },
+  "verify_email": {
+    "title": "[ZH] Verify your email",
+    "verifying": "[ZH] Verifying your email...",
+    "success": "[ZH] Email verified! Redirecting...",
+    "error": "[ZH] Verification link is invalid or expired"
+  },
+  "check_email": {
+    "title": "[ZH] Check your email",
+    "message": "[ZH] We sent a verification link to {email}",
+    "resend": "[ZH] Resend verification email",
+    "spam": "[ZH] Didn't receive it? Check your spam folder"
+  },
+  "two_factor": {
+    "title": "[ZH] Two-factor authentication",
+    "subtitle": "[ZH] Enter the 6-digit code from your authenticator app",
+    "submit": "[ZH] Verify",
+    "use_backup": "[ZH] Use a backup code instead",
+    "error_invalid": "[ZH] Invalid code. {remaining} attempts remaining.",
+    "locked": "[ZH] Account locked for 15 minutes due to too many attempts"
+  },
+  "two_factor_setup": {
+    "title": "[ZH] Set up two-factor authentication",
+    "step1": "[ZH] Scan the QR code with your authenticator app",
+    "step2": "[ZH] Enter the 6-digit code to verify",
+    "secret_label": "[ZH] Or enter this secret key manually",
+    "submit": "[ZH] Verify and enable",
+    "backup_codes_title": "[ZH] Save your backup codes",
+    "backup_codes_warning": "[ZH] Store these securely. You won't see them again.",
+    "i_saved": "[ZH] I've saved my backup codes"
+  },
+  "onboarding": {
+    "welcome": "[ZH] Welcome to rejira",
+    "welcome_message": "[ZH] Hi {name}! Let's set up your workspace.",
+    "create_workspace": "[ZH] Create your workspace",
+    "invite_team": "[ZH] Invite your team",
+    "create_project": "[ZH] Create your first project",
+    "done": "[ZH] You're all set!",
+    "skip": "[ZH] Skip for now",
+    "continue": "[ZH] Continue",
+    "go_to_workspace": "[ZH] Go to your workspace"
+  },
+  "settings": {
+    "account": "[ZH] Account",
+    "profile": "[ZH] Profile",
+    "security": "[ZH] Security",
+    "sessions": "[ZH] Sessions",
+    "data": "[ZH] Data & Privacy",
+    "notifications": "[ZH] Notifications",
+    "members": "[ZH] Members"
+  },
+  "common": {
+    "loading": "[ZH] Loading...",
+    "save": "[ZH] Save",
+    "cancel": "[ZH] Cancel",
+    "delete": "[ZH] Delete",
+    "confirm": "[ZH] Confirm",
+    "back": "[ZH] Back",
+    "error": "[ZH] Something went wrong",
+    "success": "[ZH] Success"
+  }
+}

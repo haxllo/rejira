@@ -1,0 +1,62 @@
+{
+  "welcome": {
+    "subject": "Welcome to rejira",
+    "heading": "Welcome to rejira, {name}",
+    "body": "Your account is ready. Sign in to start tracking issues with your team.",
+    "cta": "Sign In",
+    "footer": "rejira — a Jira replacement for engineering teams"
+  },
+  "verify_email": {
+    "subject": "Verify your email for rejira",
+    "heading": "Verify your email",
+    "body": "Hi {name}, click the button below to verify your email address.",
+    "cta": "Verify Email",
+    "footer": "If you didn't create this account, you can ignore this email."
+  },
+  "reset_password": {
+    "subject": "Reset your rejira password",
+    "heading": "Reset your password",
+    "body": "Hi {name}, click the button below to reset your password.",
+    "cta": "Reset Password",
+    "footer": "If you didn't request this, you can ignore this email."
+  },
+  "password_changed": {
+    "subject": "Your rejira password was changed",
+    "heading": "Password changed",
+    "body": "Hi {name}, your password was successfully changed. If this was you, no further action is needed.",
+    "footer": "If you did not change your password, please contact support immediately."
+  },
+  "magic_link": {
+    "subject": "Sign in to rejira",
+    "heading": "Sign in to rejira",
+    "body": "Hi {name}, click the button below to sign in instantly.",
+    "cta": "Sign In",
+    "expires": "This link expires in 15 minutes and can only be used once.",
+    "footer": "If you didn't request this, you can ignore this email."
+  },
+  "new_device": {
+    "subject": "New sign-in to rejira",
+    "heading": "New sign-in to rejira",
+    "body": "Hi {name}, a new sign-in was detected from an unrecognized device.",
+    "browser": "Browser",
+    "os": "Operating system",
+    "location": "Approximate location",
+    "time": "Time",
+    "not_you": "If this was you, you can ignore this email. If not, change your password immediately.",
+    "cta": "View active sessions",
+    "footer": "rejira security"
+  },
+  "workspace_invite": {
+    "subject": "You've been invited to join {workspace}",
+    "heading": "You've been invited to join {workspace}",
+    "body": "You've been invited to join {workspace} on rejira as a {role}.",
+    "cta": "Accept Invitation",
+    "expires": "This invitation expires in 7 days. If you weren't expecting this, you can ignore it."
+  },
+  "role_changed": {
+    "subject": "Your role in {workspace} has changed",
+    "heading": "Your role has changed",
+    "body": "Your role in {workspace} has been changed to {role} by {actor}.",
+    "footer": "If you believe this was a mistake, contact your workspace owner."
+  }
+}

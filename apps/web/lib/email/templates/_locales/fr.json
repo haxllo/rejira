@@ -1,0 +1,62 @@
+{
+  "welcome": {
+    "subject": "Bienvenue sur rejira",
+    "heading": "Bienvenue sur rejira, {name}",
+    "body": "Votre compte est pret. Connectez-vous pour commencer a gerer les tickets avec votre equipe.",
+    "cta": "Se connecter",
+    "footer": "rejira — un remplacement de Jira pour les equipes d'ingenierie"
+  },
+  "verify_email": {
+    "subject": "Verifiez votre e-mail pour rejira",
+    "heading": "Verifiez votre e-mail",
+    "body": "Bonjour {name}, cliquez sur le bouton pour verifier votre adresse e-mail.",
+    "cta": "Verifier l'e-mail",
+    "footer": "Si vous n'avez pas cree ce compte, ignorez cet e-mail."
+  },
+  "reset_password": {
+    "subject": "Reinitialisez votre mot de passe rejira",
+    "heading": "Reinitialiser le mot de passe",
+    "body": "Bonjour {name}, cliquez sur le bouton pour reinitialiser votre mot de passe.",
+    "cta": "Reinitialiser le mot de passe",
+    "footer": "Si vous n'avez pas demande cela, ignorez cet e-mail."
+  },
+  "password_changed": {
+    "subject": "Votre mot de passe rejira a ete modifie",
+    "heading": "Mot de passe modifie",
+    "body": "Bonjour {name}, votre mot de passe a ete modifie avec succes. Si c'est vous, aucune action n'est necessaire.",
+    "footer": "Si vous n'avez pas modifie votre mot de passe, contactez le support immediatement."
+  },
+  "magic_link": {
+    "subject": "Connectez-vous a rejira",
+    "heading": "Connectez-vous a rejira",
+    "body": "Bonjour {name}, cliquez sur le bouton pour vous connecter instantanement.",
+    "cta": "Se connecter",
+    "expires": "Ce lien expire dans 15 minutes et ne peut etre utilise qu'une seule fois.",
+    "footer": "Si vous n'avez pas demande cela, ignorez cet e-mail."
+  },
+  "new_device": {
+    "subject": "Nouvelle connexion a rejira",
+    "heading": "Nouvelle connexion a rejira",
+    "body": "Bonjour {name}, une nouvelle connexion a ete detectee depuis un appareil non reconnu.",
+    "browser": "Navigateur",
+    "os": "Systeme d'exploitation",
+    "location": "Emplacement approximatif",
+    "time": "Heure",
+    "not_you": "Si c'est vous, ignorez cet e-mail. Sinon, changez votre mot de passe immediatement.",
+    "cta": "Voir les sessions actives",
+    "footer": "securite rejira"
+  },
+  "workspace_invite": {
+    "subject": "Vous avez ete invite a {workspace}",
+    "heading": "Vous avez ete invite a {workspace}",
+    "body": "Vous avez ete invite a rejoindre {workspace} sur rejira en tant que {role}.",
+    "cta": "Accepter l'invitation",
+    "expires": "Cette invitation expire dans 7 jours. Si vous ne l'attendiez pas, ignorez-la."
+  },
+  "role_changed": {
+    "subject": "Votre role dans {workspace} a change",
+    "heading": "Votre role a change",
+    "body": "Votre role dans {workspace} a ete change en {role} par {actor}.",
+    "footer": "Si vous pensez qu'il s'agit d'une erreur, contactez le proprietaire de l'espace de travail."
+  }
+}
