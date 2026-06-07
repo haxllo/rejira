@@ -53,6 +53,12 @@ const SETTINGS_CARDS: SettingCard[] = [
     icon: <BellIcon size={18} />,
   },
   {
+    title: 'Workspace Security',
+    description: '2FA requirements, domain restrictions, session policies',
+    href: '/settings/security',
+    icon: <ShieldCheckIcon size={18} />,
+  },
+  {
     title: 'Members',
     description: 'Manage workspace members and invitations',
     href: '/settings/members',
