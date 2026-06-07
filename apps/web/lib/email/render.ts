@@ -1,18 +1,18 @@
-// Phase 3 — Stream 3B: Email rendering.
-//
-// Renders React Email templates to HTML and plaintext.
-// Stub for now — 3B ships with inline HTML; React Email integration
-// lands when `@react-email/components` is installed (3K).
+import 'server-only';
 
-import type { EmailPayload } from "./transport";
+import type { EmailPayload } from './transport';
+import { welcomeTemplate, verifyEmailTemplate, resetPasswordTemplate, magicLinkTemplate } from './templates/index';
+import { passwordChangedTemplate } from './templates/password-changed';
 
 type TemplateFn = (props: Record<string, string>) => { html: string; text: string };
 
-const templates: Record<string, TemplateFn> = {};
-
-export function registerTemplate(name: string, fn: TemplateFn) {
-  templates[name] = fn;
-}
+const templates: Record<string, TemplateFn> = {
+  welcome: (props) => welcomeTemplate({ name: props.name }),
+  'verify-email': (props) => verifyEmailTemplate({ name: props.name, url: props.url }),
+  'reset-password': (props) => resetPasswordTemplate({ name: props.name, url: props.url }),
+  'magic-link': (props) => magicLinkTemplate({ name: props.name, url: props.url }),
+  'password-changed': (props) => passwordChangedTemplate({ name: props.name }),
+};
 
 export function render(name: string, props: Record<string, string>): EmailPayload | null {
   const tpl = templates[name];

@@ -3,6 +3,7 @@ import 'server-only';
 import { betterAuth } from 'better-auth';
 import { nextCookies } from 'better-auth/next-js';
 import { Pool } from 'pg';
+import { sendEmail } from './email';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL_SESSION!,
@@ -19,11 +20,27 @@ export const auth = betterAuth({
     requireEmailVerification: true,
     minPasswordLength: 12,
     autoSignIn: false,
+    sendResetPassword: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: 'Reset your password',
+        template: 'reset-password',
+        data: { name: user.name, url, email: user.email },
+      });
+    },
   },
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     expiresIn: 86400,
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: 'Verify your email',
+        template: 'verify-email',
+        data: { name: user.name, url, email: user.email },
+      });
+    },
   },
   session: {
     expiresIn: 604800,
