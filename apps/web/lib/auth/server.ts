@@ -61,6 +61,7 @@ function getAuthInstance() {
       transaction: async (cb: any) => cb(adapter),
     };
     return adapter;
+  }
 
   _authInstance = betterAuth({
     appName: "Rejira",
