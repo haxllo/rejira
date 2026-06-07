@@ -1,51 +1,46 @@
-// Phase 3 — Stream 3F: Post-signup onboarding wizard.
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useRouter } from 'next/navigation';
+import { WorkspaceSetupWizard } from '@/components/onboarding/workspace-setup-wizard';
+import { useWorkspaceList } from '@/hooks/useWorkspaceList';
+import { Button } from '@/components/primitives/button';
 
 export default function OnboardingPage() {
-  const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
+  const router = useRouter();
+  const { workspaces, isLoading } = useWorkspaceList();
 
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await fetch("/api/function", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path: "workspaces:create", format: "convex_encoded_json", args: [{ name }] }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setDone(true);
-        setTimeout(() => { window.location.href = `/inbox?w=${data.slug}`; }, 1000);
-      }
-    } finally {
-      setLoading(false);
-    }
+  const handleComplete = () => {
+    router.push('/inbox');
+  };
+
+  const handleSkipToWorkspace = () => {
+    router.push('/inbox');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-0 flex-1 items-center justify-center">
+        <div className="text-[13px] text-[var(--color-text-muted)]">Loading...</div>
+      </div>
+    );
   }
 
   return (
-    <div className="auth-shell">
-      <div className="auth-card">
-        <h1 className="auth-title">Create your workspace</h1>
-        {done ? (
-          <p className="auth-success">Workspace created! Redirecting...</p>
-        ) : (
-          <form onSubmit={handleCreate} className="auth-form">
-            <label className="auth-field">
-              <span>Workspace name</span>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-                placeholder="My Team" required />
-            </label>
-            <button type="submit" className="auth-button" disabled={loading || !name}>
-              {loading ? "Creating..." : "Create workspace"}
-            </button>
-          </form>
-        )}
-      </div>
+    <div className="min-w-0 flex-1 overflow-y-auto">
+      {workspaces.length > 0 && (
+        <div className="border-b border-[var(--color-border)] bg-[var(--color-surface-1)] px-6 py-3">
+          <div className="mx-auto flex max-w-lg items-center justify-between">
+            <span className="text-[12px] text-[var(--color-text-muted)]">
+              You already have {workspaces.length} workspace{workspaces.length !== 1 ? 's' : ''}.
+            </span>
+            <Button variant="ghost" size="sm" onClick={handleSkipToWorkspace}>
+              Skip to workspace
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <WorkspaceSetupWizard onComplete={handleComplete} />
     </div>
   );
 }
