@@ -1,16 +1,121 @@
-// Phase 3 — Stream 3H: Account settings page.
+'use client';
+
+import * as React from 'react';
+import Link from 'next/link';
+import { motion } from 'motion/react';
+import { cn } from '@/lib/utils';
+import {
+  UserIconCustom,
+  LockIcon,
+  ActivityIcon,
+  ShieldCheckIcon,
+  BellIcon,
+  ChevronRightIcon,
+  ChevronLeftIcon,
+} from '@/components/icons';
+
+interface AccountCard {
+  title: string;
+  description: string;
+  href: string;
+  icon: React.ReactNode;
+}
+
+const ACCOUNT_CARDS: AccountCard[] = [
+  {
+    title: 'Profile',
+    description: 'Your name and avatar',
+    href: '/settings/account/profile',
+    icon: <UserIconCustom size={18} />,
+  },
+  {
+    title: 'Security',
+    description: 'Password and two-factor authentication',
+    href: '/settings/account/security',
+    icon: <LockIcon size={18} />,
+  },
+  {
+    title: 'Sessions',
+    description: 'Manage active sessions and devices',
+    href: '/settings/account/sessions',
+    icon: <ActivityIcon size={18} />,
+  },
+  {
+    title: 'Data & Privacy',
+    description: 'Export your data or delete your account',
+    href: '/settings/account/data',
+    icon: <ShieldCheckIcon size={18} />,
+  },
+  {
+    title: 'Notifications',
+    description: 'Email notification preferences',
+    href: '/settings/account/notifications',
+    icon: <BellIcon size={18} />,
+  },
+];
 
 export default function AccountSettingsPage() {
   return (
-    <div style={{ maxWidth: 640, padding: "24px 0" }}>
-      <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Account Settings</h1>
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <a href="/settings/members" style={{ padding: "12px 16px", background: "var(--color-bg-layer-2)", borderRadius: 8, border: "1px solid var(--color-border)", color: "var(--color-fg)", textDecoration: "none" }}>
-          Members & Invites
-        </a>
-        <a href="/two-factor/setup" style={{ padding: "12px 16px", background: "var(--color-bg-layer-2)", borderRadius: 8, border: "1px solid var(--color-border)", color: "var(--color-fg)", textDecoration: "none" }}>
-          Two-Factor Authentication
-        </a>
+    <div className="min-w-0 flex-1 overflow-y-auto">
+      <div className="mx-auto max-w-2xl px-6 py-8">
+        <Link
+          href="/settings"
+          className="mb-6 inline-flex items-center gap-1 text-[12px] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors duration-[120ms]"
+        >
+          <ChevronLeftIcon size={12} />
+          Settings
+        </Link>
+
+        <div className="mb-8">
+          <h1 className="text-[20px] font-semibold tracking-tight text-[var(--color-text)]">
+            Account
+          </h1>
+          <p className="mt-1 text-[13px] text-[var(--color-text-muted)]">
+            Manage your personal account settings.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {ACCOUNT_CARDS.map((card, i) => (
+            <motion.div
+              key={card.href}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                type: 'spring',
+                stiffness: 380,
+                damping: 32,
+                delay: i * 0.04,
+              }}
+            >
+              <Link
+                href={card.href}
+                className={cn(
+                  'group flex items-start gap-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-1)] p-5',
+                  'transition-[background-color,box-shadow] duration-[120ms]',
+                  'hover:bg-[var(--color-surface-2)] hover:shadow-[var(--shadow-1)]',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]',
+                )}
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--color-surface-2)] text-[var(--color-text-muted)] group-hover:text-[var(--color-text)] group-hover:bg-[var(--color-surface-3)] transition-colors duration-[120ms]">
+                  {card.icon}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[14px] font-medium text-[var(--color-text)]">
+                    {card.title}
+                  </div>
+                  <div className="mt-0.5 text-[12px] text-[var(--color-text-muted)] leading-snug">
+                    {card.description}
+                  </div>
+                </div>
+                <ChevronRightIcon
+                  size={14}
+                  className="mt-1 shrink-0 text-[var(--color-text-faint)] group-hover:text-[var(--color-text-muted)] transition-colors duration-[120ms]"
+                />
+              </Link>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </div>
   );
