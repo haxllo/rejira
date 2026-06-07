@@ -144,6 +144,44 @@ export const auth = betterAuth({
     window: 60,
     max: 30,
   },
+  databaseHooks: {
+    session: {
+      create: {
+        after: async (session: Record<string, unknown>) => {
+          try {
+            const { hashIP, hashUA, isNewDevice } = await import('./session-binding');
+            const { sendEmail } = await import('./email');
+            const userId = session.userId as string;
+            const userEmail = (session as Record<string, unknown>).user?.email ?? '';
+
+            const ip = session.ipAddress as string || '0.0.0.0';
+            const ua = session.userAgent as string || 'unknown';
+            const ipHash = hashIP(ip);
+            const uaHash = hashUA(ua);
+
+            const isNew = await isNewDevice(userId, ipHash, uaHash);
+
+            if (isNew && userEmail) {
+              await sendEmail({
+                to: userEmail as string,
+                subject: 'New sign-in to rejira',
+                template: 'new-device',
+                data: {
+                  name: (session as Record<string, unknown>).user?.name as string ?? userEmail as string,
+                  browser: 'Unknown browser',
+                  os: 'Unknown OS',
+                  location: ip === '0.0.0.0' ? 'Unknown' : ip,
+                  timestamp: new Date().toISOString(),
+                },
+              });
+            }
+          } catch {
+            // non-critical: session tracking failure should not block sign-in
+          }
+        },
+      },
+    },
+  },
   onAPIError: {
     throw: true,
   },
