@@ -17,12 +17,33 @@ export interface EmailTransport {
 
 class ConsoleTransport implements EmailTransport {
   async send(payload: EmailPayload) {
-    const line = "-".repeat(60);
-    console.log(`\n${line}`);
-    console.log(`[EMAIL] TO:      ${payload.to}`);
-    console.log(`[EMAIL] SUBJECT: ${payload.subject}`);
-    console.log(`[EMAIL] TEXT:    ${payload.text.slice(0, 200)}${payload.text.length > 200 ? "..." : ""}`);
-    console.log(`${line}\n`);
+    const urlMatch = payload.text.match(/https?:\/\/[^\s]+/);
+
+    if (urlMatch) {
+      const url = urlMatch[0];
+      const inner = 56;
+      const hBorder = '\u2550'.repeat(inner);
+      const empty = `\u2551${' '.repeat(inner)}\u2551`;
+
+      console.log(`\n\u2554${hBorder}\u2557`);
+      console.log(`\u2551${'  DEV EMAIL (ConsoleTransport)'.padEnd(inner)}\u2551`);
+      console.log(`\u2560${hBorder}\u2563`);
+      console.log(`\u2551${`  To: ${payload.to}`.padEnd(inner)}\u2551`);
+      console.log(`\u2551${`  Subject: ${payload.subject}`.padEnd(inner)}\u2551`);
+      console.log(empty);
+      console.log(`\u2551${'  Verification link:'.padEnd(inner)}\u2551`);
+      console.log(`\u2551${`  ${url}`.padEnd(inner)}\u2551`);
+      console.log(empty);
+      console.log(`\u2551${'  Click or Ctrl+click the link above in terminal.'.padEnd(inner)}\u2551`);
+      console.log(`\u255A${hBorder}\u255D\n`);
+    } else {
+      const line = '-'.repeat(60);
+      console.log(`\n${line}`);
+      console.log(`[EMAIL] TO:      ${payload.to}`);
+      console.log(`[EMAIL] SUBJECT: ${payload.subject}`);
+      console.log(`[EMAIL] TEXT:    ${payload.text.slice(0, 200)}${payload.text.length > 200 ? '...' : ''}`);
+      console.log(`${line}\n`);
+    }
     return { ok: true };
   }
 }
