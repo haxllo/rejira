@@ -5,11 +5,16 @@ import { Button } from '@/components/primitives/button';
 import { cn } from '@/lib/utils';
 
 function generateSlug(name: string): string {
-  return name
+  const slug = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 32);
+  // Fallback if slug is empty or too short (all-special-chars input)
+  if (slug.length < 3) {
+    return `workspace-${Date.now().toString(36).slice(-4)}`;
+  }
+  return slug;
 }
 
 function isValidSlug(slug: string): boolean {
@@ -37,8 +42,9 @@ export function StepCreateWorkspace({
   const handleNameChange = useCallback(
     (value: string) => {
       setName(value);
+      const autoSlug = generateSlug(value);
       if (!slug || slug === generateSlug(name)) {
-        setSlug(generateSlug(value));
+        setSlug(autoSlug);
       }
     },
     [name, slug],
@@ -78,7 +84,8 @@ export function StepCreateWorkspace({
             onChange={(e) => handleNameChange(e.target.value)}
             placeholder="My Workspace"
             autoFocus
-            className="h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-[13px] text-[var(--color-text)] outline-none transition-colors duration-[120ms] focus:border-[var(--color-border-strong)]"
+            maxLength={100}
+            className="h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-[13px] text-[var(--color-text)] transition-colors duration-[120ms] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
           />
         </label>
 
@@ -86,7 +93,14 @@ export function StepCreateWorkspace({
           <span className="text-[12px] font-medium text-[var(--color-text)]">
             Workspace URL
           </span>
-          <div className="flex items-center rounded-md border border-[var(--color-border)] bg-[var(--color-bg)]">
+          <div
+            className={cn(
+              'flex items-center rounded-md border bg-[var(--color-bg)]',
+              slug && !isValidSlug(slug)
+                ? 'border-[var(--color-danger)]'
+                : 'border-[var(--color-border)]',
+            )}
+          >
             <span className="px-3 text-[12px] text-[var(--color-text-muted)] select-none">
               rejira.app/
             </span>
@@ -99,30 +113,27 @@ export function StepCreateWorkspace({
               }}
               onBlur={handleSlugBlur}
               placeholder="my-workspace"
-              className="flex-1 h-9 bg-transparent px-1 text-[13px] text-[var(--color-text)] outline-none"
+              className="flex-1 h-9 bg-transparent px-1 text-[13px] text-[var(--color-text)] transition-colors duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
             />
           </div>
           <div className="flex items-center gap-2">
-            {!slug && (
+            {slug && !isValidSlug(slug) ? (
+              <span className="text-[11px] text-[var(--color-danger)]">
+                Invalid format — use 3-32 lowercase letters, numbers, and hyphens
+              </span>
+            ) : !slug ? (
               <span className="text-[11px] text-[var(--color-text-faint)]">
                 3-32 characters, lowercase letters, numbers, and hyphens
               </span>
-            )}
-            {slug && !isValidSlug(slug) && (
-              <span className="text-[11px] text-[var(--color-danger)]">
-                Invalid format
-              </span>
-            )}
-            {slug && isValidSlug(slug) && checking && (
+            ) : checking ? (
               <span className="text-[11px] text-[var(--color-text-faint)]">
                 Checking availability...
               </span>
-            )}
-            {slug && isValidSlug(slug) && slugAvailable === true && (
-              <span className="text-[11px] text-[var(--color-success)]">
-                Available
+            ) : slugAvailable === true ? (
+              <span className="text-[11px] text-[var(--color-text-faint)]">
+                &#126; estimated availability
               </span>
-            )}
+            ) : null}
           </div>
         </label>
 

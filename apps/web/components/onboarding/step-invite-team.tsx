@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { Button } from '@/components/primitives/button';
 import { XIcon } from '@/components/icons';
 import { cn } from '@/lib/utils';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface InviteEntry {
   email: string;
@@ -31,13 +34,23 @@ export function StepInviteTeam({
 
   const handleAdd = () => {
     const trimmed = email.trim();
-    if (!trimmed || !trimmed.includes('@')) return;
+    if (!trimmed || !EMAIL_RE.test(trimmed)) return;
 
     if (invites.some((inv) => inv.email === trimmed)) return;
 
     setInvites((prev) => [...prev, { email: trimmed, role }]);
     setEmail('');
   };
+
+  const getEmailError = useCallback((): string | null => {
+    const trimmed = email.trim();
+    if (!trimmed) return null;
+    if (!EMAIL_RE.test(trimmed)) return 'Enter a valid email address (e.g., name@example.com)';
+    if (invites.some((inv) => inv.email === trimmed)) return 'This email is already added';
+    return null;
+  }, [email, invites]);
+
+  const emailError = getEmailError();
 
   const handleRemove = (emailToRemove: string) => {
     setInvites((prev) => prev.filter((inv) => inv.email !== emailToRemove));
@@ -72,8 +85,18 @@ export function StepInviteTeam({
               onKeyDown={handleKeyDown}
               placeholder="colleague@example.com"
               autoFocus
-              className="h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-[13px] text-[var(--color-text)] outline-none transition-colors duration-[120ms] focus:border-[var(--color-border-strong)]"
+              className={cn(
+                'h-9 rounded-md border bg-[var(--color-bg)] px-3 text-[13px] text-[var(--color-text)] transition-colors duration-[120ms] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]',
+                emailError && emailError !== 'This email is already added'
+                  ? 'border-[var(--color-danger)]'
+                  : 'border-[var(--color-border)]',
+              )}
             />
+            {emailError && (
+              <span className="text-[11px] text-[var(--color-danger)]" role="alert">
+                {emailError}
+              </span>
+            )}
           </label>
 
           <label className="flex flex-col gap-1.5">
@@ -95,36 +118,47 @@ export function StepInviteTeam({
             variant="secondary"
             size="md"
             onClick={handleAdd}
-            disabled={!email.trim() || !email.includes('@')}
+            disabled={!email.trim() || !EMAIL_RE.test(email.trim())}
           >
             Add
           </Button>
         </div>
 
         {invites.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {invites.map((inv) => (
-              <span
-                key={inv.email}
-                className={cn(
-                  'inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2.5 py-1 text-[12px]',
-                )}
-              >
-                <span className="text-[var(--color-text)]">{inv.email}</span>
-                <span className="text-[11px] text-[var(--color-text-faint)] capitalize">
-                  {inv.role}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleRemove(inv.email)}
-                  className="text-[var(--color-text-faint)] hover:text-[var(--color-text)] transition-colors duration-[120ms]"
-                  aria-label={`Remove ${inv.email}`}
+          <ul role="list" className="flex flex-wrap gap-2">
+            <AnimatePresence initial={false}>
+              {invites.map((inv) => (
+                <motion.li
+                  key={inv.email}
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 500,
+                    damping: 30,
+                  }}
+                  layout
+                  className={cn(
+                    'inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2.5 py-1 text-[12px]',
+                  )}
                 >
-                  <XIcon size={10} />
-                </button>
-              </span>
-            ))}
-          </div>
+                  <span className="text-[var(--color-text)]">{inv.email}</span>
+                  <span className="text-[11px] text-[var(--color-text-faint)] capitalize">
+                    {inv.role}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(inv.email)}
+                    className="text-[var(--color-text-faint)] hover:text-[var(--color-text)] transition-colors duration-[120ms]"
+                    aria-label={`Remove ${inv.email}`}
+                  >
+                    <XIcon size={10} />
+                  </button>
+                </motion.li>
+              ))}
+            </AnimatePresence>
+          </ul>
         )}
 
         <p className="text-[12px] text-[var(--color-text-faint)]">

@@ -2,22 +2,24 @@
 
 import { useState, useCallback } from 'react';
 import { Button } from '@/components/primitives/button';
+import { cn } from '@/lib/utils';
 
 function generateKey(name: string): string {
-  const words = name
+  const cleaned = name
     .toUpperCase()
     .replace(/[^A-Z\s]/g, '')
-    .split(/\s+/)
-    .filter(Boolean);
+    .trim();
+  const words = cleaned.split(/\s+/).filter(Boolean);
 
   if (words.length >= 2) {
-    return (words[0][0] + words[1][0]).slice(0, 5);
+    const key = (words[0][0] + words[1][0]).slice(0, 5);
+    if (key.length >= 2) return key;
   }
 
-  return name
-    .toUpperCase()
-    .replace(/[^A-Z]/g, '')
-    .slice(0, 4) || 'PROJ';
+  const fallback = cleaned.replace(/\s+/g, '').slice(0, 4);
+  if (fallback.length >= 2) return fallback;
+
+  return 'PROJ';
 }
 
 function isValidKey(key: string): boolean {
@@ -72,9 +74,9 @@ export function StepCreateProject({
             type="text"
             value={name}
             onChange={(e) => handleNameChange(e.target.value)}
-            placeholder="Engineering"
+            placeholder="My Project"
             autoFocus
-            className="h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-[13px] text-[var(--color-text)] outline-none transition-colors duration-[120ms] focus:border-[var(--color-border-strong)]"
+            className="h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-[13px] text-[var(--color-text)] transition-colors duration-[120ms] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
           />
         </label>
 
@@ -87,7 +89,10 @@ export function StepCreateProject({
             value={key}
             onChange={(e) => setKey(e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5))}
             placeholder="ENG"
-            className="h-9 w-24 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-[13px] font-mono uppercase tracking-wider text-[var(--color-text)] outline-none transition-colors duration-[120ms] focus:border-[var(--color-border-strong)]"
+            className={cn(
+              'h-9 w-24 rounded-md border bg-[var(--color-bg)] px-3 text-[13px] font-mono uppercase tracking-wider text-[var(--color-text)] transition-colors duration-[120ms] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]',
+              key && !isValidKey(key) ? 'border-[var(--color-danger)]' : 'border-[var(--color-border)]',
+            )}
           />
           <div className="flex items-center gap-2">
             {key && !isValidKey(key) && (
@@ -99,6 +104,11 @@ export function StepCreateProject({
               <span className="text-[11px] text-[var(--color-text-faint)]">
                 Issues will look like{' '}
                 <span className="font-mono text-[var(--color-text-muted)]">{key}-1234</span>
+              </span>
+            )}
+            {!key && (
+              <span className="text-[11px] text-[var(--color-text-faint)]">
+                Project key is auto-generated from the name. Can be 2-5 uppercase letters.
               </span>
             )}
           </div>

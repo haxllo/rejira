@@ -14,13 +14,18 @@ export default function OnboardingPage() {
   };
 
   const handleSkipToWorkspace = () => {
-    router.push('/inbox');
+    if (confirm('Navigating away will discard your current setup. Proceed?')) {
+      router.push('/inbox');
+    }
   };
 
   if (isLoading) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center">
-        <div className="text-[13px] text-[var(--color-text-muted)]">Loading...</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-48 animate-pulse rounded-md bg-[var(--color-surface-2)]" />
+          <div className="h-4 w-32 animate-pulse rounded-md bg-[var(--color-surface-2)]" />
+        </div>
       </div>
     );
   }
