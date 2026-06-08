@@ -15,7 +15,7 @@ A 10-phase brownfield rewrite that takes a runnable Next.js 16 + React 19 + Tail
 - [ ] **Phase 6: Search & AI** - pgvector embeddings, hybrid BM25+cosine, `⌘K` semantic, AI triage, cost cap
 - [ ] **Phase 7: Integrations** - GitHub PR link, Slack DM, outbound webhooks, file uploads, public REST API
 - [ ] **Phase 8: Launch** - WCAG 2.2 AA, Lighthouse > 95, Stripe billing, i18n (6 locales), GDPR, PITR drill, browser matrix
-- [ ] **Phase 9: Dev Env & Onboarding Flow Audit** - Dev env setup flow after sign-up, email verification requirement for dev, onboarding UI/UX clarity
+- [x] **Phase 9: Dev Env & Onboarding Flow Audit** - Dev env setup flow after sign-up, email verification requirement for dev, onboarding UI/UX clarity (completed 2026-06-08)
 
 ## Phase Details
 
@@ -259,13 +259,13 @@ Plans:
    4. Any friction points in the onboarding flow are identified and addressed
 **Status**: Planned
 
-**Plans:** 4 plans
+**Plans:** 4/4 plans complete
 
 Plans:
-- [ ] 09-01-PLAN.md — Dev env setup flow audit & documentation (Wave 1, audit, no code changes)
-- [ ] 09-02-PLAN.md — Email verification policy for dev environments (Wave 1, env var toggle + ConsoleTransport polish)
-- [ ] 09-03-PLAN.md — Onboarding flow UI/UX clarity review (Wave 1, audit, no code changes)
-- [ ] 09-04-PLAN.md — Onboarding friction fixes & polish (Wave 2, depends on 09-03, first-login redirect + wizard polish)
+- [x] 09-01-PLAN.md — Dev env setup flow audit & documentation (Wave 1, audit, no code changes)
+- [x] 09-02-PLAN.md — Email verification policy for dev environments (Wave 1, env var toggle + ConsoleTransport polish)
+- [x] 09-03-PLAN.md — Onboarding flow UI/UX clarity review (Wave 1, audit, no code changes)
+- [x] 09-04-PLAN.md — Onboarding friction fixes & polish (Wave 2, depends on 09-03, first-login redirect + wizard polish)
 
 ## Progress
 
@@ -283,7 +283,7 @@ Phases execute in numeric order: 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9
 | 6. Search & AI | 0/6 | Not started | - |
 | 7. Integrations | 0/6 | Not started | - |
 | 8. Launch | 0/12 | Planned | - |
-| 9. Dev Env & Onboarding Flow Audit | 0/4 | Planned | - |
+| 9. Dev Env & Onboarding Flow Audit | 4/4 | Complete   | 2026-06-08 |
 
 ---
 *Roadmap defined: 2026-06-07 after GSD project initialization*
