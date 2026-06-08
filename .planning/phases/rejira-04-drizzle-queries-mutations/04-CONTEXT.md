@@ -295,6 +295,15 @@ Out of scope (deferred to later phases):
   integrations** — Phase 7.
 - **Lighthouse perf gate, real light mode, Stripe billing, browser
   matrix, PITR drill, i18n (ja, zh) review** — Phase 8.
+- **PROJ-08 (Cycle auto-advances)** — belongs in pg_cron / Phase 5; not a
+  Phase 4 deliverable. The cycle table from Phase 2 has the data; the
+  scheduler is Phase 5.
+- **ISSUE-19 (@-mention notifications)** — storage of `mentions` in the
+  `comments.mentions` jsonb column is covered by Plan 02's `createComment`
+  action (the `mentions?: string[]` field). The mention-to-notification
+  pipeline (rendering the @-mention autocomplete, firing notifications on
+  mention) is Phase 5. The Phase 4 cutover ships the storage; the UX
+  polish is Phase 5.
 
 </deferred>
 

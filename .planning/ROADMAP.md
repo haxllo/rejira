@@ -129,20 +129,19 @@ Plans:
   8. E2E test: signup → create workspace → create project → create issue → assign → close passes
   9. Activity log writes happen via Postgres trigger (same transaction as data change)
   10. Comments, notifications, saved views all backed by Drizzle queries
-**Status**: Not started
-**Detailed plan**: `PHASE_4_PLAN.md` (528 lines, 10 streams: 4A–4J)
+**Status**: Ready to execute — 8 plans redesigned for the best and most robust path
+**Detailed plan**: `PHASE_4_PLAN.md` (646 lines, original 10 streams 4A–4J) — reference for scope; the GSD plans below are the executable source of truth
+**Redesign rationale**: Original 10 streams conflated concerns. Redesigned into 8 plans across 4 waves that share file ownership, expose clear dependencies, and each fit within 50% context. The `apply()` pipeline from Phase 1 is retained as the optimistic UX layer; the underlying mutation is now an awaited server action. RLS is the only authorization check (proven by pgTAP).
 
-Plans (streams):
-- [ ] 04-A: Drizzle query helpers (issues, projects, cycles, labels, memberships) with proper joins
-- [ ] 04-B: Drizzle mutations (replace `apply()` with transactional writes; `withTransaction()` helper)
-- [ ] 04-C: Comments, notifications, saved views queries + mutations
-- [ ] 04-D: Activity / audit log writes from every mutation (via Postgres triggers + Drizzle)
-- [ ] 04-E: Realtime subscription wiring (`supabase.channel(...).on('postgres_changes', ...)`)
-- [ ] 04-F: Optimistic UI via Drizzle + `useOptimistic` (RSC) + client cache invalidation
-- [ ] 04-G: Cleanup: `lib/mock/` data deleted; only types remain for the seed
-- [ ] 04-H: pgTAP test suite: RLS enforcement + cross-tenant denial (CI gate; expanded from Phase 2)
-- [ ] 04-I: Performance tuning: query plans, indexes, prepared statements, statement timeouts
-- [ ] 04-J: Observability: Sentry, PostHog events, query tracing, slow-query log
+Plans:
+- [ ] 04-01-PLAN.md — DB foundation: tuned Drizzle client, 10 RSC read helpers, `withTransaction()` (sets `request.jwt.claims`), `withWorkspaceTransaction`, `mapDrizzleError`, inferred types, drizzleLogger — Wave 1
+- [ ] 04-02-PLAN.md — Action modules: 7 server-action files (issues, projects, cycles, comments, notifications, saved-views, memberships) + logActivity + barrel + 10 PostHog event helpers — Wave 1
+- [ ] 04-03-PLAN.md — Page migration (issues/projects/cycles): home, my-issues, projects index, project detail, project issues, cycle board, roadmap + 4 component prop changes; mock data arrays deleted (types kept) — Wave 2
+- [ ] 04-04-PLAN.md — Page migration (inbox/saved-views/members/activity) + remaining mock cleanup; saved-views store refactored to load from Postgres — Wave 2
+- [ ] 04-05-PLAN.md — Mutation cutover: 7 Next.js Route Handlers, 30+ typed server action wrappers, `apply()` refactored to await server actions, `useIssuesServerActions` hook, `useIssues` store as optimistic source of truth — Wave 3
+- [ ] 04-06-PLAN.md — Realtime + notification badge: Supabase browser client, 7 subscription helpers, `WorkspaceRealtimeProvider`, 4 client hooks, shell wiring — Wave 3
+- [ ] 04-07-PLAN.md — RLS proof + app-level guard removal: 27+ pgTAP cases (cross-tenant + mutations), `rbac-helpers.ts` deleted, `check-rbac.sh` enforces the rule, CI gate updated — Wave 4
+- [ ] 04-08-PLAN.md — Performance + observability + E2E: pool tuning, Sentry + PostHog + pino, 100-concurrent load test, full-flow integration, Playwright E2E, operational runbook — Wave 4
 
 ### Phase 5: Live & resilience
 **Goal**: Supabase Realtime presence, live issue updates, Yjs collaborative editing on descriptions, page-level error boundaries, full telemetry & observability, security headers & rate limiting, mobile & responsive design, transactional emails, and the activity log surface.
@@ -259,7 +258,7 @@ Phases execute in numeric order: 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1. Interactions | 7/7 | Complete | 2026-06-07 |
 | 2. Data layer (Supabase + Drizzle) | 0/14 | Ready to execute | - |
 | 3. Auth & Identity (Better Auth) | 7/7 | Complete | 2026-06-08 |
-| 4. Drizzle queries & mutations | 0/10 | Not started | - |
+| 4. Drizzle queries & mutations | 0/8 | Ready to execute | - |
 | 5. Live & resilience | 0/9 | Not started | - |
 | 6. Search & AI | 0/6 | Not started | - |
 | 7. Integrations | 0/6 | Not started | - |
