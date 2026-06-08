@@ -1,4 +1,4 @@
-import { pgTable, text, jsonb, boolean, timestamp, index, bigserial } from 'drizzle-orm/pg-core';
+import { pgTable, bigint, text, jsonb, boolean, timestamp, index, bigserial } from 'drizzle-orm/pg-core';
 import { workspaces } from './workspaces';
 import { users } from './users';
 
