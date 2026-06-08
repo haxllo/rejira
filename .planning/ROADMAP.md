@@ -214,9 +214,9 @@ Plans:
 - [ ] 07-06: Public REST API (5 most-used mutations; token auth; rate-limited)
 
 ### Phase 8: Launch
-**Goal**: WCAG 2.2 AA, Lighthouse > 95, Stripe billing, onboarding wizard, i18n (6 locales), GDPR & privacy, real light mode, PITR drill, browser support matrix, documentation, marketing & launch readiness.
+**Goal**: WCAG 2.2 AA, Lighthouse > 95, Stripe billing, i18n completion (date/time/timezone), GDPR & privacy, real light mode, PITR drill, browser support matrix, documentation, marketing & launch readiness. (First-run onboarding and core i18n were completed in Phase 3.)
 **Depends on**: Phase 7
-**Requirements**: A11Y-01..04, PERF-01..05, I18N-01..04, ONB-01..04, BILL-01..04, SEC-04..06, SEC-10
+**Requirements**: A11Y-01..04, PERF-01..05, I18N-04, BILL-01..04, SEC-04..06
 **Success Criteria** (what must be TRUE):
   1. WCAG 2.2 AA: axe 0 critical issues, screen reader test passes for 6 core screens
   2. Lighthouse > 95 on all routes (perf, a11y, best-practices, SEO)
@@ -224,30 +224,29 @@ Plans:
   4. Test coverage: 80% on `lib/`, 60% on `components/`; 5 critical E2E flows pass
   5. Storybook published; 3 densities × light/dark for every component
   6. Stripe Checkout: Free/Pro/Enterprise self-serve; webhook updates Postgres; downgrade to read-only on cancel
-  7. First-run onboarding: 5-step flow, dismissible; 7-day checklist
-  8. i18n: 6 locales at GA; no hardcoded strings (CI enforced)
-  9. GDPR: data export + account deletion (soft 30 days); cookie consent
-  10. Real light mode: every token has a light counterpart; system preference auto-detected
-  11. Supabase PITR enabled; quarterly restore drill passes
-  12. Browser support matrix: Chrome/Edge/Safari/Firefox latest 2; graceful degradation
-  13. Landing page live; status page; security disclosure policy; launch checklist signed off
-  14. Better Auth enterprise plugins enabled: SAML SSO, MFA (TOTP), passkeys, organization UI; admin sees audit log
-**Status**: Not started
+  7. i18n: 6 locales at GA; no hardcoded strings (CI enforced); dates/times localized to user preference
+  8. GDPR: data export + account deletion (soft 30 days); cookie consent; privacy policy, DPA, ToS published
+  9. Real light mode: every token has a light counterpart; system preference auto-detected
+  10. Supabase PITR enabled; quarterly restore drill passes
+  11. Browser support matrix: Chrome/Edge/Safari/Firefox latest 2; graceful degradation
+  12. Landing page live; status page; security disclosure policy; launch checklist signed off
+**Status**: Planned
+
+**Plans:** 12 plans
 
 Plans:
-- [ ] 08-01: WCAG 2.2 AA (axe, screen reader, keyboard)
-- [ ] 08-02: Lighthouse perf > 95; Core Web Vitals
-- [ ] 08-03: Test coverage (Vitest + Playwright + pgTAP)
-- [ ] 08-04: Storybook + Chromatic
-- [ ] 08-05: Stripe billing (Free / Pro / Enterprise)
-- [ ] 08-06: First-run onboarding (5-step + 7-day checklist)
-- [ ] 08-07: i18n & l10n (next-intl, 6 locales)
-- [ ] 08-08: GDPR & privacy (export, delete, cookie consent, DPA)
-- [ ] 08-09: Theming (real light mode, per-workspace accent)
-- [ ] 08-10: Backup & DR (PITR, quarterly drill, S3 lifecycle)
-- [ ] 08-11: Browser support matrix
-- [ ] 08-12: Documentation (user docs, dev docs, ADRs, CHANGELOG)
-- [ ] 08-13: Marketing & launch readiness (landing, status, security disclosure, drip emails)
+- [ ] 08-01-PLAN.md — WCAG 2.2 AA (axe, screen reader, keyboard navigation across 6 core screens)
+- [ ] 08-02-PLAN.md — Lighthouse perf > 95 + Core Web Vitals (LCP/INP/CLS)
+- [ ] 08-03-PLAN.md — Test coverage (80% lib, 60% components, 5 critical E2E flows)
+- [ ] 08-04-PLAN.md — Storybook + Chromatic (design system docs, visual regression CI)
+- [ ] 08-05-PLAN.md — Stripe billing backend (checkout, webhooks, subscription state, feature gates)
+- [ ] 08-06-PLAN.md — Stripe billing UI (pricing table, current plan, usage limits, checkout flow)
+- [ ] 08-07-PLAN.md — i18n completion (date/time/timezone per user preference)
+- [ ] 08-08-PLAN.md — GDPR & privacy completion (full data export, cookie consent, privacy/terms/DPA)
+- [ ] 08-09-PLAN.md — Real light mode (OKLCH tokens, theme toggle, system preference detection)
+- [ ] 08-10-PLAN.md — Backup & DR + browser matrix (PITR drill, multi-browser smoke tests)
+- [ ] 08-11-PLAN.md — Documentation (user guide, dev docs, ADRs, CHANGELOG)
+- [ ] 08-12-PLAN.md — Marketing & launch readiness (landing page, status page, drip emails, launch checklist)
 
 ## Progress
 
@@ -259,12 +258,12 @@ Phases execute in numeric order: 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 0. Foundation | 7/7 | Complete | 2026-06-07 |
 | 1. Interactions | 7/7 | Complete | 2026-06-07 |
 | 2. Data layer (Supabase + Drizzle) | 0/14 | Ready to execute | - |
-| 3. Auth & Identity (Better Auth) | 4/7 | Ready to execute | - |
+| 3. Auth & Identity (Better Auth) | 7/7 | Complete | 2026-06-08 |
 | 4. Drizzle queries & mutations | 0/10 | Not started | - |
 | 5. Live & resilience | 0/9 | Not started | - |
 | 6. Search & AI | 0/6 | Not started | - |
 | 7. Integrations | 0/6 | Not started | - |
-| 8. Launch | 0/13 | Not started | - |
+| 8. Launch | 0/12 | Planned | - |
 
 ---
 *Roadmap defined: 2026-06-07 after GSD project initialization*
