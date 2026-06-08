@@ -53,3 +53,14 @@
 - **Path C:** First workspace experience — 3 substeps, 3 critical friction points (#1, #2, #3)
 - **Path D:** Magic link flow — 3 substeps, 1 friction point (#8)
 - **Path E:** OAuth flow — 3 substeps, 0 unique friction points (shares workspace issues)
+
+## Self-Check: PASSED
+
+- ✅ `dev-env-audit.md` exists (440 lines, covers Paths A-E)
+- ✅ `09-01-SUMMARY.md` exists (55 lines)
+- ✅ Commit `faf18dc` exists: `docs(09-dev-env-onboarding-flow): complete dev env setup flow audit`
+- ✅ 11 friction points identified with severity ratings
+- ✅ 10 recommendations provided (3 critical, 3 high, 2 medium, 2 low)
+- ✅ 6 quick wins identified
+- ✅ Environment configuration audit completed (24 env vars checked)
+- ✅ No code changes — read-only audit as specified
