@@ -6,7 +6,7 @@ import * as s from './schema';
 import { requireAuth } from '@/lib/auth/require-auth';
 import { getActiveWorkspaceId, type ActiveWorkspace } from '@/lib/auth/workspace-helpers';
 import type { AuthUser } from '@/lib/auth/types';
-import type { Issue, Project, Cycle, Label, Comment, Notification, SavedView, Membership, Activity, StatusKey } from './types';
+import type { Issue, Project, Cycle, Label, Comment, Notification, SavedView, Membership, Activity, User, StatusKey } from './types';
 
 interface ActiveContext {
   user: AuthUser;
