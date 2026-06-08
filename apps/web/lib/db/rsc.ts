@@ -34,7 +34,13 @@ export async function getIssuesForActiveWorkspace(filters?: IssueFilters): Promi
     eq(s.issues.workspaceId, workspaceId),
     filters?.includeArchived ? undefined : isNull(s.issues.archivedAt),
     filters?.assigneeId
-      ? sql`${s.issues.assigneeIds} @> ARRAY[${filters.assigneeId}]::int[]`
+      ? sql`EXISTS (
+          SELECT 1 FROM ${s.issueAssignees} ia
+          JOIN ${s.users} u ON u.id = ia.userId
+          WHERE ia.issue_id = ${s.issues.id}
+            AND ia.workspace_id = ${workspaceId}
+            AND u.external_id = ${filters.assigneeId}
+        )`
       : undefined,
     filters?.projectId ? eq(s.issues.projectId, filters.projectId) : undefined,
     filters?.cycleId ? eq(s.issues.cycleId, filters.cycleId) : undefined,
@@ -94,6 +100,27 @@ export async function getLabels(): Promise<Label[]> {
     .orderBy(asc(s.labels.name));
 }
 
+export async function getUsers(): Promise<User[]> {
+  const { workspaceId } = await getActiveContext();
+  const rows = await db
+    .select({
+      id: s.users.id,
+      externalId: s.users.externalId,
+      email: s.users.email,
+      name: s.users.name,
+      avatarColor: s.users.avatarColor,
+      avatarUrl: s.users.avatarUrl,
+      status: s.users.status,
+      createdAt: s.users.createdAt,
+      updatedAt: s.users.updatedAt,
+    })
+    .from(s.users)
+    .innerJoin(s.memberships, eq(s.memberships.userId, s.users.externalId))
+    .where(eq(s.memberships.workspaceId, workspaceId))
+    .orderBy(asc(s.users.name));
+  return rows as unknown as User[];
+}
+
 export async function getIssue(issueId: string): Promise<Issue | null> {
   const rows = await db
     .select()
@@ -149,6 +176,33 @@ export async function getMemberships(): Promise<Membership[]> {
     .from(s.memberships)
     .where(eq(s.memberships.workspaceId, workspaceId))
     .orderBy(asc(s.memberships.createdAt));
+}
+
+export type MembershipWithUser = Membership & {
+  userName: string | null;
+  userEmail: string | null;
+  userAvatarColor: string | null;
+};
+
+export async function getMembershipsWithUsers(): Promise<MembershipWithUser[]> {
+  const { workspaceId } = await getActiveContext();
+  return db
+    .select({
+      id: s.memberships.id,
+      externalId: s.memberships.externalId,
+      userId: s.memberships.userId,
+      workspaceId: s.memberships.workspaceId,
+      role: s.memberships.role,
+      createdAt: s.memberships.createdAt,
+      updatedAt: s.memberships.updatedAt,
+      userName: s.users.name,
+      userEmail: s.users.email,
+      userAvatarColor: s.users.avatarColor,
+    })
+    .from(s.memberships)
+    .leftJoin(s.users, eq(s.memberships.userId, s.users.externalId))
+    .where(eq(s.memberships.workspaceId, workspaceId))
+    .orderBy(asc(s.memberships.createdAt)) as unknown as MembershipWithUser[];
 }
 
 export type ActivityWithActor = Activity & {
