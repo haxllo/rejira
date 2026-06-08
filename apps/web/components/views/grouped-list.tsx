@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { motion } from "motion/react";
+import * as React from 'react';
+import { motion } from 'motion/react';
 import {
   DndContext,
   DragOverlay,
@@ -12,16 +12,14 @@ import {
   useSensors,
   type DragEndEvent,
   type DragStartEvent,
-} from "@dnd-kit/core";
-import { sortableKeyboardCoordinates, arrayMove } from "@dnd-kit/sortable";
-import { ChevronDownIcon, ChevronRightIcon, PlusIcon } from "@/components/icons";
-import { IssueRow } from "@/components/issue/issue-row";
-import { DragRowOverlay } from "@/components/issue/drag-overlay";
-import { useUI } from "@/lib/state/ui";
-import { useIssues } from "@/lib/state/issues";
-import { apply } from "@/lib/state/mutations";
-import { cn } from "@/lib/utils";
-import type { Issue, StatusKey } from "@/lib/mock";
+} from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { ChevronDownIcon, ChevronRightIcon, PlusIcon } from '@/components/icons';
+import { IssueRow } from '@/components/issue/issue-row';
+import { DragRowOverlay } from '@/components/issue/drag-overlay';
+import { useUI } from '@/lib/state/ui';
+import { cn } from '@/lib/utils';
+import type { Issue, StatusKey } from '@/lib/db/types';
 
 export interface Group {
   id: string;
@@ -46,7 +44,6 @@ export function GroupedList({
   const cancelDrag = useUI((s) => s.cancelDrag);
   const selectedIds = useUI((s) => s.selectedIssueIds);
 
-  // The actively-dragged issue (head), used for the DragOverlay
   const [activeId, setActiveId] = React.useState<string | null>(null);
   const [overGroupId, setOverGroupId] = React.useState<string | null>(null);
   const [overSlot, setOverSlot] = React.useState<{ groupId: string; index: number } | null>(null);
@@ -56,23 +53,20 @@ export function GroupedList({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  // Build flat id → group map for fast lookup
   const issueToGroup = React.useMemo(() => {
     const m = new Map<string, string>();
-    for (const g of groups) for (const i of g.issues) m.set(i.id, g.id);
+    for (const g of groups) for (const i of g.issues) m.set(i.externalId, g.id);
     return m;
   }, [groups]);
 
   const issueById = React.useMemo(() => {
     const m = new Map<string, Issue>();
-    for (const g of groups) for (const i of g.issues) m.set(i.id, i);
+    for (const g of groups) for (const i of g.issues) m.set(i.externalId, i);
     return m;
   }, [groups]);
 
   const activeIssues: Issue[] = React.useMemo(() => {
     if (!activeId) return [];
-    // If the active id is part of a multi-selection, drag the whole set;
-    // otherwise drag just the single issue.
     if (selectedIds.has(activeId) && selectedIds.size > 1) {
       return Array.from(selectedIds).map((id) => issueById.get(id)!).filter(Boolean);
     }
@@ -88,14 +82,8 @@ export function GroupedList({
     const id = String(e.active.id);
     setActiveId(id);
     const dragging = activeIssues;
-    const label =
-      dragging.length > 1
-        ? `${dragging.length} issues`
-        : dragging[0]?.title ?? id;
-    startDrag(
-      dragging.map((i) => i.id),
-      label,
-    );
+    const label = dragging.length > 1 ? `${dragging.length} issues` : dragging[0]?.title ?? id;
+    startDrag(dragging.map((i) => i.externalId), label);
   };
 
   const onDragOver = (e: { over: { id: string | number } | null; activatorEvent?: Event; delta?: { x: number; y: number } }) => {
@@ -112,27 +100,20 @@ export function GroupedList({
       return;
     }
     setOverGroupId(g);
-
-    // Compute slot: position in the group's issues array for the hovered issue,
-    // adjusted down by one if the active item is in the same group and at or
-    // before that position (so the indicator doesn't collapse to a stale spot
-    // when the dragged row is removed from its source group).
     const group = groups.find((x) => x.id === g);
     if (!group) {
       setOverSlot(null);
       return;
     }
-    const overIndex = group.issues.findIndex((i) => i.id === overId);
+    const overIndex = group.issues.findIndex((i) => i.externalId === overId);
     if (overIndex === -1) {
       setOverSlot({ groupId: g, index: group.issues.length });
       return;
     }
-    // Use the bottom-half heuristic via the row element's bounding box.
     const overEl = document.querySelector<HTMLElement>(`[data-issue-id="${overId}"]`);
     if (overEl) {
       const rect = overEl.getBoundingClientRect();
       const pointerY = (e.activatorEvent as PointerEvent | MouseEvent | undefined)?.clientY;
-      // dnd-kit's deltaY is on the active, not over. Fall back to mid-point.
       if (typeof pointerY === "number") {
         const mid = rect.top + rect.height / 2;
         const slot = pointerY < mid ? overIndex : overIndex + 1;
@@ -158,54 +139,10 @@ export function GroupedList({
       endDrag();
       return;
     }
-    const fromGroupId = issueToGroup.get(fromId);
     const toGroupId = issueToGroup.get(toId);
-    if (!fromGroupId || !toGroupId) {
+    if (!toGroupId) {
       endDrag();
       return;
-    }
-    const targetGroup = groups.find((g) => g.id === toGroupId)!;
-    const draggedIds = activeIssues.map((i) => i.id);
-
-    if (fromGroupId === toGroupId) {
-      // Within-group reorder
-      const fromIndex = targetGroup.issues.findIndex((i) => i.id === fromId);
-      const toIndex = targetGroup.issues.findIndex((i) => i.id === toId);
-      if (fromIndex === -1 || toIndex === -1) {
-        endDrag();
-        return;
-      }
-      const before = useIssues.getState().issues;
-      draggedIds.forEach((id) => {
-        useIssues.getState().reorderInGroup(toGroupId as StatusKey, fromIndex, toIndex);
-      });
-      const after = useIssues.getState().issues;
-      apply({
-        message:
-          draggedIds.length > 1
-            ? `Reordered ${draggedIds.length} issues`
-            : "Reordered",
-        affectedIds: draggedIds,
-        undo: () => useIssues.setState({ issues: before }),
-        retry: () => useIssues.setState({ issues: after }),
-      });
-    } else {
-      // Cross-group: moveToStatus
-      const toIndex = targetGroup.issues.findIndex((i) => i.id === toId);
-      const before = useIssues.getState().issues;
-      draggedIds.forEach((id) => {
-        useIssues.getState().moveToStatus(id, toGroupId as StatusKey, toIndex);
-      });
-      const after = useIssues.getState().issues;
-      apply({
-        message:
-          draggedIds.length > 1
-            ? `Moved ${draggedIds.length} to ${targetGroup.label}`
-            : `Moved to ${targetGroup.label}`,
-        affectedIds: draggedIds,
-        undo: () => useIssues.setState({ issues: before }),
-        retry: () => useIssues.setState({ issues: after }),
-      });
     }
     endDrag();
   };
@@ -269,14 +206,14 @@ export function GroupedList({
                       isOverGroup &&
                       overSlot?.groupId === g.id &&
                       overSlot?.index === i &&
-                      activeId !== issue.id;
+                      activeId !== issue.externalId;
                     return (
-                      <React.Fragment key={issue.id}>
+                      <React.Fragment key={issue.externalId}>
                         {showIndicator && <ListDropIndicator />}
                         <IssueRow
                           issue={issue}
                           index={i}
-                          onOpen={(iss, el) => openDrawer(iss.id, el)}
+                          onOpen={(iss, el) => openDrawer(iss.externalId, el)}
                         />
                       </React.Fragment>
                     );

@@ -9,6 +9,8 @@ import { auth } from './server';
 import type { WorkspaceRole, MembershipWithUser, WorkspaceInvite, InviteStatus } from './workspace-types';
 import { getInviteStatus } from './workspace-types';
 
+type AuthApi = Record<string, CallableFunction>;
+
 interface InviteMemberData {
   email: string;
   role: WorkspaceRole;
@@ -19,10 +21,10 @@ export async function inviteMember(
   inviterId: string,
   data: InviteMemberData,
 ): Promise<WorkspaceInvite> {
-  const result = await auth.api.createInvitation({
+  const result = await (auth.api as unknown as AuthApi).createInvitation({
     body: {
       email: data.email,
-      role: data.role,
+      role: data.role as string,
       organizationId: workspaceId,
     },
   });
@@ -47,7 +49,7 @@ export async function bulkInvite(
 }
 
 export async function revokeInvite(invitationId: string): Promise<void> {
-  await auth.api.cancelInvitation({
+  await (auth.api as unknown as AuthApi).cancelInvitation({
     body: {
       invitationId,
     },
@@ -65,10 +67,10 @@ export async function resendInvite(invitationId: string): Promise<WorkspaceInvit
 
   if (!invite[0]) throw new Error('Invitation not found');
 
-  const result = await auth.api.createInvitation({
+  const result = await (auth.api as unknown as AuthApi).createInvitation({
     body: {
       email: invite[0].email,
-      role: invite[0].role,
+      role: invite[0].role as string,
       organizationId: String(invite[0].workspaceId),
     },
   });
@@ -79,15 +81,15 @@ export async function resendInvite(invitationId: string): Promise<WorkspaceInvit
 export async function acceptInvite(
   token: string,
 ): Promise<{ workspaceId: string; role: WorkspaceRole }> {
-  const result = await auth.api.acceptInvitation({
+  const result = await (auth.api as unknown as AuthApi).acceptInvitation({
     body: {
       invitationId: token,
     },
   });
 
   return {
-    workspaceId: (result as Record<string, unknown>).organizationId as string,
-    role: ((result as Record<string, unknown>).role ?? 'member') as WorkspaceRole,
+    workspaceId: (result as unknown as Record<string, unknown>).organizationId as string,
+    role: (((result as unknown as Record<string, unknown>).role as string) ?? 'member') as WorkspaceRole,
   };
 }
 
@@ -96,10 +98,10 @@ export async function changeMemberRole(
   newRole: WorkspaceRole,
   _actorId: string,
 ): Promise<void> {
-  await auth.api.updateMemberRole({
+  await (auth.api as unknown as AuthApi).updateMemberRole({
     body: {
       memberId: membershipId,
-      role: newRole,
+      role: newRole as string,
     },
   });
 }
@@ -108,9 +110,9 @@ export async function removeMember(
   membershipId: string,
   _actorId: string,
 ): Promise<void> {
-  await auth.api.removeMember({
+  await (auth.api as unknown as AuthApi).removeMember({
     body: {
-      memberId: membershipId,
+      memberIdOrEmail: membershipId,
     },
   });
 }

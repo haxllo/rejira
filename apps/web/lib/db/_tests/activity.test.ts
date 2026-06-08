@@ -5,7 +5,7 @@ import { seedTwoWorkspaces, getPool } from './setup';
 
 vi.mock('server-only', () => ({}));
 
-const REPO_ROOT = path.resolve(process.cwd());
+const REPO_ROOT = path.resolve(process.cwd(), '..', '..');
 
 describe('activity log surface (static)', () => {
   it('1: project /activity page exists at apps/web/app/(workspace)/projects/[key]/activity/page.tsx', () => {

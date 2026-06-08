@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-const REPO_ROOT = path.resolve(process.cwd());
+const REPO_ROOT = path.resolve(process.cwd(), '..', '..');
 
 interface QueryPlan {
   table: string | null;

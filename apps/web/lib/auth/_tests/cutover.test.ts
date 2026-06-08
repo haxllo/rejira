@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeAll, vi, beforeEach } from 'vitest';
 
+beforeAll(() => {
+  process.env.BETTER_AUTH_SECRET = 'test-secret-min-32-chars-long--!!';
+  process.env.BETTER_AUTH_URL = 'http://localhost:3000';
+  process.env.DATABASE_URL_SESSION = 'postgresql://test:test@localhost:5432/test';
+});
+
 const mockQuery = vi.fn().mockResolvedValue({ rows: [] });
 const mockConnect = vi.fn().mockResolvedValue({
   query: mockQuery,
@@ -278,8 +284,8 @@ describe('cutover — ME_ID removal', () => {
     const mockMod = await import('@/lib/mock/users');
     expect(mockMod).not.toHaveProperty('ME_ID');
     expect(mockMod).not.toHaveProperty('ME_EXTERNAL_ID');
-    // USERS array should still exist for seed data
-    expect(mockMod.USERS).toBeDefined();
+    // USERS array was removed in Phase 4 (mock data deleted) — verify it's gone
+    expect(mockMod).not.toHaveProperty('USERS');
   });
 
   it('test 8: useCurrentUser hook no longer falls back to hardcoded user ID', async () => {

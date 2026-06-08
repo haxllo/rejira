@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { WorkspaceInvite } from '@/lib/auth/workspace-types';
 import { getInviteStatus } from '@/lib/auth/workspace-types';
+import { getPendingInvitesAction, revokeInviteAction, resendInviteAction } from '@/lib/auth/server-actions';
 
 interface WorkspaceInvitesTableProps {
   workspaceId: string;
@@ -16,8 +17,7 @@ export function WorkspaceInvitesTable({ workspaceId }: WorkspaceInvitesTableProp
   const loadInvites = useCallback(async () => {
     setLoading(true);
     try {
-      const { getPendingInvites } = await import('@/lib/auth/invites');
-      const result = await getPendingInvites(workspaceId);
+      const result = await getPendingInvitesAction(workspaceId);
       setInvites(result);
       setError('');
     } catch (err: unknown) {
@@ -32,8 +32,7 @@ export function WorkspaceInvitesTable({ workspaceId }: WorkspaceInvitesTableProp
   const handleRevoke = async (invitationId: string) => {
     if (!window.confirm('Revoke this invitation?')) return;
     try {
-      const { revokeInvite } = await import('@/lib/auth/invites');
-      await revokeInvite(invitationId);
+      await revokeInviteAction(invitationId);
       await loadInvites();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to revoke invite');
@@ -42,8 +41,7 @@ export function WorkspaceInvitesTable({ workspaceId }: WorkspaceInvitesTableProp
 
   const handleResend = async (invitationId: string) => {
     try {
-      const { resendInvite } = await import('@/lib/auth/invites');
-      await resendInvite(invitationId);
+      await resendInviteAction(invitationId);
       await loadInvites();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to resend invite');

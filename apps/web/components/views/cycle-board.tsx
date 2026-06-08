@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { motion, AnimatePresence } from "motion/react";
+import * as React from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   DndContext,
   DragOverlay,
@@ -15,18 +15,18 @@ import {
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
-} from "@dnd-kit/core";
-import { StatusDot, getStatusLabel } from "@/components/primitives/status";
-import { PriorityIcon } from "@/components/primitives/priority";
-import { Avatar } from "@/components/primitives/avatar";
-import { LabelChip } from "@/components/primitives/label";
-import { userById, labelById, type Issue, type StatusKey } from "@/lib/mock";
-import { dueLabel, dueIsOverdue } from "@/lib/utils/date";
-import { useIssues } from "@/lib/state/issues";
-import { apply } from "@/lib/state/mutations";
-import { useUI } from "@/lib/state/ui";
-import { BoardDragOverlay } from "@/components/issue/board-drag-overlay";
-import { cn } from "@/lib/utils";
+} from '@dnd-kit/core';
+import { StatusDot, getStatusLabel } from '@/components/primitives/status';
+import { PriorityIcon } from '@/components/primitives/priority';
+import { Avatar } from '@/components/primitives/avatar';
+import { LabelChip } from '@/components/primitives/label';
+import { dueLabel, dueIsOverdue } from '@/lib/utils/date';
+import { useUI } from '@/lib/state/ui';
+import { lookupUser, type UserView } from '@/lib/state/users';
+import { lookupLabel, type LabelView } from '@/lib/state/labels';
+import { BoardDragOverlay } from '@/components/issue/board-drag-overlay';
+import { cn } from '@/lib/utils';
+import type { Issue, Cycle, StatusKey } from '@/lib/db/types';
 
 const COLUMNS: Array<{ key: StatusKey; tone: string }> = [
   { key: "backlog", tone: "var(--color-text-faint)" },
@@ -36,7 +36,13 @@ const COLUMNS: Array<{ key: StatusKey; tone: string }> = [
   { key: "done", tone: "var(--color-status-done)" },
 ];
 
-export function CycleBoard({ issues, onOpen }: { issues: Issue[]; onOpen: (i: Issue) => void }) {
+interface Props {
+  issues: Issue[];
+  cycles: Cycle[];
+  onOpen: (i: Issue) => void;
+}
+
+export function CycleBoard({ issues, onOpen }: Props) {
   const [activeId, setActiveId] = React.useState<string | null>(null);
   const [overCol, setOverCol] = React.useState<StatusKey | null>(null);
   const [overSlot, setOverSlot] = React.useState<number | null>(null);
@@ -48,7 +54,7 @@ export function CycleBoard({ issues, onOpen }: { issues: Issue[]; onOpen: (i: Is
 
   const issueById = React.useMemo(() => {
     const m = new Map<string, Issue>();
-    for (const i of issues) m.set(i.id, i);
+    for (const i of issues) m.set(i.externalId, i);
     return m;
   }, [issues]);
 
@@ -74,7 +80,6 @@ export function CycleBoard({ issues, onOpen }: { issues: Issue[]; onOpen: (i: Is
       return;
     }
     const overId = String(e.over.id);
-    // overId is either a column id (col:<key>) or a card id (issue id)
     if (overId.startsWith("col:")) {
       const key = overId.slice(4) as StatusKey;
       setOverCol(key);
@@ -83,59 +88,16 @@ export function CycleBoard({ issues, onOpen }: { issues: Issue[]; onOpen: (i: Is
       const issue = issueById.get(overId);
       if (issue) {
         setOverCol(issue.status);
-        setOverSlot(issuesByCol[issue.status].findIndex((i) => i.id === overId));
+        setOverSlot(issuesByCol[issue.status].findIndex((i) => i.externalId === overId));
       }
     }
   };
 
   const onDragEnd = (e: DragEndEvent) => {
-    const { active, over } = e;
     setActiveId(null);
     setOverCol(null);
     setOverSlot(null);
     useUI.getState().endDrag();
-    if (!over) return;
-    const issueId = String(active.id);
-    const overId = String(over.id);
-    const moved = issueById.get(issueId);
-    if (!moved) return;
-    let targetCol: StatusKey;
-    let targetIndex: number;
-    if (overId.startsWith("col:")) {
-      targetCol = overId.slice(4) as StatusKey;
-      targetIndex = issuesByCol[targetCol].length;
-    } else {
-      const overIssue = issueById.get(overId);
-      if (!overIssue) return;
-      targetCol = overIssue.status;
-      targetIndex = issuesByCol[targetCol].findIndex((i) => i.id === overId);
-    }
-    if (moved.status === targetCol) {
-      // Pure re-order: skip if same position
-      const fromIndex = issuesByCol[targetCol].findIndex((i) => i.id === issueId);
-      if (fromIndex === targetIndex || fromIndex + 1 === targetIndex) return;
-      const before = useIssues.getState().issues;
-      useIssues.getState().moveToStatus(issueId, targetCol, targetIndex);
-      const after = useIssues.getState().issues;
-      apply({
-        message: `Moved in ${getStatusLabel(targetCol)}`,
-        affectedIds: [issueId],
-        undo: () => useIssues.setState({ issues: before }),
-        retry: () => useIssues.setState({ issues: after }),
-      });
-      return;
-    }
-    // Cross-column: reuses moveToStatus so the issue is removed from its old
-    // group and inserted into the target group at targetIndex.
-    const before = useIssues.getState().issues;
-    useIssues.getState().moveToStatus(issueId, targetCol, targetIndex);
-    const after = useIssues.getState().issues;
-    apply({
-      message: `Moved to ${getStatusLabel(targetCol)}`,
-      affectedIds: [issueId],
-      undo: () => useIssues.setState({ issues: before }),
-      retry: () => useIssues.setState({ issues: after }),
-    });
   };
 
   const onDragCancel = () => {
@@ -210,7 +172,7 @@ function BoardColumn({
       <div className="flex-1 space-y-1.5 overflow-y-auto p-2">
         <AnimatePresence initial={false}>
           {issues.map((issue, i) => (
-            <React.Fragment key={issue.id}>
+            <React.Fragment key={issue.externalId}>
               {isOver && overSlot === i && <DropIndicator />}
               <BoardCard
                 issue={issue}
@@ -240,7 +202,7 @@ function DropIndicator() {
 }
 
 function BoardCard({ issue, index, onClick }: { issue: Issue; index: number; onClick: () => void }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: issue.id });
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: issue.externalId });
   return (
     <motion.div
       ref={setNodeRef}
@@ -259,7 +221,12 @@ function BoardCard({ issue, index, onClick }: { issue: Issue; index: number; onC
 }
 
 function BoardCardBody({ issue, onClick }: { issue: Issue; onClick?: () => void }) {
-  const labels = issue.labelIds.map((id) => labelById(id)).filter((l): l is NonNullable<typeof l> => Boolean(l));
+  const labels: LabelView[] = ((issue.labelIds as unknown as Array<string | number | bigint>) ?? [])
+    .map((id) => lookupLabel(id))
+    .filter((l): l is LabelView => Boolean(l));
+  const firstAssignee: UserView | undefined = ((issue.assigneeIds as unknown as Array<string | number | bigint>) ?? [])
+    .map((id) => lookupUser(id))
+    .find((u): u is UserView => Boolean(u));
   return (
     <button
       type="button"
@@ -267,7 +234,6 @@ function BoardCardBody({ issue, onClick }: { issue: Issue; onClick?: () => void 
       className={cn(
         "block w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] p-[var(--card-pad)] text-left shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:border-[var(--color-border-strong)]",
         "focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-border-focus)]",
-        issue.pending && "pending-pulse",
       )}
     >
       <div className="flex items-start gap-1.5">
@@ -290,13 +256,13 @@ function BoardCardBody({ issue, onClick }: { issue: Issue; onClick?: () => void 
           <span
             className={cn(
               "text-[10.5px]",
-              dueIsOverdue(issue.dueDate) ? "text-[var(--color-danger)]" : "text-[var(--color-text-faint)]",
+              dueIsOverdue(issue.dueDate.toISOString()) ? "text-[var(--color-danger)]" : "text-[var(--color-text-faint)]",
             )}
           >
-            {dueLabel(issue.dueDate)}
+            {dueLabel(issue.dueDate.toISOString())}
           </span>
         )}
-        {issue.assigneeIds[0] && <Avatar name={userById(issue.assigneeIds[0])?.name ?? "?"} size="xs" />}
+        {firstAssignee && <Avatar name={firstAssignee.name} size="xs" />}
       </div>
     </button>
   );

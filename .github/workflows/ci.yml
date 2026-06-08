@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   build:
-    name: typecheck + test + build
+    name: typecheck + lint + db:test + build
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -29,28 +29,54 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # ─── 1. Typecheck ───────────────────────────────────
+      # ─── 1. Typecheck ─────────────────────────────────────
       - name: Typecheck
         run: npm run typecheck
 
-      # ─── 2. Convex: deploy schema in CI (one-shot) ─────
-      # `convex dev --once` is the right command for CI: it
-      # pushes the schema + functions to a temporary
-      # deployment (or the configured CONVEX_DEPLOYMENT) and
-      # exits without starting a watch loop. We need a real
-      # CONVEX_DEPLOYMENT + access token from a maintainer —
-      # until Phase 3 wires a CI deployment, this step is
-      # gated behind a "convex" job that uses the convex-test
-      # stack (no real Convex backend required).
-      - name: Convex unit tests (convex-test)
-        run: npm run convex:test
+      # ─── 2. Lint ──────────────────────────────────────────
+      - name: Lint
+        run: npm run lint
 
-      # ─── 3. Build the Next.js app ──────────────────────
+      # ─── 3. Supabase local + Drizzle + RLS + auth tests ──
+      # We start the local Supabase stack in CI, apply migrations,
+      # run the seed, and execute the Vitest suite (RLS, Drizzle
+      # transactions, Better Auth flow). No remote Supabase
+      # project is required — `supabase start` is self-contained.
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Apply migrations
+        run: supabase db reset --no-seed
+
+      - name: Supabase DB lint + drift detection
+        run: |
+          supabase db lint
+          supabase db diff > /tmp/drift.sql
+          if [ -s /tmp/drift.sql ]; then
+            echo "::error::Database drift detected. Run 'npm run db:generate' and commit the result."
+            cat /tmp/drift.sql
+            exit 1
+          fi
+
+      - name: Seed the demo workspace
+        run: npm run db:seed
+
+      - name: Vitest: RLS + Drizzle + auth tests
+        run: npm run db:test
+
+      # ─── 4. Build the Next.js app ─────────────────────────
       - name: Build
         env:
-          # The build doesn't need a real Convex URL; the
+          # The build doesn't need a real Supabase URL; the
           # components render the seed/mock data when no
-          # Convex hooks fire. Set a placeholder so
+          # Drizzle queries fire. Set a placeholder so
           # NEXT_PUBLIC_* inlining succeeds.
           NEXT_PUBLIC_APP_URL: http://localhost:3000
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
         run: npm run build

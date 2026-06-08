@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { RoleSelect } from './role-select';
+import { inviteMemberAction, bulkInviteAction } from '@/lib/auth/server-actions';
 import type { WorkspaceRole } from '@/lib/auth/workspace-types';
 
 interface WorkspaceInviteFormProps {
@@ -23,8 +24,6 @@ export function WorkspaceInviteForm({ workspaceId, onInviteSent }: WorkspaceInvi
     setError('');
     setLoading(true);
     try {
-      const { inviteMember, bulkInvite } = await import('@/lib/auth/invites');
-
       if (bulkMode) {
         const emails = bulkEmails
           .split(/[\n,]/)
@@ -35,7 +34,7 @@ export function WorkspaceInviteForm({ workspaceId, onInviteSent }: WorkspaceInvi
           setLoading(false);
           return;
         }
-        await bulkInvite(workspaceId, '', emails, role);
+        await bulkInviteAction(workspaceId, '', emails, role);
         setDone([...emails]);
         setBulkEmails('');
       } else {
@@ -44,7 +43,7 @@ export function WorkspaceInviteForm({ workspaceId, onInviteSent }: WorkspaceInvi
           setLoading(false);
           return;
         }
-        await inviteMember(workspaceId, '', { email: email.trim(), role });
+        await inviteMemberAction(workspaceId, '', email.trim(), role);
         setDone([email]);
         setEmail('');
       }

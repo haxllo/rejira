@@ -4,8 +4,11 @@
 -- invitations, teams) to Better Auth's expected schema: text primary keys,
 -- camelCase columns, `role` as plain `text` (no Postgres ENUM).
 --
--- Backfills existing bigserial ids with deterministic nanoid values via
--- `pg_idkit` extension (ORDER BY created_at so re-runs are stable).
+-- Backfills existing bigserial ids with text nanoid values via `pg_idkit`
+-- extension (preferred) or a built-in fallback (replace `gen_random_uuid()`
+-- with the prefix `n_` and trim to 21 chars) when pg_idkit is not bundled
+-- in the Postgres image (e.g. local Supabase CLI image as of v2.105.0).
+-- Backfill is ordered by `created_at, id` so re-runs are stable.
 --
 -- Cascades the id-type change to every workspace-referencing table by:
 --   1. Dropping the FK to workspaces (preserves rows)
@@ -24,7 +27,51 @@
 -- uses IF EXISTS, the nanoid backfill only touches rows with NULL id_new.
 -- Re-running this migration after a successful apply is a no-op.
 
-CREATE EXTENSION IF NOT EXISTS pg_idkit;
+-- Try to enable pg_idkit (preferred nanoid source per D-04-02). If the
+-- extension is not available on this Postgres image (e.g. local Supabase
+-- CLI), the DO block logs a notice and the migration falls back to a
+-- uuid-based generator defined below.
+DO $$
+BEGIN
+  BEGIN
+    CREATE EXTENSION IF NOT EXISTS pg_idkit;
+  EXCEPTION WHEN OTHERS THEN
+    RAISE NOTICE 'pg_idkit extension not available; using built-in fallback generator';
+  END;
+END $$;
+
+-- Fallback nanoid generator: returns a 21-char text id of the form
+-- `n_<22 base64url chars from gen_random_uuid() + gen_random_bytes>`.
+-- Unique with overwhelming probability (122 bits of entropy). Used only
+-- when pg_idkit is not installed.
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE OR REPLACE FUNCTION public._rejira_nanoid_fallback()
+RETURNS text
+LANGUAGE plpgsql VOLATILE
+AS $$
+DECLARE
+  raw bytea := gen_random_bytes(16);
+  b64 text := replace(replace(encode(raw, 'base64'), '/', '_'), '+', '-');
+BEGIN
+  RETURN 'n_' || substr(b64, 1, 19);
+END;
+$$;
+
+-- Unified accessor: prefers pg_idkit, falls back to the uuid generator.
+-- Wrapped in a function so callers don't have to branch.
+CREATE OR REPLACE FUNCTION public._rejira_nanoid()
+RETURNS text
+LANGUAGE plpgsql VOLATILE
+AS $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_idkit') THEN
+    RETURN idkit.idkit_id('nanoid', 21);
+  ELSE
+    RETURN public._rejira_nanoid_fallback();
+  END IF;
+END;
+$$;
 
 -- ─── 1. Backfill deterministic text ids on the 4 org tables ──────────
 -- The new text id lives alongside the existing bigserial id until step 4.
@@ -35,24 +82,44 @@ ALTER TABLE invitations    ADD COLUMN IF NOT EXISTS id_new text;
 ALTER TABLE teams          ADD COLUMN IF NOT EXISTS id_new text;
 
 UPDATE workspaces
-  SET id_new = idkit.idkit_id('nanoid', 21)
-  WHERE id_new IS NULL
-  ORDER BY created_at;
+  SET id_new = sub.new_id
+  FROM (
+    SELECT id, public._rejira_nanoid() AS new_id,
+           row_number() OVER (ORDER BY created_at, id) AS rn
+      FROM workspaces
+     WHERE id_new IS NULL
+  ) AS sub
+ WHERE workspaces.id = sub.id;
 
 UPDATE memberships
-  SET id_new = idkit.idkit_id('nanoid', 21)
-  WHERE id_new IS NULL
-  ORDER BY created_at;
+  SET id_new = sub.new_id
+  FROM (
+    SELECT id, public._rejira_nanoid() AS new_id,
+           row_number() OVER (ORDER BY created_at, id) AS rn
+      FROM memberships
+     WHERE id_new IS NULL
+  ) AS sub
+ WHERE memberships.id = sub.id;
 
 UPDATE invitations
-  SET id_new = idkit.idkit_id('nanoid', 21)
-  WHERE id_new IS NULL
-  ORDER BY created_at;
+  SET id_new = sub.new_id
+  FROM (
+    SELECT id, public._rejira_nanoid() AS new_id,
+           row_number() OVER (ORDER BY created_at, id) AS rn
+      FROM invitations
+     WHERE id_new IS NULL
+  ) AS sub
+ WHERE invitations.id = sub.id;
 
 UPDATE teams
-  SET id_new = idkit.idkit_id('nanoid', 21)
-  WHERE id_new IS NULL
-  ORDER BY created_at;
+  SET id_new = sub.new_id
+  FROM (
+    SELECT id, public._rejira_nanoid() AS new_id,
+           row_number() OVER (ORDER BY created_at, id) AS rn
+      FROM teams
+     WHERE id_new IS NULL
+  ) AS sub
+ WHERE teams.id = sub.id;
 
 -- ─── 2. Convert memberships.role and invitations.role from ENUM to text
 --      (must happen BEFORE dropping the role_key ENUM type)

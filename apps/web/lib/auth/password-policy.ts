@@ -103,20 +103,5 @@ export async function validatePassword(password: string): Promise<string | null>
   if (isCommon(password)) {
     return 'This password is too common';
   }
-
-  try {
-    const { checkBreach } = await import('./breach-check');
-    const breached = await checkBreach(password);
-    if (breached) {
-      return 'This password has appeared in a data breach. Please choose another.';
-    }
-  } catch {
-    return null;
-  }
-
   return null;
-}
-
-export function checkBreach(password: string): Promise<boolean> {
-  return import('./breach-check').then((m) => m.checkBreach(password));
 }

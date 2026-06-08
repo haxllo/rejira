@@ -31,7 +31,6 @@ vi.mock('better-auth', async (importOriginal) => {
     betterAuth: vi.fn().mockImplementation((config: Record<string, unknown>) => ({
       options: config,
       api: {
-        getSession: vi.fn().mockResolvedValue(null),
         ...mockAuthApi,
       },
       $Infer: {

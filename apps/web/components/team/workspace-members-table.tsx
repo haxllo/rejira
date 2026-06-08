@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { RoleSelect } from './role-select';
+import { getMembersAction, changeMemberRoleAction, removeMemberAction } from '@/lib/auth/server-actions';
 import type { WorkspaceRole, MembershipWithUser } from '@/lib/auth/workspace-types';
 
 interface WorkspaceMembersTableProps {
@@ -19,8 +20,7 @@ export function WorkspaceMembersTable({ workspaceId }: WorkspaceMembersTableProp
   const loadMembers = useCallback(async () => {
     setLoading(true);
     try {
-      const { getMembers } = await import('@/lib/auth/invites');
-      const result = await getMembers(workspaceId);
+      const result = await getMembersAction(workspaceId);
       setMembers(result);
       setError('');
     } catch (err: unknown) {
@@ -34,8 +34,7 @@ export function WorkspaceMembersTable({ workspaceId }: WorkspaceMembersTableProp
 
   const handleRoleChange = async (membershipId: string, newRole: WorkspaceRole) => {
     try {
-      const { changeMemberRole } = await import('@/lib/auth/invites');
-      await changeMemberRole(membershipId, newRole, '');
+      await changeMemberRoleAction(membershipId, newRole, '');
       await loadMembers();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to change role');
@@ -45,8 +44,7 @@ export function WorkspaceMembersTable({ workspaceId }: WorkspaceMembersTableProp
   const handleRemove = async (membershipId: string) => {
     if (!window.confirm('Remove this member from the workspace?')) return;
     try {
-      const { removeMember } = await import('@/lib/auth/invites');
-      await removeMember(membershipId, '');
+      await removeMemberAction(membershipId, '');
       await loadMembers();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to remove member');

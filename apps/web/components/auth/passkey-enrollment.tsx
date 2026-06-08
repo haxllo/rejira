@@ -70,9 +70,8 @@ export function PasskeyEnrollment({ userId }: PasskeyEnrollmentProps): React.Rea
           ),
           attestationObject: Array.from(
             new Uint8Array(
-              (credential as PublicKeyCredential).response instanceof AuthenticatorAttestationResponse
-                ? (credential as PublicKeyCredential).response.attestationObject
-                : new ArrayBuffer(0),
+              ((credential as PublicKeyCredential).response as unknown as Record<string, ArrayBuffer>).attestationObject
+                ?? new ArrayBuffer(0),
             ),
           ),
         },

@@ -1,7 +1,7 @@
 # Phase 1 — Interactions
 
-**Status:** not started
-**Owner:** —
+**Status:** ✅ Complete
+**Owner:** opencode
 **Goal:** Make the prototype feel like a real product. Every state change must feel instant, every view must be shareable, and every list must respect the user's hand.
 
 The current prototype is a static, in-memory mock. Phase 1 turns it into something that responds to intent: status flips instantly, filters live in the URL, rows drag to reorder, cards drag to change status, and the user's hand never has to wait for a paint.
@@ -116,7 +116,7 @@ function apply(ctx: MutationContext): void;   // writes to store, fires toast
 4. Dispatches a `jira:toast` CustomEvent with `{ message, actionLabel: "Undo", expiresAt: Date.now()+5000, onAction: ctx.undo, onRetry: ctx.retry }`
 5. In a real backend integration, would `await fetch(...)` and either clear `pending` on success or restore the previous state + set `lastError` on failure
 
-In the mock, `set` is synchronous and `pending` is cleared on the next tick. The pipeline shape must work for a real backend later without changes to the call sites.
+In the mock, `set` is synchronous and `pending` is cleared on the next tick. The pipeline shape works for a real backend (Phase 4 swaps `set` for a Drizzle transaction; the `apply()` signature does not change).
 
 **Toast UX (already partially in `components/shell/toast.tsx`):**
 - 5s auto-expire with a thin radial progress ring on the leading edge

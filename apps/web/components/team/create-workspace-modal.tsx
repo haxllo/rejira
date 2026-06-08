@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useSession } from '@/lib/auth/client';
+import { createWorkspaceAction } from '@/lib/auth/server-actions';
 
 interface CreateWorkspaceModalProps {
   onClose: () => void;
@@ -40,8 +41,7 @@ export function CreateWorkspaceModal({ onClose, onCreated }: CreateWorkspaceModa
 
     setLoading(true);
     try {
-      const { createWorkspace } = await import('@/lib/auth/workspace-helpers');
-      const result = await createWorkspace(session?.user?.id ?? '', { name: name.trim(), slug });
+      const result = await createWorkspaceAction(session?.user?.id ?? '', name.trim(), slug);
       onCreated(result.slug);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create workspace');

@@ -1,4 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
+
+beforeAll(() => {
+  process.env.BETTER_AUTH_SECRET = 'test-secret-min-32-chars-long--!!';
+  process.env.BETTER_AUTH_URL = 'http://localhost:3000';
+  process.env.DATABASE_URL_SESSION = 'postgresql://test:test@localhost:5432/test';
+});
 
 const mockOrgApi = {
   createOrganization: vi.fn(),

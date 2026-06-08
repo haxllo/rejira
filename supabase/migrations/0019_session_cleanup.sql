@@ -28,7 +28,7 @@ END;
 $$;
 
 -- Schedule the cleanup job if not already scheduled
-DO $$
+DO $outer$
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM cron.job WHERE jobname = 'session-cleanup'
@@ -36,4 +36,4 @@ BEGIN
     PERFORM cron.schedule('session-cleanup', '0 4 * * *', $$SELECT public.tg_session_cleanup();$$);
   END IF;
 END;
-$$;
+$outer$;

@@ -1,0 +1,4 @@
+-- Daily backup (placeholder): Phase 2 stub. Phase 8 implements the real backup workflow
+-- (pg_dump via Edge Function or Supabase's built-in backup integration).
+-- For Phase 2, this file exists solely to reserve the migration slot.
+-- PITR is enabled in the Supabase Dashboard (manual, documented in 02-14-SUMMARY.md).

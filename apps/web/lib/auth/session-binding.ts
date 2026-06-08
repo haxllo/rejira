@@ -17,7 +17,7 @@ export async function isNewDevice(
 ): Promise<boolean> {
   try {
     const { auth } = await import('./server');
-    const sessions = (await (auth as unknown as Record<string, CallableFunction>).api.listSessions?.({ userId })) as Array<{
+    const sessions = (await (auth as unknown as Record<string, Record<string, CallableFunction>>).api.listSessions?.({ userId })) as Array<{
       ipAddress?: string;
       userAgent?: string;
     }> | null;

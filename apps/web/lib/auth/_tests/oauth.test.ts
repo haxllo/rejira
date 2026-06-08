@@ -160,17 +160,20 @@ describe('OAuth providers', () => {
     const oauthCalls = (genericOAuth as ReturnType<typeof vi.fn>).mock.calls;
     expect(oauthCalls.length).toBeGreaterThan(0);
 
-    const config_arg = oauthCalls[0][0] as { config: Array<{ id: string }> };
+    const config_arg = oauthCalls[0][0] as { config: Array<{ providerId: string }> };
     expect(config_arg.config).toBeDefined();
-    const googleConfig = config_arg.config.find((c) => c.id === 'google');
+    const googleConfig = config_arg.config.find((c) => c.providerId === 'google');
     expect(googleConfig).toBeDefined();
   });
 
   it('registers GitHub OAuth provider via genericOAuth plugin', async () => {
     const { genericOAuth } = await import('better-auth/plugins');
     const oauthCalls = (genericOAuth as ReturnType<typeof vi.fn>).mock.calls;
-    const config_arg = oauthCalls[0][0] as { config: Array<{ id: string }> };
-    const githubConfig = config_arg.config.find((c) => c.id === 'github');
+    expect(oauthCalls.length).toBeGreaterThan(0);
+
+    const config_arg = oauthCalls[0][0] as { config: Array<{ providerId: string }> };
+    expect(config_arg.config).toBeDefined();
+    const githubConfig = config_arg.config.find((c) => c.providerId === 'github');
     expect(githubConfig).toBeDefined();
   });
 });

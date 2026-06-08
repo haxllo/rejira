@@ -1,66 +1,45 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { AnimatePresence, motion } from "motion/react";
+import * as React from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import {
   XIcon,
-  Link2Icon,
   PaperclipIcon,
   MessageSquareIcon,
-  GitPullRequestIcon,
-  MoreHorizontalIcon,
-  SendIcon,
-  HeartIcon,
   SparklesIcon,
   CheckIcon,
   CalendarIcon,
-  TagIcon,
-  FlagIcon,
-  CopyIcon,
-  ShareIcon,
-  EditIcon,
   ChevronDownIcon,
-  CircleDotIcon,
-  CircleCheckIcon,
-  ArrowUpRightIcon,
   UserIcon,
-  UsersIconCustom,
-} from "@/components/icons";
-import {
-  issueById,
-  userById,
-  usersByIds,
-  commentsFor,
-  activityFor,
-  cycleById,
-  projectById,
-  labelById,
-  subIssues,
-  USERS,
-  type Issue,
-  type StatusKey,
-  type Comment,
-  type Activity,
-} from "@/lib/mock";
-import { useCurrentUserId } from "@/hooks/useCurrentUser";
-import { StatusDot, getStatusLabel } from "@/components/primitives/status";
-import { PriorityIcon, getPriorityLabel } from "@/components/primitives/priority";
-import { Avatar } from "@/components/primitives/avatar";
-import { LabelChip } from "@/components/primitives/label";
-import { relativeTime, dateWithYear, timeOnly, dueLabel, dueIsOverdue } from "@/lib/utils/date";
-import { useUI } from "@/lib/state/ui";
-import { useIssues } from "@/lib/state/issues";
-import { apply } from "@/lib/state/mutations";
-import { cn } from "@/lib/utils";
+  SendIcon,
+  MoreHorizontalIcon,
+  ShareIcon,
+} from '@/components/icons';
+import { StatusDot, getStatusLabel } from '@/components/primitives/status';
+import { PriorityIcon, getPriorityLabel } from '@/components/primitives/priority';
+import { Avatar } from '@/components/primitives/avatar';
+import { LabelChip } from '@/components/primitives/label';
+import { relativeTime, dateWithYear, dueLabel, dueIsOverdue } from '@/lib/utils/date';
+import { useUI } from '@/lib/state/ui';
+import { lookupUser, type UserView } from '@/lib/state/users';
+import { lookupLabel, type LabelView } from '@/lib/state/labels';
+import { cn } from '@/lib/utils';
+import type { Issue, StatusKey, PriorityKey } from '@/lib/db/types';
 
-const STATUS_ORDER: StatusKey[] = ["backlog", "todo", "in_progress", "in_review", "done", "cancelled"];
+const STATUS_ORDER: StatusKey[] = ['backlog', 'todo', 'in_progress', 'in_review', 'done', 'cancelled'];
 
-export function IssueDrawer() {
+interface Props {
+  issues: Issue[];
+}
+
+export function IssueDrawer({ issues }: Props) {
   const issueId = useUI((s) => s.drawerIssueId);
   const close = useUI((s) => s.closeDrawer);
-  const issue = useIssues((s) => s.issues.find((i) => i.id === issueId) ?? null);
+  const issue = React.useMemo(
+    () => (issueId ? issues.find((i) => i.externalId === issueId) ?? null : null),
+    [issueId, issues],
+  );
 
-  // ⌘1-5 quick status
   React.useEffect(() => {
     if (!issue) return;
     const onKey = (e: KeyboardEvent) => {
@@ -68,20 +47,11 @@ export function IssueDrawer() {
       const idx = parseInt(e.key, 10) - 1;
       if (idx >= 0 && idx < STATUS_ORDER.length) {
         e.preventDefault();
-        const target = STATUS_ORDER[idx]!;
-        const prev = issue.status;
-        useIssues.getState().setStatus(issue.id, target);
-        apply({
-          message: `Moved to ${getStatusLabel(target)}`,
-          affectedIds: [issue.id],
-          undo: () => useIssues.getState().setStatus(issue.id, prev),
-          retry: () => useIssues.getState().setStatus(issue.id, target),
-          });
-        }
-      };
-      window.addEventListener("keydown", onKey);
-      return () => window.removeEventListener("keydown", onKey);
-    }, [issue]);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [issue]);
 
   return (
     <AnimatePresence>
@@ -119,30 +89,18 @@ export function IssueDrawer() {
 }
 
 function DrawerHeader({ issue, onClose }: { issue: Issue; onClose: () => void }) {
-  const cycle = cycleById(issue.cycleId ?? "");
-  const project = projectById(issue.projectId);
   return (
     <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-bg)]/95 px-5 py-2.5 backdrop-blur">
       <div className="flex items-center gap-2.5 text-[12px] text-[var(--color-text-muted)]">
-        <span className="flex items-center gap-1.5">
-          {project && (
-            <span
-              className="grid size-4 place-items-center rounded text-[9px] font-bold text-[oklch(0.16_0.005_250)]"
-              style={{ background: project.iconColor }}
-            >
-              {project.iconLetter}
-            </span>
-          )}
-          <span className="font-mono text-[10.5px] text-[var(--color-text-faint)]">{issue.key}</span>
-        </span>
+        <span className="font-mono text-[10.5px] text-[var(--color-text-faint)]">{issue.key}</span>
         <span className="text-[var(--color-text-faint)]">/</span>
         <StatusDot status={issue.status} size={7} />
         <span className="text-[var(--color-text-muted)]">{getStatusLabel(issue.status)}</span>
-        {cycle && (
+        {issue.cycleId && (
           <>
             <span className="text-[var(--color-text-faint)]">·</span>
             <span className="rounded border border-[var(--color-border)] bg-[var(--color-surface-1)] px-1.5 py-0.5 text-[10.5px]">
-              {cycle.name.replace(/^Cycle \d+ — /, "")}
+              Cycle #{String(issue.cycleId)}
             </span>
           </>
         )}
@@ -163,16 +121,14 @@ function DrawerHeader({ issue, onClose }: { issue: Issue; onClose: () => void })
 }
 
 function DrawerBody({ issue }: { issue: Issue }) {
-  const subs = subIssues(issue.id);
   return (
     <div className="grid grid-cols-[1fr_220px] gap-0">
       <div className="min-w-0 border-r border-[var(--color-border)] px-6 py-5">
         <TitleSection issue={issue} />
         <PropertiesBar issue={issue} />
         <DescriptionSection issue={issue} />
-        <SubIssuesSection subs={subs} />
         <ActivityAndComments issue={issue} />
-        <ReplyBox issue={issue} />
+        <ReplyBox />
       </div>
       <SidePanel issue={issue} />
     </div>
@@ -182,9 +138,7 @@ function DrawerBody({ issue }: { issue: Issue }) {
 function TitleSection({ issue }: { issue: Issue }) {
   const [editing, setEditing] = React.useState(false);
   const [title, setTitle] = React.useState(issue.title);
-
   React.useEffect(() => setTitle(issue.title), [issue.title]);
-
   return (
     <div className="group">
       {editing ? (
@@ -192,20 +146,7 @@ function TitleSection({ issue }: { issue: Issue }) {
           autoFocus
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          onBlur={() => {
-            setEditing(false);
-            const next = title.trim();
-            if (next && next !== issue.title) {
-              const prev = issue.title;
-              useIssues.getState().setTitle(issue.id, next);
-              apply({
-                message: "Title updated",
-                affectedIds: [issue.id],
-                undo: () => useIssues.getState().setTitle(issue.id, prev),
-                retry: () => useIssues.getState().setTitle(issue.id, next),
-              });
-            }
-          }}
+          onBlur={() => setEditing(false)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
@@ -231,10 +172,6 @@ function TitleSection({ issue }: { issue: Issue }) {
 }
 
 function PropertiesBar({ issue }: { issue: Issue }) {
-  const setStatus = useIssues((s) => s.setStatus);
-  const setPriority = useIssues((s) => s.setPriority);
-  const toggleAssignee = useIssues((s) => s.toggleAssignee);
-
   return (
     <div className="mt-3 flex flex-wrap items-center gap-1.5">
       <PropertyPill
@@ -246,14 +183,7 @@ function PropertiesBar({ issue }: { issue: Issue }) {
         icon={<PriorityIcon priority={issue.priority} size={11} />}
       />
       <PropertyPill
-        label={
-          issue.assigneeIds.length === 0
-            ? "Unassigned"
-            : issue.assigneeIds
-                .map((id) => userById(id)?.name.split(" ")[0])
-                .filter(Boolean)
-                .join(", ")
-        }
+        label="Unassigned"
         icon={<UserIcon size={12} />}
       />
       {issue.estimatePoints != null && (
@@ -261,9 +191,9 @@ function PropertiesBar({ issue }: { issue: Issue }) {
       )}
       {issue.dueDate && (
         <PropertyPill
-          label={dueLabel(issue.dueDate)}
+          label={dueLabel(issue.dueDate.toISOString())}
           icon={<CalendarIcon size={12} />}
-          tone={dueIsOverdue(issue.dueDate) ? "danger" : undefined}
+          tone={dueIsOverdue(issue.dueDate.toISOString()) ? "danger" : undefined}
         />
       )}
     </div>
@@ -296,9 +226,7 @@ function PropertyPill({
 function DescriptionSection({ issue }: { issue: Issue }) {
   const [editing, setEditing] = React.useState(false);
   const [value, setValue] = React.useState(issue.description);
-
   React.useEffect(() => setValue(issue.description), [issue.description]);
-
   return (
     <section className="mt-6">
       <SectionHeader
@@ -317,25 +245,13 @@ function DescriptionSection({ issue }: { issue: Issue }) {
           autoFocus
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          onBlur={() => {
-            setEditing(false);
-            if (value !== issue.description) {
-              const prev = issue.description;
-              useIssues.getState().setDescription(issue.id, value);
-              apply({
-                message: "Description updated",
-                affectedIds: [issue.id],
-                undo: () => useIssues.getState().setDescription(issue.id, prev),
-                retry: () => useIssues.getState().setDescription(issue.id, value),
-              });
-            }
-          }}
+          onBlur={() => setEditing(false)}
           rows={5}
           className="w-full resize-none rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] p-3 text-[13px] text-[var(--color-text)] outline-none focus:border-[var(--color-border-strong)]"
         />
       ) : (
         <p className="whitespace-pre-line text-[13px] leading-[1.6] text-[var(--color-text-muted)]">
-          {issue.description}
+          {issue.description || <span className="text-[var(--color-text-faint)]">No description</span>}
         </p>
       )}
       <div className="mt-2 flex items-center gap-1.5 text-[11px] text-[var(--color-text-faint)]">
@@ -346,146 +262,24 @@ function DescriptionSection({ issue }: { issue: Issue }) {
   );
 }
 
-function SubIssuesSection({ subs }: { subs: Issue[] }) {
-  if (subs.length === 0) return null;
-  return (
-    <section className="mt-6">
-      <SectionHeader title={`Sub-issues (${subs.length})`} action={<button className="text-[11px] text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)]">+ Add</button>} />
-      <div className="mt-2 flex flex-col gap-0.5">
-        {subs.map((s) => (
-          <button
-            key={s.id}
-            className="group flex h-8 items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] px-2.5 text-left text-[12px] hover:bg-[var(--color-surface-2)]"
-          >
-            <StatusDot status={s.status} size={6} />
-            <span className="font-mono text-[10.5px] text-[var(--color-text-faint)]">{s.key}</span>
-            <span className="flex-1 truncate text-[var(--color-text-muted)] group-hover:text-[var(--color-text)]">{s.title}</span>
-            {s.assigneeIds[0] && <Avatar name={userById(s.assigneeIds[0])?.name ?? "?"} size="xs" />}
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function ActivityAndComments({ issue }: { issue: Issue }) {
-  const comments = commentsFor(issue.id);
-  const activity = activityFor(issue.id);
-  const merged: Array<{ kind: "comment"; at: string; data: Comment } | { kind: "activity"; at: string; data: Activity }> = [
-    ...comments.map((c) => ({ kind: "comment" as const, at: c.createdAt, data: c })),
-    ...activity.map((a) => ({ kind: "activity" as const, at: a.createdAt, data: a })),
-  ].sort((a, b) => a.at.localeCompare(b.at));
-
+function ActivityAndComments({ issue: _issue }: { issue: Issue }) {
   return (
     <section className="mt-6">
       <SectionHeader title="Activity" />
       <ol className="mt-3 flex flex-col gap-3">
-        {merged.map((entry, i) =>
-          entry.kind === "comment" ? (
-            <CommentRow key={`c-${entry.data.id}`} comment={entry.data} />
-          ) : (
-            <ActivityRow key={`a-${entry.data.id}-${i}`} activity={entry.data} />
-          ),
-        )}
+        <li className="rounded border border-dashed border-[var(--color-border)] p-4 text-center text-[11.5px] text-[var(--color-text-faint)]">
+          Comments and activity stream — wired in Plan 04
+        </li>
       </ol>
     </section>
   );
 }
 
-function CommentRow({ comment }: { comment: Comment }) {
-  const author = userById(comment.authorId);
-  return (
-    <li className="flex gap-3">
-      <Avatar name={author?.name ?? "?"} size="sm" />
-      <div className="flex-1">
-        <div className="flex items-baseline gap-2 text-[12px]">
-          <span className="font-medium text-[var(--color-text)]">{author?.name}</span>
-          <span className="text-[var(--color-text-faint)]">{relativeTime(comment.createdAt)}</span>
-        </div>
-        <p className="mt-1 text-[13px] leading-[1.55] text-[var(--color-text-muted)]">{comment.body}</p>
-        <div className="mt-1.5 flex items-center gap-1.5">
-          {comment.reactions.map((r, i) => (
-            <button
-              key={i}
-              className="flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-1)] px-1.5 py-0.5 text-[10.5px] text-[var(--color-text-muted)] hover:border-[var(--color-border-strong)]"
-            >
-              <span>{r.emoji}</span>
-              <span>{r.count}</span>
-            </button>
-          ))}
-          <button className="ml-1 text-[10.5px] text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)]">Reply</button>
-        </div>
-      </div>
-    </li>
-  );
-}
-
-function ActivityRow({ activity }: { activity: Activity }) {
-  const actor = userById(activity.actorId);
-  return (
-    <li className="flex items-start gap-2.5 text-[12px] text-[var(--color-text-subtle)]">
-      <Avatar name={actor?.name ?? "?"} size="xs" />
-      <div className="flex flex-1 items-baseline gap-1.5">
-        <span className="font-medium text-[var(--color-text-muted)]">{actor?.name}</span>
-        <ActivityBody activity={activity} />
-        <span className="text-[var(--color-text-faint)]">· {relativeTime(activity.createdAt)}</span>
-      </div>
-    </li>
-  );
-}
-
-function ActivityBody({ activity }: { activity: Activity }) {
-  switch (activity.type) {
-    case "created":
-      return <span>created the issue</span>;
-    case "status_changed":
-      return (
-        <span>
-          moved status from{" "}
-          <StatusDot status={activity.payload.from as StatusKey} size={6} />{" "}
-          to <StatusDot status={activity.payload.to as StatusKey} size={6} />{" "}
-          <span className="text-[var(--color-text-muted)]">{getStatusLabel(activity.payload.to as StatusKey)}</span>
-        </span>
-      );
-    case "priority_changed":
-      return (
-        <span>
-          changed priority from <span className="text-[var(--color-text-muted)]">{activity.payload.from as string}</span> to{" "}
-          <PriorityIcon priority={activity.payload.to as any} size={10} />
-          <span className="text-[var(--color-text-muted)]">{activity.payload.to as string}</span>
-        </span>
-      );
-    case "assignee_changed":
-      return <span>added {userById(activity.payload.added as string)?.name} as assignee</span>;
-    case "label_added":
-      return <span>added label {labelById(activity.payload.label as string)?.name}</span>;
-    case "label_removed":
-      return <span>removed label {labelById(activity.payload.label as string)?.name}</span>;
-    case "title_changed":
-      return (
-        <span>
-          changed title to <span className="text-[var(--color-text-muted)]">"{activity.payload.to as string}"</span>
-        </span>
-      );
-    case "due_changed":
-      return <span>changed due date</span>;
-    case "mentioned":
-      return <span>mentioned someone</span>;
-    case "commented":
-      return <span>commented</span>;
-    default:
-      return <span>updated the issue</span>;
-  }
-}
-
-function ReplyBox({ issue }: { issue: Issue }) {
-  const meId = useCurrentUserId();
-  const me = meId ? USERS.find((u) => u.id === meId) : USERS[0];
-  if (!me) return null;
+function ReplyBox() {
   return (
     <div className="mt-6 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] p-2.5">
       <div className="flex items-start gap-2">
-        <Avatar name={me.name} size="sm" />
+        <Avatar name="You" size="sm" />
         <textarea
           placeholder="Write a comment… (⌘↵ to send)"
           rows={2}
@@ -514,19 +308,20 @@ function ReplyBox({ issue }: { issue: Issue }) {
 }
 
 function SidePanel({ issue }: { issue: Issue }) {
-  const cycle = cycleById(issue.cycleId ?? "");
-  const project = projectById(issue.projectId);
-  const assignees = usersByIds(issue.assigneeIds);
-  const labels = issue.labelIds.map((id) => labelById(id)).filter((l): l is NonNullable<typeof l> => Boolean(l));
-  const subs = subIssues(issue.id);
+  const assignees: UserView[] = ((issue.assigneeIds as unknown as Array<string | number | bigint>) ?? [])
+    .map((id) => lookupUser(id))
+    .filter((u): u is UserView => Boolean(u));
+  const labels: LabelView[] = ((issue.labelIds as unknown as Array<string | number | bigint>) ?? [])
+    .map((id) => lookupLabel(id))
+    .filter((l): l is LabelView => Boolean(l));
 
   return (
     <aside className="px-5 py-5">
       <SideRow label="Status">
-        <StatusPicker current={issue.status} issueId={issue.id} />
+        <StatusPicker current={issue.status} />
       </SideRow>
       <SideRow label="Priority">
-        <PriorityPicker current={issue.priority} issueId={issue.id} />
+        <PriorityPicker current={issue.priority} />
       </SideRow>
       <SideRow label="Assignees">
         <div className="flex flex-wrap items-center gap-1.5">
@@ -551,13 +346,8 @@ function SidePanel({ issue }: { issue: Issue }) {
         </div>
       </SideRow>
       <SideRow label="Cycle">
-        {cycle ? (
-          <div className="flex min-w-0 items-center gap-2 text-[12px] text-[var(--color-text-muted)]">
-            <span className="shrink-0 rounded border border-[var(--color-border)] bg-[var(--color-surface-1)] px-1.5 py-0.5 text-[10.5px]">
-              C{cycle.number}
-            </span>
-            <span className="min-w-0 truncate">{cycle.goal}</span>
-          </div>
+        {issue.cycleId ? (
+          <span className="text-[12px] text-[var(--color-text-muted)]">Cycle #{String(issue.cycleId)}</span>
         ) : (
           <span className="text-[12px] text-[var(--color-text-faint)]">No cycle</span>
         )}
@@ -572,52 +362,20 @@ function SidePanel({ issue }: { issue: Issue }) {
           <span
             className={cn(
               "text-[12px]",
-              dueIsOverdue(issue.dueDate) ? "text-[var(--color-danger)]" : "text-[var(--color-text-muted)]",
+              dueIsOverdue(issue.dueDate.toISOString()) ? "text-[var(--color-danger)]" : "text-[var(--color-text-muted)]",
             )}
           >
-            {dateWithYear(issue.dueDate)}
+            {dateWithYear(issue.dueDate.toISOString())}
           </span>
         ) : (
           <span className="text-[12px] text-[var(--color-text-faint)]">None</span>
         )}
       </SideRow>
-      <SideRow label="Project">
-        {project && (
-          <div className="flex items-center gap-2 text-[12px] text-[var(--color-text-muted)]">
-            <span className="grid size-4 place-items-center rounded text-[9px] font-bold text-[oklch(0.16_0.005_250)]" style={{ background: project.iconColor }}>{project.iconLetter}</span>
-            <span>{project.name}</span>
-          </div>
-        )}
-      </SideRow>
-
-      {issue.pr && (
-        <SideRow label="Pull request">
-          <a
-            href="#"
-            className="flex items-center gap-1.5 rounded border border-[var(--color-border)] bg-[var(--color-surface-1)] px-2 py-1 text-[11.5px] text-[var(--color-text-muted)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text)]"
-          >
-            <GitPullRequestIcon size={11} />
-            <span className="font-mono text-[10.5px]">{issue.pr.repo}#{issue.pr.number}</span>
-            <span className="rounded bg-[var(--color-surface-3)] px-1 text-[9.5px] uppercase tracking-wide">{issue.pr.status}</span>
-            <ArrowUpRightIcon size={10} />
-          </a>
-        </SideRow>
-      )}
-
       <SideRow label="Created">
-        <span className="text-[12px] text-[var(--color-text-muted)]">{dateWithYear(issue.createdAt)}</span>
+        <span className="text-[12px] text-[var(--color-text-muted)]">{dateWithYear(issue.createdAt.toISOString())}</span>
       </SideRow>
       <SideRow label="Updated">
-        <span className="text-[12px] text-[var(--color-text-muted)]">{relativeTime(issue.updatedAt)}</span>
-      </SideRow>
-
-      <SideRow label="Sub-issues">
-        <span className="text-[12px] text-[var(--color-text-muted)]">{subs.length}</span>
-      </SideRow>
-      <SideRow label="Blocked by">
-        <span className={cn("text-[12px]", issue.blockedBy.length > 0 ? "text-[var(--color-danger)]" : "text-[var(--color-text-faint)]")}>
-          {issue.blockedBy.length || "—"}
-        </span>
+        <span className="text-[12px] text-[var(--color-text-muted)]">{relativeTime(issue.updatedAt.toISOString())}</span>
       </SideRow>
     </aside>
   );
@@ -632,8 +390,7 @@ function SideRow({ label, children }: { label: string; children: React.ReactNode
   );
 }
 
-function StatusPicker({ current, issueId }: { current: StatusKey; issueId: string }) {
-  const setStatus = useIssues((s) => s.setStatus);
+function StatusPicker({ current }: { current: StatusKey }) {
   const [open, setOpen] = React.useState(false);
   return (
     <div className="relative">
@@ -660,16 +417,6 @@ function StatusPicker({ current, issueId }: { current: StatusKey; issueId: strin
                 <button
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    if (s !== current) {
-                      const prev = current;
-                      setStatus(issueId, s);
-                      apply({
-                        message: `Moved to ${getStatusLabel(s)}`,
-                        affectedIds: [issueId],
-                        undo: () => useIssues.getState().setStatus(issueId, prev),
-                        retry: () => useIssues.getState().setStatus(issueId, s),
-                      });
-                    }
                     setOpen(false);
                   }}
                   className={cn(
@@ -691,25 +438,12 @@ function StatusPicker({ current, issueId }: { current: StatusKey; issueId: strin
   );
 }
 
-function PriorityPicker({ current, issueId }: { current: Issue["priority"]; issueId: string }) {
-  const setPriority = useIssues((s) => s.setPriority);
+function PriorityPicker({ current }: { current: PriorityKey }) {
   return (
     <div className="flex flex-wrap gap-1">
-      {(["urgent", "high", "medium", "low", "none"] as const).map((p) => (
+      {(['urgent', 'high', 'medium', 'low', 'none'] as const).map((p) => (
         <button
           key={p}
-          onClick={() => {
-            if (p !== current) {
-              const prev = current;
-              setPriority(issueId, p);
-              apply({
-                message: `Priority set to ${p}`,
-                affectedIds: [issueId],
-                undo: () => useIssues.getState().setPriority(issueId, prev),
-                retry: () => useIssues.getState().setPriority(issueId, p),
-              });
-            }
-          }}
           className={cn(
             "flex h-6 items-center gap-1.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] px-1.5 text-[10.5px] text-[var(--color-text-muted)] hover:border-[var(--color-border-strong)]",
             current === p && "border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-text)]",

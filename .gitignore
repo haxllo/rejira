@@ -4,3 +4,6 @@ node_modules/
 .env*.local
 *.tsbuildinfo
 next-env.d.ts
+# Supabase local stack — per-branch DB caches and temp CLI dirs
+supabase/.branches/
+supabase/.temp/

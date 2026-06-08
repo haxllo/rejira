@@ -59,3 +59,8 @@ export type NewAttachment = typeof attachments.$inferInsert;
 export type StatusKey = (typeof statusKeyEnum.enumValues)[number];
 export type PriorityKey = (typeof priorityKeyEnum.enumValues)[number];
 export type CycleStatus = (typeof cycleStatusEnum.enumValues)[number];
+
+export type ProjectId = number;
+export type LabelId = number;
+export type UserId = string;
+export type IssueId = string;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/primitives/button';
 import { validatePassword, PASSWORD_MIN_LENGTH } from '@/lib/auth/password-policy';
 import { resetPassword } from '@/lib/auth/client';
@@ -32,9 +32,21 @@ export function PasswordForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (newPassword) {
+      validatePassword(newPassword).then((err) => {
+        if (!cancelled) setValidationError(err);
+      });
+    } else {
+      setValidationError(null);
+    }
+    return () => { cancelled = true; };
+  }, [newPassword]);
 
   const strength = getStrength(newPassword);
-  const validationError = newPassword ? validatePassword(newPassword) : null;
   const passwordsMatch = !confirmPassword || newPassword === confirmPassword;
   const canSubmit = currentPassword && newPassword && !validationError && passwordsMatch && !loading;
 

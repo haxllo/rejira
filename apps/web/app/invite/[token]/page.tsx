@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth/client';
+import { acceptInviteAction } from '@/lib/auth/server-actions';
 
 export default function AcceptInvitePage() {
   const params = useParams();
@@ -24,8 +25,7 @@ export default function AcceptInvitePage() {
 
     async function accept() {
       try {
-        const { acceptInvite } = await import('@/lib/auth/invites');
-        const result = await acceptInvite(token);
+        const result = await acceptInviteAction(token);
         setWorkspaceName((result as Record<string, unknown>).workspaceName as string || 'the workspace');
         setStatus('success');
         setTimeout(() => {

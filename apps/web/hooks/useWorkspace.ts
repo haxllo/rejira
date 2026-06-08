@@ -14,6 +14,7 @@ export function useWorkspace(): WorkspaceInfo & { isLoading: boolean; error: str
       id: '',
       name: '',
       slug: '',
+      isActive: false,
       isLoading: true,
       error: null,
     };
@@ -36,6 +37,7 @@ export function useWorkspace(): WorkspaceInfo & { isLoading: boolean; error: str
     id: '',
     name: '',
     slug: '',
+    isActive: false,
     isLoading: false,
     error: 'No workspaces found',
   };

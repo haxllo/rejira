@@ -29,7 +29,7 @@ export function ProfileForm() {
 
   const [name, setName] = useState((user?.name as string) ?? '');
   const [avatarColor, setAvatarColor] = useState(
-    (user?.image as string)?.startsWith('oklch') ? (user.image as string) : AVATAR_COLORS[0],
+    (user?.image as string | undefined)?.startsWith('oklch') ? (user!.image as string) : AVATAR_COLORS[0],
   );
   const [customColor, setCustomColor] = useState('#6b5ce7');
   const [isCustom, setIsCustom] = useState(false);

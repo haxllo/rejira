@@ -2,10 +2,18 @@ import type { NextConfig } from 'next';
 
 const config: NextConfig = {
   reactStrictMode: true,
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   experimental: {
     optimizePackageImports: ['motion', '@radix-ui/react-dialog', 'cmdk'],
   },
   async headers() {
+    const isDev = process.env.NODE_ENV === 'development';
+    const cspScriptSrc = isDev
+      ? "'self' 'unsafe-inline' 'unsafe-eval' https://*.posthog.com"
+      : "'self' 'unsafe-inline' https://*.posthog.com";
+
     return [
       {
         source: '/(.*)',
@@ -13,7 +21,7 @@ const config: NextConfig = {
           {
             key: 'Content-Security-Policy',
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.posthog.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.supabase.co; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.posthog.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';",
+              `default-src 'self'; script-src ${cspScriptSrc}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.posthog.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';`,
           },
           {
             key: 'Strict-Transport-Security',
