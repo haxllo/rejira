@@ -36,13 +36,22 @@ export const {
   getSession,
   useActiveOrganization,
   useListOrganizations,
-  createOrganization,
-  setActiveOrganization,
   useActiveMember,
 } = authClient;
 
+export const createOrganization = (authClient as unknown as Record<string, CallableFunction>).createOrganization as (params: { name: string; slug: string }) => Promise<{ data?: unknown; error?: { message?: string } }>;
+export const setActiveOrganization = (authClient as unknown as Record<string, CallableFunction>).setActiveOrganization as (params: { organizationId: string }) => Promise<{ data?: unknown; error?: { message?: string } }>;
+
 export function forgetPassword(params: { email: string; redirectTo?: string }) {
   return (authClient as unknown as Record<string, CallableFunction>).forgetPassword(params) as Promise<{ error?: { message?: string } }>;
+}
+
+export function verifyEmail(params: { query: { token: string; callbackURL?: string } }) {
+  return (authClient as unknown as Record<string, CallableFunction>).verifyEmail(params) as Promise<{ data?: unknown; error?: { message?: string; statusText?: string } | null }>;
+}
+
+export function sendVerificationEmail(params: { email: string; callbackURL?: string }) {
+  return (authClient as unknown as Record<string, CallableFunction>).sendVerificationEmail(params) as Promise<{ data?: { status?: boolean }; error?: { message?: string; statusText?: string } | null }>;
 }
 
 export function resetPassword(params: { newPassword: string; token?: string }) {

@@ -2,18 +2,34 @@ import 'server-only';
 
 import { betterAuth } from 'better-auth';
 import { nextCookies } from 'better-auth/next-js';
-import { organization, admin, jwt, magicLink, genericOAuth, twoFactor, passkey } from 'better-auth/plugins';
-import { google, github } from 'better-auth/social-providers';
+import { organization, admin, jwt, magicLink, genericOAuth, twoFactor } from 'better-auth/plugins';
 import { Pool } from 'pg';
 import { sendEmail } from './email';
 import { accountLinkingConfig } from './account-linking';
 import { emitAuditEvent } from './audit';
 import { validatePassword } from './password-policy';
+import { checkBreach } from './breach-check';
+import { buildVerificationPageUrl } from './email-url';
+
+async function validatePasswordWithBreachCheck(password: string): Promise<string | null> {
+  const basicError = await validatePassword(password);
+  if (basicError) return basicError;
+  try {
+    const breached = await checkBreach(password);
+    if (breached) return 'This password has appeared in a data breach. Please choose another.';
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+const connectionString = process.env.DATABASE_URL_SESSION!;
+const isLocal = connectionString.includes('localhost') || connectionString.includes('127.0.0.1') || connectionString.includes('::1');
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL_SESSION!,
+  connectionString,
   max: 10,
-  ssl: { rejectUnauthorized: false },
+  ssl: isLocal ? false : { rejectUnauthorized: false },
 });
 
 export const auth = betterAuth({
@@ -39,11 +55,12 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     expiresIn: 86400,
     sendVerificationEmail: async ({ user, url }) => {
+      const pageUrl = buildVerificationPageUrl(url, process.env.BETTER_AUTH_URL);
       await sendEmail({
         to: user.email,
         subject: 'Verify your email',
         template: 'verify-email',
-        data: { name: user.name, url, email: user.email },
+        data: { name: user.name, url: pageUrl, email: user.email },
       });
     },
   },
@@ -108,11 +125,7 @@ export const auth = betterAuth({
       },
     }),
     admin(),
-    jwt({
-      jwtClaims: {
-        sub: '{{user.external_id}}',
-      },
-    }),
+    jwt(),
     magicLink({
       sendMagicLink: async ({ email, url }) => {
         await sendEmail({
@@ -134,23 +147,28 @@ export const auth = betterAuth({
         length: 10,
       },
     }),
-    passkey({
-      rpName: 'rejira',
-      rpID: process.env.BETTER_AUTH_URL ? new URL(process.env.BETTER_AUTH_URL).hostname : 'localhost',
-      origin: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-    }),
     genericOAuth({
       config: [
-        google({
+        {
+          providerId: 'google',
           clientId: process.env.GOOGLE_CLIENT_ID!,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+          authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+          tokenUrl: 'https://oauth2.googleapis.com/token',
+          userInfoUrl: 'https://www.googleapis.com/oauth2/v3/userinfo',
           redirectURI: `${process.env.BETTER_AUTH_URL!}/api/auth/callback/google`,
-        }),
-        github({
+          scopes: ['openid', 'profile', 'email'],
+        },
+        {
+          providerId: 'github',
           clientId: process.env.GITHUB_CLIENT_ID!,
           clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+          authorizationUrl: 'https://github.com/login/oauth/authorize',
+          tokenUrl: 'https://github.com/login/oauth/access_token',
+          userInfoUrl: 'https://api.github.com/user',
           redirectURI: `${process.env.BETTER_AUTH_URL!}/api/auth/callback/github`,
-        }),
+          scopes: ['user:email'],
+        },
       ],
     }),
   ],
@@ -186,7 +204,7 @@ export const auth = betterAuth({
         before: async (user: Record<string, unknown>) => {
           const password = user.password as string | undefined;
           if (password) {
-            const error = await validatePassword(password);
+            const error = await validatePasswordWithBreachCheck(password);
             if (error) {
               throw new Error(error);
             }
@@ -223,7 +241,9 @@ export const auth = betterAuth({
             const { hashIP, hashUA, isNewDevice } = await import('./session-binding');
             const { sendEmail } = await import('./email');
             const userId = session.userId as string;
-            const userEmail = (session as Record<string, unknown>).user?.email ?? '';
+            const sessionUser = session.user as Record<string, unknown> | undefined;
+            const userEmail = (sessionUser?.email as string) ?? '';
+            const userName = (sessionUser?.name as string) ?? (userEmail as string);
 
             const ip = session.ipAddress as string || '0.0.0.0';
             const ua = session.userAgent as string || 'unknown';
@@ -238,7 +258,7 @@ export const auth = betterAuth({
                 subject: 'New sign-in to rejira',
                 template: 'new-device',
                 data: {
-                  name: (session as Record<string, unknown>).user?.name as string ?? userEmail as string,
+                  name: userName,
                   browser: 'Unknown browser',
                   os: 'Unknown OS',
                   location: ip === '0.0.0.0' ? 'Unknown' : ip,
