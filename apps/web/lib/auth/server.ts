@@ -26,6 +26,10 @@ async function validatePasswordWithBreachCheck(password: string): Promise<string
 const connectionString = process.env.DATABASE_URL_SESSION!;
 const isLocal = connectionString.includes('localhost') || connectionString.includes('127.0.0.1') || connectionString.includes('::1');
 
+const skipEmailVerification =
+  process.env.DEV_SKIP_EMAIL_VERIFICATION === 'true' &&
+  process.env.NODE_ENV !== 'production';
+
 const pool = new Pool({
   connectionString,
   max: 10,
@@ -38,7 +42,7 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL!,
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    requireEmailVerification: !skipEmailVerification,
     minPasswordLength: 12,
     autoSignIn: false,
     sendResetPassword: async ({ user, url }) => {
@@ -51,7 +55,7 @@ export const auth = betterAuth({
     },
   },
   emailVerification: {
-    sendOnSignUp: true,
+    sendOnSignUp: !skipEmailVerification,
     autoSignInAfterVerification: true,
     expiresIn: 86400,
     sendVerificationEmail: async ({ user, url }) => {
