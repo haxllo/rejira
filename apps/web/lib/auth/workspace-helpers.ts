@@ -6,6 +6,14 @@ import { memberships } from '@/lib/db/schema/memberships';
 import { eq, and, isNull, count } from 'drizzle-orm';
 import { auth } from './server';
 import type { Workspace, MembershipWithUser } from './workspace-types';
+import { headers } from 'next/headers';
+
+export interface ActiveWorkspace {
+  id: string;
+  slug: string;
+  name: string;
+  isActive: boolean;
+}
 
 interface CreateWorkspaceData {
   name: string;
@@ -125,4 +133,66 @@ export async function getMembersWithUsers(
   });
 
   return result as unknown as MembershipWithUser[];
+}
+
+export async function getActiveWorkspaceId(workspaceSlug?: string): Promise<string> {
+  const userMemberships = await db
+    .select({ workspaceId: memberships.workspaceId })
+    .from(memberships);
+
+  if (userMemberships.length === 0) {
+    throw new Error('No workspace membership found for current user');
+  }
+
+  if (workspaceSlug) {
+    const match = await db
+      .select({ id: workspaces.id })
+      .from(workspaces)
+      .where(and(eq(workspaces.slug, workspaceSlug), isNull(workspaces.archivedAt)))
+      .limit(1);
+    if (match[0]) return match[0].id;
+  }
+
+  return userMemberships[0].workspaceId;
+}
+
+export async function getActiveWorkspace(workspaceSlug?: string): Promise<ActiveWorkspace | null> {
+  const userMemberships = await db
+    .select({ workspaceId: memberships.workspaceId })
+    .from(memberships);
+
+  if (userMemberships.length === 0) return null;
+
+  const allowedIds = new Set(userMemberships.map((m) => m.workspaceId));
+
+  const headerList = workspaceSlug ? null : await headers();
+  const urlSlug = workspaceSlug ?? (headerList?.get('x-workspace-slug') ?? null);
+
+  let target: Workspace | null = null;
+  if (urlSlug) {
+    const result = await db
+      .select()
+      .from(workspaces)
+      .where(and(eq(workspaces.slug, urlSlug), isNull(workspaces.archivedAt)))
+      .limit(1);
+    target = (result[0] as Workspace | undefined) ?? null;
+  }
+
+  if (!target) {
+    const fallbackId = userMemberships[0].workspaceId;
+    const result = await db
+      .select()
+      .from(workspaces)
+      .where(eq(workspaces.id, fallbackId))
+      .limit(1);
+    target = (result[0] as Workspace | undefined) ?? null;
+  }
+
+  if (!target || !allowedIds.has(target.id)) return null;
+  return {
+    id: target.id,
+    slug: target.slug,
+    name: target.name,
+    isActive: true,
+  };
 }
