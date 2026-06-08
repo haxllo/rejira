@@ -1,15 +1,14 @@
 "use client";
 
 import { create } from "zustand";
-import {
-  ISSUES as INITIAL_ISSUES,
-  type Issue,
-  type StatusKey,
-  type PriorityKey,
-  type ProjectId,
-  type LabelId,
-  type UserId,
-} from "@/lib/mock";
+import type {
+  Issue,
+  StatusKey,
+  PriorityKey,
+  ProjectId,
+  LabelId,
+  UserId,
+} from "@/lib/db/types";
 import { useUI } from "./ui";
 
 type IssuesState = {
@@ -42,9 +41,11 @@ type IssuesState = {
   bulkAddLabel: (ids: string[], labelId: LabelId) => void;
   /** Legacy: undo a specific issue's most recent mutation (per-issue HISTORY). */
   undo: (id: string) => void;
-  /** Replace all issues from an external data source (Convex/mock). */
+  /** Replace all issues from an external data source (Supabase/RSC). */
   syncData: (incoming: Issue[]) => void;
-  /** Reset to initial data (for tests). */
+  /** Hydrate from server-fetched issues (replaces store contents). */
+  hydrate: (incoming: Issue[]) => void;
+  /** Reset to empty (for tests). */
   reset: () => void;
 };
 
@@ -60,8 +61,8 @@ function pushHistory(id: string, prev: Partial<Issue>): void {
   HISTORY.set(id, list);
 }
 
-function nextIssueNumber(projectId: string): number {
-  const used = INITIAL_ISSUES.filter((i) => i.projectId === projectId).map((i) => i.number);
+function nextIssueNumber(issues: Issue[], projectId: string): number {
+  const used = issues.filter((i) => i.projectId === projectId).map((i) => i.number);
   const projectPrefix = projectId.split("_")[1] ?? "x";
   return Math.max(1000, ...used) + 1 + Math.floor(Math.random() * 3);
 }
@@ -73,7 +74,7 @@ const PROJECT_KEY: Record<string, string> = {
 };
 
 export const useIssues = create<IssuesState>((set, get) => ({
-  issues: INITIAL_ISSUES,
+  issues: [],
 
   setStatus: (id, status) =>
     set((s) => {
@@ -177,7 +178,7 @@ export const useIssues = create<IssuesState>((set, get) => ({
 
   addIssue: (input) => {
     const id = input.id ?? `i_${input.projectId.split("_")[1] ?? "x"}_${Date.now().toString(36)}`;
-    const number = input.number ?? nextIssueNumber(input.projectId);
+    const number = input.number ?? nextIssueNumber(get().issues, input.projectId);
     const keyPrefix = PROJECT_KEY[input.projectId] ?? input.projectId.toUpperCase();
     const key = input.key ?? `${keyPrefix}-${number}`;
     const issue: Issue = {
@@ -321,5 +322,7 @@ export const useIssues = create<IssuesState>((set, get) => ({
 
   syncData: (incoming) => set({ issues: incoming }),
 
-  reset: () => set({ issues: INITIAL_ISSUES }),
+  hydrate: (incoming) => set({ issues: incoming }),
+
+  reset: () => set({ issues: [] }),
 }));

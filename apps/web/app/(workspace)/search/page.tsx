@@ -4,8 +4,9 @@ import * as React from "react";
 import { motion } from "motion/react";
 import { ViewHeader } from "@/components/views/view-header";
 import { GroupedList, type Group } from "@/components/views/grouped-list";
-import { USERS, type Issue } from "@/lib/mock";
+import type { Issue } from "@/lib/db/types";
 import { useIssues } from "@/lib/state/issues";
+import { useUsersStore, type UserView } from "@/lib/state/users";
 import { getStatusLabel } from "@/components/primitives/status";
 import { Avatar } from "@/components/primitives/avatar";
 import { LabelChip } from "@/components/primitives/label";
@@ -29,6 +30,7 @@ export default function SearchPage() {
   }, []);
 
   const allIssues = useIssues((s) => s.issues);
+  const allUsers = useUsersStore((s) => Object.values(s.byId));
 
   const results = React.useMemo(() => {
     if (!q.trim()) return [] as Issue[];
@@ -39,13 +41,13 @@ export default function SearchPage() {
         i.key.toLowerCase().includes(needle) ||
         i.description.toLowerCase().includes(needle),
     ).slice(0, 30);
-  }, [q]);
+  }, [q, allIssues]);
 
   const people = React.useMemo(() => {
-    if (!q.trim()) return [] as typeof USERS;
+    if (!q.trim()) return [] as UserView[];
     const needle = q.toLowerCase();
-    return USERS.filter((u) => u.name.toLowerCase().includes(needle) || u.email.toLowerCase().includes(needle));
-  }, [q]);
+    return allUsers.filter((u) => u.name.toLowerCase().includes(needle) || u.email.toLowerCase().includes(needle));
+  }, [q, allUsers]);
 
   const groups: Group[] = React.useMemo(() => {
     if (results.length === 0) return [];

@@ -2,7 +2,7 @@
 
 ## Overview
 
-A 9-phase brownfield rewrite that takes a runnable Next.js 16 + React 19 + Tailwind v4.3 prototype (with the design system, IA shell, and `apply()` pipeline from Phases 0–1) to a GA-ready multi-tenant workspace on Supabase Postgres + Drizzle + Better Auth. The journey is: lock the data layer (Phase 2), wire real auth and workspaces (Phase 3), replace the mock data layer with Drizzle queries and mutations (Phase 4), add live collaboration and resilience (Phase 5), search and AI (Phase 6), integrations (Phase 7), and launch readiness (Phase 8). Phases execute in numeric order (Sequential); Phase 2 is unblocked and is the current focus.
+A 10-phase brownfield rewrite that takes a runnable Next.js 16 + React 19 + Tailwind v4.3 prototype (with the design system, IA shell, and `apply()` pipeline from Phases 0–1) to a GA-ready multi-tenant workspace on Supabase Postgres + Drizzle + Better Auth. The journey is: lock the data layer (Phase 2), wire real auth and workspaces (Phase 3), replace the mock data layer with Drizzle queries and mutations (Phase 4), add live collaboration and resilience (Phase 5), search and AI (Phase 6), integrations (Phase 7), and launch readiness (Phase 8). Phases execute in numeric order (Sequential); Phase 2 is unblocked and is the current focus.
 
 ## Phases
 
@@ -15,6 +15,7 @@ A 9-phase brownfield rewrite that takes a runnable Next.js 16 + React 19 + Tailw
 - [ ] **Phase 6: Search & AI** - pgvector embeddings, hybrid BM25+cosine, `⌘K` semantic, AI triage, cost cap
 - [ ] **Phase 7: Integrations** - GitHub PR link, Slack DM, outbound webhooks, file uploads, public REST API
 - [ ] **Phase 8: Launch** - WCAG 2.2 AA, Lighthouse > 95, Stripe billing, i18n (6 locales), GDPR, PITR drill, browser matrix
+- [ ] **Phase 9: Dev Env & Onboarding Flow Audit** - Dev env setup flow after sign-up, email verification requirement for dev, onboarding UI/UX clarity
 
 ## Phase Details
 
@@ -247,10 +248,29 @@ Plans:
 - [ ] 08-11-PLAN.md — Documentation (user guide, dev docs, ADRs, CHANGELOG)
 - [ ] 08-12-PLAN.md — Marketing & launch readiness (landing page, status page, drip emails, launch checklist)
 
+### Phase 9: Dev Env & Onboarding Flow Audit
+**Goal**: Audit and improve the developer environment setup flow after sign-up, determine whether email verification is required for dev environment sign-in, and review the onboarding flow UI/UX for clarity and cleanliness.
+**Depends on**: Phase 3 (Auth & Identity)
+**Requirements**: ONB-01..04 (onboarding), AUTH-01 (email verification)
+**Success Criteria** (what must be TRUE):
+   1. Dev env sign-up/sign-in flow is documented and streamlined
+   2. Email verification requirement for dev environment is clearly determined (skip or enforce)
+   3. Onboarding wizard UI/UX is reviewed against clarity benchmarks
+   4. Any friction points in the onboarding flow are identified and addressed
+**Status**: Planned
+
+**Plans:** 4 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Dev env setup flow audit & documentation (Wave 1, audit, no code changes)
+- [ ] 09-02-PLAN.md — Email verification policy for dev environments (Wave 1, env var toggle + ConsoleTransport polish)
+- [ ] 09-03-PLAN.md — Onboarding flow UI/UX clarity review (Wave 1, audit, no code changes)
+- [ ] 09-04-PLAN.md — Onboarding friction fixes & polish (Wave 2, depends on 09-03, first-login redirect + wizard polish)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -263,6 +283,7 @@ Phases execute in numeric order: 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 6. Search & AI | 0/6 | Not started | - |
 | 7. Integrations | 0/6 | Not started | - |
 | 8. Launch | 0/12 | Planned | - |
+| 9. Dev Env & Onboarding Flow Audit | 0/4 | Planned | - |
 
 ---
 *Roadmap defined: 2026-06-07 after GSD project initialization*

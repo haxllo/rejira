@@ -5,7 +5,9 @@ import { AnimatePresence, motion } from "motion/react";
 import { XIcon, PlusIcon, FilterIcon, SearchIcon } from "@/components/icons";
 import { StatusDot, getStatusLabel } from "@/components/primitives/status";
 import { PriorityIcon, getPriorityLabel } from "@/components/primitives/priority";
-import { USERS, PROJECTS, LABELS, type StatusKey, type PriorityKey } from "@/lib/mock";
+import { useUsersStore } from "@/lib/state/users";
+import { useLabelsStore } from "@/lib/state/labels";
+import type { StatusKey, PriorityKey } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
 import type { FilterState, GroupBy, SortKey, SortDir, DueFilter } from "@/lib/state/view-query";
 
@@ -53,6 +55,8 @@ export function FilterPopover({
   const [open, setOpen] = React.useState(false);
   const [section, setSection] = React.useState<Field | "group" | "sort">("status");
   const ref = React.useRef<HTMLDivElement>(null);
+  const userList = useUsersStore((s) => Object.values(s.byId));
+  const labelList = useLabelsStore((s) => Object.values(s.byId));
 
   React.useEffect(() => {
     if (!open) return;
@@ -118,7 +122,7 @@ export function FilterPopover({
                   options={[
                     { value: "me", label: "Me" },
                     { value: "none", label: "Unassigned" },
-                    ...USERS.slice(0, 8).map((u) => ({ value: u.id, label: u.name.split(" ")[0] })),
+                    ...userList.slice(0, 8).map((u) => ({ value: u.id, label: u.name.split(" ")[0] })),
                   ]}
                   selected={filter.assignee}
                   onToggle={(v) =>
@@ -135,7 +139,7 @@ export function FilterPopover({
                 <ChipList
                   options={[
                     { value: "none", label: "No label" },
-                    ...LABELS.map((l) => ({ value: l.id, label: l.name })),
+                    ...labelList.map((l) => ({ value: l.id, label: l.name })),
                   ]}
                   selected={filter.label}
                   onToggle={(v) =>

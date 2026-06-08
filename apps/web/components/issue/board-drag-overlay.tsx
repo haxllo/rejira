@@ -4,7 +4,9 @@ import * as React from "react";
 import { PriorityIcon } from "@/components/primitives/priority";
 import { Avatar } from "@/components/primitives/avatar";
 import { LabelChip } from "@/components/primitives/label";
-import { userById, labelById, type Issue } from "@/lib/mock";
+import { lookupUser } from "@/lib/state/users";
+import { lookupLabel } from "@/lib/state/labels";
+import type { Issue } from "@/lib/db/types";
 import { dueLabel, dueIsOverdue } from "@/lib/utils/date";
 import { cn } from "@/lib/utils";
 
@@ -15,9 +17,9 @@ import { cn } from "@/lib/utils";
  */
 export function BoardDragOverlay({ issue }: { issue: Issue }) {
   const labels = issue.labelIds
-    .map((id) => labelById(id))
+    .map((id) => lookupLabel(id))
     .filter((l): l is NonNullable<typeof l> => Boolean(l));
-  const assignee = issue.assigneeIds[0] ? userById(issue.assigneeIds[0]) : null;
+  const assignee = issue.assigneeIds[0] ? lookupUser(issue.assigneeIds[0]) : null;
   return (
     <div
       className="w-[264px] rounded-md border border-[var(--color-border-strong)] bg-[var(--color-bg)] p-[var(--card-pad)] text-left shadow-[0_12px_32px_rgba(0,0,0,0.45)]"

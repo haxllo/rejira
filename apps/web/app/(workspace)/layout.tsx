@@ -11,14 +11,23 @@ import { GlobalShortcuts } from '@/components/shell/global-shortcuts';
 import { BulkActionBar } from '@/components/views/bulk-action-bar';
 import { RouteChangeSelectionReset } from '@/components/shell/route-change-selection-reset';
 import { RequireAuth } from '@/components/auth/require-auth';
+import { getUsers, getLabels, getIssuesForActiveWorkspace, getProjects } from '@/lib/db/rsc';
+import { WorkspaceDataHydrator } from '@/components/workspace/data-hydrator';
 
-export default function WorkspaceLayout({
+export default async function WorkspaceLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [users, labels, issues, projects] = await Promise.all([
+    getUsers(),
+    getLabels(),
+    getIssuesForActiveWorkspace({ limit: 500 }),
+    getProjects(),
+  ]);
   return (
     <RequireAuth>
+      <WorkspaceDataHydrator users={users} labels={labels} projects={projects} issues={issues} />
       <div className="flex h-dvh flex-col">
         <RouteChangeSelectionReset />
         <GlobalShortcuts />
@@ -33,7 +42,7 @@ export default function WorkspaceLayout({
           <StatusBar />
         </Suspense>
         <CommandPalette />
-        <IssueDrawer />
+        <IssueDrawer issues={issues} />
         <CreateIssueDialog />
         <Cheatsheet />
         <ToastHost />

@@ -19,21 +19,25 @@ import {
   CircleCheckIcon,
   CircleIcon,
 } from "@/components/icons";
-import { PROJECTS, INBOX, issuesAssignedTo } from "@/lib/mock";
+import { useProjectsStore } from "@/lib/state/projects";
+import { useIssues } from "@/lib/state/issues";
 import { useCurrentUserId } from "@/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
 import { Kbd } from "@/components/primitives/kbd";
 
 export function PrimaryNav() {
   const path = usePathname() ?? "";
-  const unread = INBOX.filter((i) => !i.read).length;
+  const projectList = useProjectsStore((s) => Object.values(s.byId));
+  const issues = useIssues((s) => s.issues);
   const meId = useCurrentUserId();
-  const myIssuesCount = meId ? issuesAssignedTo(meId).length : 0;
+  const myIssuesCount = meId
+    ? issues.filter((i) => i.assigneeIds.includes(meId)).length
+    : 0;
 
   return (
     <nav className="flex w-[244px] shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-bg)] py-3">
       <div className="flex flex-col gap-0.5 px-2">
-        <NavItem href="/inbox" label="Inbox" icon={<InboxIcon size={15} />} badge={unread} active={path.startsWith("/inbox")} />
+        <NavItem href="/inbox" label="Inbox" icon={<InboxIcon size={15} />} active={path.startsWith("/inbox")} />
         <NavItem href="/my-issues" label="My Issues" icon={<ListIconCustom size={15} />} badge={myIssuesCount} active={path.startsWith("/my-issues")} />
         <NavItem href="/" label="Home" icon={<HomeIcon size={15} />} active={path === "/"} />
       </div>
@@ -51,7 +55,7 @@ export function PrimaryNav() {
       </div>
 
       <div className="mt-1.5 flex flex-col gap-0.5 px-2">
-        {PROJECTS.map((p) => {
+        {projectList.map((p) => {
           const isActive = path.includes(`/projects/${p.key.toLowerCase()}`);
           return (
             <Link
@@ -65,9 +69,9 @@ export function PrimaryNav() {
             >
               <span
                 className="grid size-4 place-items-center rounded text-[9px] font-bold text-[oklch(0.16_0.005_250)]"
-                style={{ background: p.iconColor }}
+                style={{ background: p.iconColor ?? 'var(--color-text-faint)' }}
               >
-                {p.iconLetter}
+                {(p.iconLetter ?? p.name.slice(0, 1)).toUpperCase()}
               </span>
               <span className="flex-1 truncate">{p.name}</span>
               <span className="opacity-0 group-hover:opacity-100 text-[var(--color-text-faint)]">

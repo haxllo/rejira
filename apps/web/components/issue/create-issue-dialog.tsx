@@ -16,9 +16,11 @@ import {
 } from "@/components/icons";
 import { useUI } from "@/lib/state/ui";
 import { useIssues } from "@/lib/state/issues";
+import { useProjectsStore } from "@/lib/state/projects";
+import { useUsersStore } from "@/lib/state/users";
 import { apply } from "@/lib/state/mutations";
 import { useCurrentUserId } from "@/hooks/useCurrentUser";
-import { PROJECTS, USERS, type StatusKey, type PriorityKey } from "@/lib/mock";
+import type { StatusKey, PriorityKey } from "@/lib/db/types";
 import { StatusDot, getStatusLabel } from "@/components/primitives/status";
 import { PriorityIcon, getPriorityLabel } from "@/components/primitives/priority";
 import { Avatar } from "@/components/primitives/avatar";
@@ -50,7 +52,9 @@ export function CreateIssueDialog() {
     }
   }, [open, defaultUserIds]);
 
-  const project = PROJECTS.find((p) => p.id === projectId)!;
+  const projectList = useProjectsStore((s) => Object.values(s.byId));
+  const userList = useUsersStore((s) => Object.values(s.byId));
+  const project = projectList.find((p) => p.id === projectId);
 
   const submit = () => {
     const t = title.trim();
@@ -65,7 +69,7 @@ export function CreateIssueDialog() {
       authorId: currentUserId ?? "u_unknown",
       labelIds: [],
     });
-    const created = useIssues.getState().issues.find((i) => i.id === newId)!;
+    const created = useIssues.getState().issues.find((i) => i.externalId === newId) ?? useIssues.getState().issues[0]!;
     apply({
       message: `Created ${created.key}`,
       detail: created.title,
@@ -105,11 +109,11 @@ export function CreateIssueDialog() {
                 <span className="text-[var(--color-text-faint)]">·</span>
                 <span
                   className="grid size-4 place-items-center rounded text-[9px] font-bold text-[oklch(0.16_0.005_250)]"
-                  style={{ background: project.iconColor }}
+                  style={{ background: project?.iconColor ?? 'var(--color-text-faint)' }}
                 >
-                  {project.iconLetter}
+                  {(project?.iconLetter ?? project?.name.slice(0, 1) ?? "?").toUpperCase()}
                 </span>
-                <span className="font-mono text-[10.5px] text-[var(--color-text-faint)]">{project.key}-</span>
+                <span className="font-mono text-[10.5px] text-[var(--color-text-faint)]">{project?.key}-</span>
               </div>
               <button
                 onClick={close}
@@ -164,7 +168,7 @@ export function CreateIssueDialog() {
 
               <Field label="Assignees">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  {USERS.slice(0, 8).map((u) => {
+                  {userList.slice(0, 8).map((u) => {
                     const selected = assigneeIds.includes(u.id);
                     return (
                       <button

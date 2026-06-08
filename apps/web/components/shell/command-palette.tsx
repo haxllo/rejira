@@ -20,13 +20,15 @@ import {
   SettingsIcon,
   UserIcon,
 } from "@/components/icons";
-import { ISSUES, PROJECTS, USERS, INBOX } from "@/lib/mock";
 import { useUI } from "@/lib/state/ui";
+import { useProjectsStore } from "@/lib/state/projects";
+import { useIssues } from "@/lib/state/issues";
+import { lookupLabel } from "@/lib/state/labels";
+import { lookupUser } from "@/lib/state/users";
 import { StatusDot } from "@/components/primitives/status";
 import { PriorityIcon } from "@/components/primitives/priority";
 import { Avatar } from "@/components/primitives/avatar";
 import { LabelDot } from "@/components/primitives/label";
-import { labelById } from "@/lib/mock";
 import { cn } from "@/lib/utils";
 
 export function CommandPalette() {
@@ -34,6 +36,8 @@ export function CommandPalette() {
   const open = useUI((s) => s.commandOpen);
   const setOpen = useUI((s) => s.setCommandOpen);
   const openDrawer = useUI((s) => s.openDrawer);
+  const projectList = useProjectsStore((s) => Object.values(s.byId));
+  const issues = useIssues((s) => s.issues);
 
   return (
     <AnimatePresence>
@@ -147,15 +151,15 @@ export function CommandPalette() {
                   heading="Projects"
                   className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10.5px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em] [&_[cmdk-group-heading]]:text-[var(--color-text-faint)]"
                 >
-                  {PROJECTS.map((p) => (
+                  {projectList.map((p) => (
                     <Item
                       key={p.id}
                       icon={
                         <span
                           className="grid size-4 place-items-center rounded text-[9px] font-bold text-[oklch(0.16_0.005_250)]"
-                          style={{ background: p.iconColor }}
+                          style={{ background: p.iconColor ?? 'var(--color-text-faint)' }}
                         >
-                          {p.iconLetter}
+                          {(p.iconLetter ?? p.name.slice(0, 1)).toUpperCase()}
                         </span>
                       }
                       label={p.name}
@@ -172,13 +176,13 @@ export function CommandPalette() {
                   heading="Issues"
                   className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10.5px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em] [&_[cmdk-group-heading]]:text-[var(--color-text-faint)]"
                 >
-                  {ISSUES.slice(0, 12).map((issue) => {
+                  {issues.slice(0, 12).map((issue) => {
                     const labels = issue.labelIds
-                      .map((id) => labelById(id))
+                      .map((id) => lookupLabel(id))
                       .filter(Boolean);
                     return (
                       <Item
-                        key={issue.id}
+                        key={issue.externalId}
                         icon={
                           <span className="font-mono text-[10.5px] text-[var(--color-text-faint)]">
                             {issue.key}
@@ -192,14 +196,14 @@ export function CommandPalette() {
                             {labels.slice(0, 2).map((l) => l && <LabelDot key={l.id} name={l.name} />)}
                             {issue.assigneeIds[0] && (
                               <Avatar
-                                name={USERS.find((u) => u.id === issue.assigneeIds[0])?.name ?? "?"}
+                                name={lookupUser(issue.assigneeIds[0])?.name ?? "?"}
                                 size="xs"
                               />
                             )}
                           </span>
                         }
                         onSelect={() => {
-                          openDrawer(issue.id);
+                          openDrawer(issue.externalId);
                           setOpen(false);
                         }}
                       />

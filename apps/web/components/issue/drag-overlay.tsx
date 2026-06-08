@@ -4,7 +4,9 @@ import * as React from "react";
 import { Avatar, AvatarGroup } from "@/components/primitives/avatar";
 import { LabelChip } from "@/components/primitives/label";
 import { PriorityIcon } from "@/components/primitives/priority";
-import { USERS, labelById, type Issue } from "@/lib/mock";
+import { lookupUser } from "@/lib/state/users";
+import { lookupLabel } from "@/lib/state/labels";
+import type { Issue } from "@/lib/db/types";
 
 /**
  * Floating preview shown in the drag layer while a row is being dragged.
@@ -21,10 +23,10 @@ export function DragRowOverlay({
   const head = issues[0];
   if (!head) return null;
   const assignees = head.assigneeIds
-    .map((id) => USERS.find((u) => u.id === id))
+    .map((id) => lookupUser(id))
     .filter((u): u is NonNullable<typeof u> => Boolean(u));
   const labels = head.labelIds
-    .map((id) => labelById(id))
+    .map((id) => lookupLabel(id))
     .filter((l): l is NonNullable<typeof l> => Boolean(l));
   const total = count ?? issues.length;
 

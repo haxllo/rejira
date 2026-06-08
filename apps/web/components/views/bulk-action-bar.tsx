@@ -5,10 +5,13 @@ import { AnimatePresence, motion } from "motion/react";
 import { XIcon, Trash2Icon, FlagIcon, UserIcon, TagIcon } from "@/components/icons";
 import { useUI } from "@/lib/state/ui";
 import { useIssues } from "@/lib/state/issues";
+import { useUsersStore } from "@/lib/state/users";
+import { useLabelsStore } from "@/lib/state/labels";
+import { useProjectsStore } from "@/lib/state/projects";
 import { apply } from "@/lib/state/mutations";
 import { StatusDot, getStatusLabel } from "@/components/primitives/status";
 import { PriorityIcon, getPriorityLabel } from "@/components/primitives/priority";
-import { USERS, PROJECTS, LABELS, type StatusKey, type PriorityKey, type LabelId, type ProjectId, type UserId } from "@/lib/mock";
+import type { StatusKey, PriorityKey, LabelId, ProjectId, UserId } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
 
 const STATUS_ORDER: StatusKey[] = ["backlog", "todo", "in_progress", "in_review", "done"];
@@ -17,6 +20,9 @@ const PRIORITY_ORDER: PriorityKey[] = ["urgent", "high", "medium", "low", "none"
 export function BulkActionBar() {
   const selectedIds = useUI((s) => s.selectedIssueIds);
   const clearSelected = useUI((s) => s.clearSelected);
+  const userList = useUsersStore((s) => Object.values(s.byId));
+  const projectList = useProjectsStore((s) => Object.values(s.byId));
+  const labelList = useLabelsStore((s) => Object.values(s.byId));
 
   return (
     <AnimatePresence>
@@ -60,10 +66,10 @@ export function BulkActionBar() {
           <BulkMenu
             label="Assign"
             trigger={<UserIcon size={11} className="text-[var(--color-text-faint)]" />}
-            options={USERS.slice(0, 8).map((u) => ({
+            options={userList.slice(0, 8).map((u) => ({
               value: u.id,
               label: u.name,
-              icon: <span className="size-3 rounded-full" style={{ background: u.avatarColor }} />,
+              icon: <span className="size-3 rounded-full" style={{ background: u.avatarColor ?? 'var(--color-text-faint)' }} />,
             }))}
             onSelect={(uid) => bulkAssign(Array.from(selectedIds), uid)}
           />
@@ -71,14 +77,14 @@ export function BulkActionBar() {
           <BulkMenu
             label="Label"
             trigger={<TagIcon size={11} className="text-[var(--color-text-faint)]" />}
-            options={LABELS.map((l) => ({ value: l.id, label: l.name }))}
+            options={labelList.map((l) => ({ value: l.id, label: l.name }))}
             onSelect={(lid) => bulkAddLabel(Array.from(selectedIds), lid)}
           />
 
           <BulkMenu
             label="Move"
             trigger={<FolderGlyph size={11} className="text-[var(--color-text-faint)]" />}
-            options={PROJECTS.map((p) => ({ value: p.id, label: p.name }))}
+            options={projectList.map((p) => ({ value: p.id, label: p.name }))}
             onSelect={(pid) => bulkMove(Array.from(selectedIds), pid)}
           />
 
@@ -241,7 +247,7 @@ function bulkSetPriority(ids: string[], priority: PriorityKey) {
 
 function bulkAssign(ids: string[], userId: UserId) {
   if (ids.length === 0) return;
-  const name = USERS.find((u) => u.id === userId)?.name.split(" ")[0] ?? "user";
+  const name = useUsersStore.getState().byId[String(userId)]?.name.split(" ")[0] ?? "user";
   const prevSelected = Array.from(useUI.getState().selectedIssueIds);
   const before = useIssues.getState().issues.filter((i) => ids.includes(i.id));
   const beforeHas = new Map(before.map((i) => [i.id, i.assigneeIds.includes(userId)]));
@@ -291,7 +297,7 @@ function bulkAddLabel(ids: string[], labelId: LabelId) {
 
 function bulkMove(ids: string[], projectId: ProjectId) {
   if (ids.length === 0) return;
-  const name = PROJECTS.find((p) => p.id === projectId)?.name ?? "project";
+  const name = useProjectsStore.getState().byId[String(projectId)]?.name ?? "project";
   const prevSelected = Array.from(useUI.getState().selectedIssueIds);
   const before = useIssues.getState().issues.filter((i) => ids.includes(i.id));
   const beforeProject = new Map(before.map((i) => [i.id, i.projectId]));

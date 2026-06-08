@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { labelById, userById, USERS, type StatusKey, type PriorityKey, type UserId, type LabelId, type Issue } from "@/lib/mock";
+import { lookupUser } from "@/lib/state/users";
+import { lookupLabel } from "@/lib/state/labels";
+import type { StatusKey, PriorityKey, UserId, LabelId, Issue } from "@/lib/db/types";
 /**
  * URL-encoded filter state for a list view.
  *
@@ -225,7 +227,7 @@ export function applyGroup(state: GroupBy, issues: Issue[]): Array<{ id: string;
           key = "none";
           label = "Unassigned";
         } else {
-          const u = userById(i.assigneeIds[0]!);
+          const u = lookupUser(i.assigneeIds[0]!);
           key = u?.id ?? "unknown";
           label = u?.name ?? "Unknown";
         }
@@ -236,7 +238,7 @@ export function applyGroup(state: GroupBy, issues: Issue[]): Array<{ id: string;
           key = "none";
           label = "No label";
         } else {
-          const l = labelById(i.labelIds[0]!);
+          const l = lookupLabel(i.labelIds[0]!);
           key = l?.id ?? "unknown";
           label = l?.name ?? "Unknown";
           color = undefined;
@@ -268,11 +270,11 @@ function mapLabel(id: string, state: GroupBy, list: Issue[]): string {
   if (state === "priority") return id;
   if (state === "assignee") {
     if (id === "none") return "Unassigned";
-    return userById(id)?.name ?? "Unknown";
+    return lookupUser(id)?.name ?? "Unknown";
   }
   if (state === "label") {
     if (id === "none") return "No label";
-    return labelById(id)?.name ?? "Unknown";
+    return lookupLabel(id)?.name ?? "Unknown";
   }
   return id;
 }

@@ -3,7 +3,9 @@
 import * as React from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { XIcon, FilterIcon } from "@/components/icons";
-import { USERS, labelById, userById, type StatusKey, type PriorityKey, type LabelId, type UserId } from "@/lib/mock";
+import { lookupUser } from "@/lib/state/users";
+import { lookupLabel } from "@/lib/state/labels";
+import type { StatusKey, PriorityKey, LabelId, UserId } from "@/lib/db/types";
 import {
   type FilterState,
   type DueFilter,
@@ -110,7 +112,7 @@ export function buildFilterChips(
   }
   for (const a of filter.assignee) {
     const isMe = a === "me";
-    const user = isMe ? USERS.find((u) => u.id === "__me__") : userById(a as UserId);
+    const user = isMe ? undefined : lookupUser(a as UserId);
     out.push({
       id: `assignee:${a}`,
       label: "Assignee",
@@ -120,7 +122,7 @@ export function buildFilterChips(
   }
   for (const l of filter.label) {
     const isNone = l === "none";
-    const label = isNone ? null : labelById(l as LabelId);
+    const label = isNone ? null : lookupLabel(l as LabelId);
     out.push({
       id: `label:${l}`,
       label: "Label",
