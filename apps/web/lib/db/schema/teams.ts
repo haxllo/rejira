@@ -1,15 +1,14 @@
-import { pgTable, bigint, text, timestamp, index, bigserial } from 'drizzle-orm/pg-core';
-import { workspaces } from './workspaces';
+import { pgTable, text, timestamp, index } from 'drizzle-orm/pg-core';
 
 export const teams = pgTable('teams', {
-  id: bigserial('id', { mode: 'bigint' }).primaryKey(),
-  externalId: text('external_id').notNull().unique(),
-  workspaceId: bigint('workspace_id', { mode: 'bigint' }).notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
+  id: text('id').primaryKey(),
+  externalId: text('externalId').notNull().unique(),
+  workspaceId: text('workspaceId').notNull(),
   name: text('name').notNull(),
   description: text('description'),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
-  index('teams_workspace_id_idx').on(table.workspaceId),
-  index('teams_external_id_idx').on(table.externalId),
+  index('teams_workspaceId_idx').on(table.workspaceId),
+  index('teams_externalId_idx').on(table.externalId),
 ]);

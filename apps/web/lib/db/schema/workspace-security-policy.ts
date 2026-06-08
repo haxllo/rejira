@@ -1,8 +1,8 @@
-import { pgTable, bigint, boolean, text, integer, timestamp, bigserial } from 'drizzle-orm/pg-core';
+import { pgTable, boolean, text, integer, timestamp } from 'drizzle-orm/pg-core';
 import { workspaces } from './workspaces';
 
 export const workspaceSecurityPolicy = pgTable('workspace_security_policy', {
-  workspaceId: bigint('workspace_id', { mode: 'bigint' })
+  workspaceId: text('workspaceId')
     .primaryKey()
     .references(() => workspaces.id, { onDelete: 'cascade' }),
   require2faForAdmins: boolean('require_2fa_for_admins').notNull().default(false),
