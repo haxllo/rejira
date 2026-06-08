@@ -17,7 +17,7 @@ export function SignUpForm() {
     setError('');
     setLoading(true);
     try {
-      const res = await signUp.email({ name, email, password, callbackURL: '/inbox' });
+      const res = await signUp.email({ name, email, password, callbackURL: '/onboarding' });
       if (res && 'error' in res && res.error) {
         setError(res.error.message ?? res.error.statusText ?? 'Sign up failed');
       } else {
@@ -35,8 +35,10 @@ export function SignUpForm() {
   if (done) {
     return (
       <div className="auth-success text-center py-4">
-        <p className="mb-2">Account created!</p>
-        <a href="/sign-in" className="auth-link">Sign in →</a>
+        <p className="mb-2 font-medium">Account created!</p>
+        <p className="text-[13px] text-[var(--color-text-muted)] leading-relaxed">
+          Check your email to verify your address. After verification, you&apos;ll be guided through workspace setup.
+        </p>
       </div>
     );
   }
