@@ -1,0 +1,30 @@
+{
+  "source_path": "G:\\ciqada2\\Projects\\jira redesign\\PLAN.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "PLAN.md — rejira (Jira Redesign)",
+  "summary": "Multi-phase execution plan for a Linear-grade Jira replacement built with Next.js, Supabase, and Better Auth.",
+  "scope": [
+    "Next.js",
+    "Supabase",
+    "PostgreSQL",
+    "Drizzle ORM",
+    "Better Auth",
+    "React",
+    "Tailwind CSS",
+    "Vercel",
+    "Supabase Realtime",
+    "Supabase Storage",
+    "pgvector"
+  ],
+  "cross_refs": [
+    "ARCHITECTURE_13_LAYERS.md",
+    "PHASE_2_PLAN.md",
+    "PHASE_3_PLAN.md",
+    "JIRA_PAIN_POINTS_REPORT.md",
+    "README.md"
+  ],
+  "locked": false,
+  "precedence": null
+}

@@ -1,0 +1,13 @@
+{
+  "source_path": "G:\\ciqada2\\Projects\\jira redesign\\docs\\runbooks\\db-failover.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Database Failover",
+  "summary": "Runbook for handling regional database outages and PITR verification.",
+  "scope": ["Supabase", "PostgreSQL", "read replicas", "PITR"],
+  "cross_refs": ["https://status.supabase.io", "status.rejira.app"],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

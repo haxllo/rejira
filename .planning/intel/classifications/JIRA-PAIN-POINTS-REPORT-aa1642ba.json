@@ -1,0 +1,28 @@
+{
+  "source_path": "G:\\ciqada2\\Projects\\jira redesign\\JIRA_PAIN_POINTS_REPORT.md",
+  "type": "DOC",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "Jira Pain Points \u2192 Design Decisions (v2)",
+  "summary": "Maps Jira user pain points to specific design decisions and implementation layers.",
+  "scope": [
+    "progressive disclosure",
+    "command palette",
+    "cursor pagination",
+    "virtualized lists",
+    "optimistic mutations",
+    "design system",
+    "density modes",
+    "workflow templates",
+    "typed property system",
+    "built-in insights",
+    "collaboration",
+    "notifications"
+  ],
+  "cross_refs": [
+    "PLAN.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "Design rationale document. Prose-heavy explanation of pain-point-driven decisions. No frontmatter, user stories, API specs, or locked decision markers."
+}

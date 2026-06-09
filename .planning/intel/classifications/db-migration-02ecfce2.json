@@ -1,0 +1,13 @@
+{
+  "source_path": "G:\\ciqada2\\Projects\\jira redesign\\docs\\runbooks\\db-migration.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Migration Workflow",
+  "summary": "Procedural guide for applying database migrations via Drizzle and Supabase.",
+  "scope": ["Drizzle ORM", "Supabase", "database migrations", "schema"],
+  "cross_refs": ["docs/runbooks/restore-drill.md"],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

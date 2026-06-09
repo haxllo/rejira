@@ -1,0 +1,24 @@
+{
+  "source_path": "G:\\ciqada2\\Projects\\jira redesign\\PHASE_1_PLAN.md",
+  "type": "PRD",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "Phase 1 — Interactions",
+  "summary": "Phase 1 plan for implementing interactions: optimistic mutations, URL-synced filters, drag-and-drop, and multi-select.",
+  "scope": [
+    "issues",
+    "views",
+    "filters",
+    "mutations",
+    "drag-and-drop",
+    "UI state",
+    "keyboard shortcuts",
+    "toasts"
+  ],
+  "cross_refs": [
+    "PLAN.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "Mixed PRD/SPEC signals. Dominant PRD signal from acceptance criteria, scope, goals, and user-facing behavior descriptions. Secondary SPEC signal from technical file lists, code snippets, and library choices."
+}

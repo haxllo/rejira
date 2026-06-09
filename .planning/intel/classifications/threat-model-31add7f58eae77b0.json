@@ -1,0 +1,21 @@
+{
+  "source_path": "G:\\ciqada2\\Projects\\jira redesign\\docs\\security\\threat-model.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "rejira Auth System Threat Model",
+  "summary": "STRIDE threat model for rejira's Phase 3 auth system covering authentication, authorization, sessions, and multi-tenancy.",
+  "scope": [
+    "auth system",
+    "authentication",
+    "authorization",
+    "sessions",
+    "multi-tenancy",
+    "email",
+    "i18n"
+  ],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

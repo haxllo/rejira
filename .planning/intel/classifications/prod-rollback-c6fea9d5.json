@@ -1,0 +1,12 @@
+{
+  "source_path": "G:\\ciqada2\\Projects\\jira redesign\\docs\\runbooks\\prod-rollback.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Production Rollback Runbook",
+  "summary": "Step-by-step runbook for rolling back production deployments and database migrations.",
+  "scope": ["Vercel", "Supabase", "Database", "Production deployments"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null
+}

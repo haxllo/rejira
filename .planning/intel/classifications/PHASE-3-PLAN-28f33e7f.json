@@ -1,0 +1,35 @@
+{
+  "source_path": "G:\\ciqada2\\Projects\\jira redesign\\PHASE_3_PLAN.md",
+  "type": "PRD",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "Phase 3 — Auth & Identity (Better Auth + Supabase)",
+  "summary": "Plan for Phase 3: implement production-grade auth and identity using Better Auth with Supabase PostgreSQL.",
+  "scope": [
+    "Better Auth",
+    "Supabase PostgreSQL",
+    "authentication",
+    "identity",
+    "workspaces",
+    "organizations",
+    "sessions",
+    "two-factor authentication",
+    "OAuth",
+    "passkeys",
+    "WebAuthn",
+    "email verification",
+    "rate limiting",
+    "audit logging",
+    "invitations",
+    "memberships"
+  ],
+  "cross_refs": [
+    "docs/runbooks/prod-deploy.md",
+    "docs/runbooks/prod-rollback.md",
+    "docs/security/threat-model.md",
+    "docs/security/pen-test-report.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "Strong ADR signals from Architecture decisions section (AD-1 through AD-17 with locked status). Strong SPEC signals from technical implementation details, rate limit tables, and config snippets. Classified as PRD because the document's primary purpose is defining what Phase 3 should deliver (goals, acceptance criteria, scope) with embedded architecture decisions and technical specifications."
+}

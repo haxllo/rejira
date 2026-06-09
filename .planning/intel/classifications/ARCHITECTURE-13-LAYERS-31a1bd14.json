@@ -1,0 +1,29 @@
+{
+  "source_path": "G:\\ciqada2\\Projects\\jira redesign\\ARCHITECTURE_13_LAYERS.md",
+  "type": "DOC",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "Jira Redesign — 13-Layer System Architecture (v2)",
+  "summary": "Defines the 13-layer system architecture with strict layer contracts, ownership rules, and dependency flows for the Jira Redesign project.",
+  "scope": [
+    "Presentation (Next.js, Animate UI)",
+    "Client State (TanStack Query, Zustand)",
+    "API Surface (tRPC, Server Actions)",
+    "Domain Services",
+    "Data & Persistence (Drizzle, Postgres)",
+    "Auth & Permissions (Auth.js)",
+    "Realtime Engine (Socket.io)",
+    "Search & Indexing",
+    "Notifications & Presence",
+    "AI & Intelligence",
+    "Integration Adapters (GitHub, Slack, Figma)",
+    "Background Workers",
+    "Observability & Compliance"
+  ],
+  "cross_refs": [
+    "PLAN.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "Document contains strong SPEC-like signals (layer contracts, dependency matrix, cross-cutting decisions table, SLO mentions) but is classified as DOC because its primary purpose is architectural reference/overview rather than formal implementation specification."
+}
