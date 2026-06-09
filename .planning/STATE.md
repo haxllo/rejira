@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: milestone
 status: verifying
-last_updated: "2026-06-08T17:58:51.709Z"
-last_activity: 2026-06-08
+last_updated: "2026-06-08T18:00:00.000Z"
+last_activity: 2026-06-08 -- Phase 9 complete (dev env audit, email verification policy, onboarding UX review, onboarding fixes)
 progress:
   total_phases: 10
-  completed_phases: 3
-  total_plans: 45
-  completed_plans: 28
-  percent: 30
+  completed_phases: 5
+  total_plans: 80
+  completed_plans: 43
+  percent: 54
 ---
 
 # Project State
@@ -20,24 +20,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07)
 
 **Core value:** Linear-grade speed for a Jira-shaped workspace. Every interaction must hit its interaction budget; if a feature slows the budget or adds a config screen, it doesn't ship.
-**Current focus:** Phase 3 — Auth & Identity (Better Auth)
+**Current focus:** Phase 9 — Dev Env & Onboarding Flow
 
 ## Current Position
 
-Phase: 3 of 8 (Auth & Identity — Better Auth + Supabase)
-Plan: 07 of 7 in current phase
-Status: Phase complete — ready for verification
-Last activity: 2026-06-08
+Phase: 9 of 10 (Dev Env & Onboarding Flow)
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-06-08 -- Phase 9 complete
 
-Progress: [██████░░░░] 62%
+Progress: [███████░░░] 71%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 14 (Phase 0: 7, Phase 1: 7)
-- Total execution time: ~6 hours (Phase 0 + 1)
-- Average duration: ~25 min/plan
+- Total plans completed: 32 (Phase 0: 7, Phase 1: 7, Phase 2: 14, Phase 3: 7)
+- Total execution time: ~8 hours (Phase 0 + 1 + 3 + 9)
+- Average duration: ~20 min/plan
 
 **By Phase:**
 
@@ -52,7 +52,7 @@ Progress: [██████░░░░] 62%
 | 6. Search & AI | 0/6 | 6 | TBD |
 | 7. Integrations | 0/6 | 6 | TBD |
 | 8. Launch | 0/12 | 12 | TBD |
-| 9. Dev Env & Onboarding | 0/4 | 4 | TBD |
+| 9. Dev Env & Onboarding | 4/4 | 4 | ~8 min |
 
 *Updated after each plan completion*
 
@@ -75,6 +75,10 @@ Recent decisions (full log in PROJECT.md):
 - **Phase 3L (03-06)**: THE CUTOVER — replaced Phase 1 demo session (ME_ID constant) with real Better Auth sessions across all workspace pages; created Next.js middleware for route protection (cookie-only fast path + security headers); built client-side RequireAuth wrapper with motion-pulse loading skeleton; created useSession/useUser convenience hooks; deleted demo-session.ts and proxy.ts; updated 15+ components to read real user from session; 8 cutover tests (131 total); zero ME_ID/ME_EXTERNAL_ID references remain in production code
 - **Phase 3M (03-07)**: Internationalization (6 locales: en, es, fr, de, ja, zh) for auth UI with dot-notation t() function and email templates; middleware Accept-Language detection with locale cookie; CSP + HSTS + security headers in next.config.ts; workspace_security_policy table with RLS and auto-insert trigger; admin-only workspace security settings page; production deploy/rollback runbooks; consolidated STRIDE threat model (24 threats); E2E scaffolding with Playwright + axe-core for WCAG 2.2 AA; Dependabot weekly npm updates; Codecov 80% target; Vitest v8 coverage with 80% thresholds; 8 new workspace-policy tests (139 total Phase 3 Vitest tests). Non-Latin locales (ja, zh) use placeholders pending human review.
 - **GSD config**: YOLO mode, Fine granularity (8–12 phases; we have 9), Sequential execution, Git tracking enabled, Research on, Plan Check on, Verifier off, Smart model profile
+- **Phase 9A (09-01)**: Dev env audit document created with 11 friction points (3 critical) — traced Paths A-E from git clone to first workspace; identified unreachable onboarding, no workspace created on sign-up, and email verification double-hop as critical issues
+- **Phase 9B (09-02)**: `DEV_SKIP_EMAIL_VERIFICATION` env var added with NODE_ENV guard (dev-only); ConsoleTransport enhanced with ASCII box-drawn banner for verification/magic link URLs; both .env.example files updated
+- **Phase 9C (09-03)**: Onboarding UI/UX review documented 28 issues (3 critical, 5 high, 8 medium, 6 low, 6 a11y); critical finding: onboarding wizard is unreachable through natural sign-up flow
+- **Phase 9D (09-04)**: Fixed 20 of 28 review issues; changed callbackURL to '/onboarding' for first-time users (auto-sign-in after verification → onboarding); added sessionStorage persistence for wizard state; applied wizard polish (step indicator, focus rings, email validation, ARIA semantics, spring animations, skip confirmation)
 
 ### Pending Todos
 

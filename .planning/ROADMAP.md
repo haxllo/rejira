@@ -66,24 +66,24 @@ Plans:
   8. pg_cron schedule runs nightly housekeeping; logs visible in `cron.job_run_details`
   9. CI gate (`supabase db lint` + drift detection + `db:test` pgTAP) blocks PRs that break the schema or RLS
   10. Seed script populates a demo workspace, project, and 50 issues for local dev
-**Status**: Not started (ready to plan and execute)
+**Status**: Complete
 **Detailed plan**: `PHASE_2_PLAN.md` (1208 lines, 14 streams: 2A–2N)
 
 Plans (streams):
-- [ ] 02-01: Supabase project + local dev stack (`supabase init`, `config.toml`, local Postgres; 14 db:* scripts)
-- [ ] 02-02: Drizzle setup (`drizzle.config.ts`, `pg.Pool` client, schema barrel, smoke-test `SELECT 1`)
-- [ ] 02-03: 16-table Drizzle schema + 7 pgEnums (workspaces, users, memberships, projects, project_members, labels, issues, issue_assignees, cycles, cycle_issues, saved_views, comments, notifications, activities, attachments, audit_log)
-- [ ] 02-04: RLS policies + isolation tests (3 SQL files; 5 helper functions; 8 Vitest RLS tests)
-- [ ] 02-05: DB functions & triggers (6 SQL files: `tg_set_updated_at`, `tg_assign_issue_number`, `tg_emit_activity`, user mirror, workflow_statuses, `search_vector` + GIN)
-- [ ] 02-06: Storage buckets + RLS (2 SQL files for `avatars`/`attachments`/`exports`; `lib/supabase/storage.ts` helper)
-- [ ] 02-07: Realtime publication (`supabase_realtime` on 6 hot tables; `REPLICA IDENTITY FULL`)
-- [ ] 02-08: pgvector setup (extension + HNSW index on `issues.embedding`)
-- [ ] 02-09: pg_cron + scheduled jobs (4 jobs: GDPR hard-delete, embedding refresh, orphan-attachment cleanup, nightly vacuum)
-- [ ] 02-10: Idempotent seed (`apps/web/lib/db/seed.ts`; demo workspace with 30 issues, 12 users, 4 projects, 3 cycles, 10 labels, 8 comments, 10 inbox items; `ME_ID` placeholder in `demo-session.ts`)
-- [ ] 02-11: Local dev DX + `.env.example` (bootstrap script, `/api/db-check` smoke test, README "First-time setup" section)
-- [ ] 02-12: Migration workflow (`db:diff`/`db:push:staging`/`db:push:prod` scripts; `docs/runbooks/db-migration.md`)
-- [ ] 02-13: CI gates (`.github/workflows/ci.yml` finalized with typecheck + lint + db-lint + drift + db-test + build; branch protection documented)
-- [ ] 02-14: Backups + PITR + restore drill (PITR verified in Dashboard; `docs/runbooks/restore-drill.md` + `db-failover.md`; placeholder daily backup cron)
+- [x] 02-01: Supabase project + local dev stack (`supabase init`, `config.toml`, local Postgres; 14 db:* scripts)
+- [x] 02-02: Drizzle setup (`drizzle.config.ts`, `pg.Pool` client, schema barrel, smoke-test `SELECT 1`)
+- [x] 02-03: 16-table Drizzle schema + 7 pgEnums (workspaces, users, memberships, projects, project_members, labels, issues, issue_assignees, cycles, cycle_issues, saved_views, comments, notifications, activities, attachments, audit_log)
+- [x] 02-04: RLS policies + isolation tests (3 SQL files; 5 helper functions; 8 Vitest RLS tests)
+- [x] 02-05: DB functions & triggers (6 SQL files: `tg_set_updated_at`, `tg_assign_issue_number`, `tg_emit_activity`, user mirror, workflow_statuses, `search_vector` + GIN)
+- [x] 02-06: Storage buckets + RLS (2 SQL files for `avatars`/`attachments`/`exports`; `lib/supabase/storage.ts` helper)
+- [x] 02-07: Realtime publication (`supabase_realtime` on 6 hot tables; `REPLICA IDENTITY FULL`)
+- [x] 02-08: pgvector setup (extension + HNSW index on `issues.embedding`)
+- [x] 02-09: pg_cron + scheduled jobs (4 jobs: GDPR hard-delete, embedding refresh, orphan-attachment cleanup, nightly vacuum)
+- [x] 02-10: Idempotent seed (`apps/web/lib/db/seed.ts`; demo workspace with 30 issues, 12 users, 4 projects, 3 cycles, 10 labels, 8 comments, 10 inbox items; `ME_ID` placeholder in `demo-session.ts`)
+- [x] 02-11: Local dev DX + `.env.example` (bootstrap script, `/api/db-check` smoke test, README "First-time setup" section)
+- [x] 02-12: Migration workflow (`db:diff`/`db:push:staging`/`db:push:prod` scripts; `docs/runbooks/db-migration.md`)
+- [x] 02-13: CI gates (`.github/workflows/ci.yml` finalized with typecheck + lint + db-lint + drift + db-test + build; branch protection documented)
+- [x] 02-14: Backups + PITR + restore drill (PITR verified in Dashboard; `docs/runbooks/restore-drill.md` + `db-failover.md`; placeholder daily backup cron)
 
 ### Phase 3: Auth & Identity (Better Auth + Supabase) 📌
 **Goal**: Users sign in to use the app. Real sessions in Postgres via Better Auth, real workspaces (organization plugin mapped to our `workspaces` table), real invites, real 2FA, real OAuth, real audit log, real GDPR delete. Closed-beta-ready: invite a handful of users, they can log in, switch workspaces, and use every page — but state still doesn't persist across the database boundary (the app still reads `lib/mock/` until Phase 4). Phase 3 is the security phase: every stream ships behind a passing test suite.
@@ -121,7 +121,7 @@ Plans:
 **Requirements**: PROJ-01..09, ISSUE-01..20, INBOX-01..05, VIEW-01..05, ACT-01..05
 **Success Criteria** (what must be TRUE):
   1. Every existing `apply()` call site routes through a Drizzle transaction (`withTransaction()` helper)
-  2. `useIssues` is replaced with `useLiveQuery(issuesQuery, ...)`; `useUI` stays local (Zustand)
+  2. `useIssues` store is backed by RSC + Realtime patches; `useUI` stays local (Zustand) — no `useLiveQuery` (Drizzle has no equivalent; RSC + Realtime is the model per CONTEXT.md)
   3. No TanStack Query; no manual cache invalidation; Supabase Realtime owns live updates
   4. RLS policies enforce workspace isolation on every query (pgTAP proves it for 16 tables)
   5. `ISSUES` constant from `lib/mock/` is gone; data flows from Postgres
@@ -130,16 +130,16 @@ Plans:
   8. E2E test: signup → create workspace → create project → create issue → assign → close passes
   9. Activity log writes happen via Postgres trigger (same transaction as data change)
   10. Comments, notifications, saved views all backed by Drizzle queries
-**Status**: Ready to execute — 8 plans redesigned for the best and most robust path
+ **Status**: In progress — 4/8 plans executed (04-01, 04-02, 04-03, 04-04) but imports broken by drizzle-orm v1 RC upgrade; typecheck has ~152 errors from v1 RC module restructure; `next build` succeeds (runtime unaffected); 4 plans remaining (04-05, 04-06, 04-07, 04-08)
 **Detailed plan**: `PHASE_4_PLAN.md` (646 lines, original 10 streams 4A–4J) — reference for scope; the GSD plans below are the executable source of truth
 **Redesign rationale**: Original 10 streams conflated concerns. Redesigned into 8 plans across 4 waves that share file ownership, expose clear dependencies, and each fit within 50% context. The `apply()` pipeline from Phase 1 is retained as the optimistic UX layer; the underlying mutation is now an awaited server action. RLS is the only authorization check (proven by pgTAP).
 
 Plans:
-- [ ] 04-01-PLAN.md — DB foundation: tuned Drizzle client, 10 RSC read helpers, `withTransaction()` (sets `request.jwt.claims`), `withWorkspaceTransaction`, `mapDrizzleError`, inferred types, drizzleLogger — Wave 1
-- [ ] 04-02-PLAN.md — Action modules: 7 server-action files (issues, projects, cycles, comments, notifications, saved-views, memberships) + logActivity + barrel + 10 PostHog event helpers — Wave 1
-- [ ] 04-03-PLAN.md — Page migration (issues/projects/cycles): home, my-issues, projects index, project detail, project issues, cycle board, roadmap + 4 component prop changes; mock data arrays deleted (types kept) — Wave 2
-- [ ] 04-04-PLAN.md — Page migration (inbox/saved-views/members/activity) + remaining mock cleanup; saved-views store refactored to load from Postgres — Wave 2
-- [ ] 04-05-PLAN.md — Mutation cutover: 7 Next.js Route Handlers, 30+ typed server action wrappers, `apply()` refactored to await server actions, `useIssuesServerActions` hook, `useIssues` store as optimistic source of truth — Wave 3
+- [x] 04-01-PLAN.md — DB foundation: tuned Drizzle client, 10 RSC read helpers, `withTransaction()` (sets `request.jwt.claims`), `withWorkspaceTransaction`, `mapDrizzleError`, inferred types, drizzleLogger — Wave 1 ⚠️ v1 RC broke imports
+- [x] 04-02-PLAN.md — Action modules: 7 server-action files (issues, projects, cycles, comments, notifications, saved-views, memberships) + logActivity + barrel + 10 PostHog event helpers — Wave 1 ⚠️ v1 RC broke imports
+- [x] 04-03-PLAN.md — Page migration (issues/projects/cycles): home, my-issues, projects index, project detail, project issues, cycle board, roadmap + 4 component prop changes; mock data arrays deleted (types kept) — Wave 2 ⚠️ v1 RC broke imports
+- [x] 04-04-PLAN.md — Page migration (inbox/saved-views/members/activity) + remaining mock cleanup; saved-views store refactored to load from Postgres — Wave 2 ⚠️ v1 RC broke imports
+- [~] 04-05-PLAN.md — Mutation cutover: 7 Next.js Route Handlers, 30+ typed server action wrappers, `apply()` refactored to await server actions, `useIssuesServerActions` hook, `useIssues` store as optimistic source of truth — Wave 3 (API routes exist; remaining work pending)
 - [ ] 04-06-PLAN.md — Realtime + notification badge: Supabase browser client, 7 subscription helpers, `WorkspaceRealtimeProvider`, 4 client hooks, shell wiring — Wave 3
 - [ ] 04-07-PLAN.md — RLS proof + app-level guard removal: 27+ pgTAP cases (cross-tenant + mutations), `rbac-helpers.ts` deleted, `check-rbac.sh` enforces the rule, CI gate updated — Wave 4
 - [ ] 04-08-PLAN.md — Performance + observability + E2E: pool tuning, Sentry + PostHog + pino, 100-concurrent load test, full-flow integration, Playwright E2E, operational runbook — Wave 4
@@ -276,9 +276,9 @@ Phases execute in numeric order: 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9
 |-------|----------------|--------|-----------|
 | 0. Foundation | 7/7 | Complete | 2026-06-07 |
 | 1. Interactions | 7/7 | Complete | 2026-06-07 |
-| 2. Data layer (Supabase + Drizzle) | 0/14 | Ready to execute | - |
+| 2. Data layer (Supabase + Drizzle) | 14/14 | Complete | 2026-06-08 |
 | 3. Auth & Identity (Better Auth) | 7/7 | Complete | 2026-06-08 |
-| 4. Drizzle queries & mutations | 0/8 | Ready to execute | - |
+| 4. Drizzle queries & mutations | 4/8 | In progress (v1 RC broke imports) | - |
 | 5. Live & resilience | 0/9 | Not started | - |
 | 6. Search & AI | 0/6 | Not started | - |
 | 7. Integrations | 0/6 | Not started | - |
