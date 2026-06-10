@@ -8,6 +8,7 @@ import { useIssues } from "@/lib/state/issues";
 import { useUsersStore } from "@/lib/state/users";
 import { useLabelsStore } from "@/lib/state/labels";
 import { useProjectsStore } from "@/lib/state/projects";
+import { useShallow } from "zustand/react/shallow";
 import { apply } from "@/lib/state/mutations";
 import { StatusDot, getStatusLabel } from "@/components/primitives/status";
 import { PriorityIcon, getPriorityLabel } from "@/components/primitives/priority";
@@ -20,9 +21,9 @@ const PRIORITY_ORDER: PriorityKey[] = ["urgent", "high", "medium", "low", "none"
 export function BulkActionBar() {
   const selectedIds = useUI((s) => s.selectedIssueIds);
   const clearSelected = useUI((s) => s.clearSelected);
-  const userList = useUsersStore((s) => Object.values(s.byId));
-  const projectList = useProjectsStore((s) => Object.values(s.byId));
-  const labelList = useLabelsStore((s) => Object.values(s.byId));
+  const userList = useUsersStore(useShallow((s) => Object.values(s.byId)));
+  const projectList = useProjectsStore(useShallow((s) => Object.values(s.byId)));
+  const labelList = useLabelsStore(useShallow((s) => Object.values(s.byId)));
 
   return (
     <AnimatePresence>
@@ -203,12 +204,16 @@ function BulkMenu<T extends string>({
   );
 }
 
+const noopRun = () => Promise.resolve();
+
 function bulkSetStatus(ids: string[], status: StatusKey) {
   if (ids.length === 0) return;
   const prevSelected = Array.from(useUI.getState().selectedIssueIds);
   const prev = useIssues.getState().issues.filter((i) => ids.includes(i.id));
   const prevStatuses = new Map(prev.map((i) => [i.id, i.status]));
-  useIssues.getState().bulkSetStatus(ids, status);
+  useIssues.setState((s) => ({
+    issues: s.issues.map((i) => (ids.includes(i.id) ? { ...i, status } : i)),
+  }));
   apply({
     message: `Moved ${ids.length} to ${getStatusLabel(status)}`,
     affectedIds: ids,
@@ -220,7 +225,8 @@ function bulkSetStatus(ids: string[], status: StatusKey) {
       }));
       useUI.getState().setSelected(prevSelected);
     },
-    retry: () => useIssues.getState().bulkSetStatus(ids, status),
+    retry: () => {},
+    run: noopRun,
   });
 }
 
@@ -229,7 +235,9 @@ function bulkSetPriority(ids: string[], priority: PriorityKey) {
   const prevSelected = Array.from(useUI.getState().selectedIssueIds);
   const prev = useIssues.getState().issues.filter((i) => ids.includes(i.id));
   const prevPriorities = new Map(prev.map((i) => [i.id, i.priority]));
-  ids.forEach((id) => useIssues.getState().setPriority(id, priority));
+  useIssues.setState((s) => ({
+    issues: s.issues.map((i) => (ids.includes(i.id) ? { ...i, priority } : i)),
+  }));
   apply({
     message: `Set ${ids.length} to ${getPriorityLabel(priority)} priority`,
     affectedIds: ids,
@@ -241,7 +249,8 @@ function bulkSetPriority(ids: string[], priority: PriorityKey) {
       }));
       useUI.getState().setSelected(prevSelected);
     },
-    retry: () => ids.forEach((id) => useIssues.getState().setPriority(id, priority)),
+    retry: () => {},
+    run: noopRun,
   });
 }
 
@@ -251,7 +260,12 @@ function bulkAssign(ids: string[], userId: UserId) {
   const prevSelected = Array.from(useUI.getState().selectedIssueIds);
   const before = useIssues.getState().issues.filter((i) => ids.includes(i.id));
   const beforeHas = new Map(before.map((i) => [i.id, i.assigneeIds.includes(userId)]));
-  useIssues.getState().bulkAssign(ids, userId);
+  useIssues.setState((s) => ({
+    issues: s.issues.map((i) => {
+      if (!ids.includes(i.id) || i.assigneeIds.includes(userId)) return i;
+      return { ...i, assigneeIds: [...i.assigneeIds, userId] };
+    }),
+  }));
   apply({
     message: `Assigned ${name} to ${ids.length} issue${ids.length === 1 ? "" : "s"}`,
     affectedIds: ids,
@@ -272,14 +286,21 @@ function bulkAssign(ids: string[], userId: UserId) {
       }));
       useUI.getState().setSelected(prevSelected);
     },
-    retry: () => useIssues.getState().bulkAssign(ids, userId),
+    retry: () => {},
+    run: noopRun,
   });
 }
 
 function bulkAddLabel(ids: string[], labelId: LabelId) {
   if (ids.length === 0) return;
   const prevSelected = Array.from(useUI.getState().selectedIssueIds);
-  useIssues.getState().bulkAddLabel(ids, labelId);
+  useIssues.setState((s) => ({
+    issues: s.issues.map((i) =>
+      ids.includes(i.id) && !i.labelIds.includes(labelId)
+        ? { ...i, labelIds: [...i.labelIds, labelId] }
+        : i,
+    ),
+  }));
   apply({
     message: `Added label to ${ids.length} issue${ids.length === 1 ? "" : "s"}`,
     affectedIds: ids,
@@ -291,7 +312,8 @@ function bulkAddLabel(ids: string[], labelId: LabelId) {
       }));
       useUI.getState().setSelected(prevSelected);
     },
-    retry: () => useIssues.getState().bulkAddLabel(ids, labelId),
+    retry: () => {},
+    run: noopRun,
   });
 }
 
@@ -301,7 +323,9 @@ function bulkMove(ids: string[], projectId: ProjectId) {
   const prevSelected = Array.from(useUI.getState().selectedIssueIds);
   const before = useIssues.getState().issues.filter((i) => ids.includes(i.id));
   const beforeProject = new Map(before.map((i) => [i.id, i.projectId]));
-  ids.forEach((id) => useIssues.getState().setProject(id, projectId));
+  useIssues.setState((s) => ({
+    issues: s.issues.map((i) => (ids.includes(i.id) ? { ...i, projectId } : i)),
+  }));
   apply({
     message: `Moved ${ids.length} to ${name}`,
     affectedIds: ids,
@@ -315,21 +339,27 @@ function bulkMove(ids: string[], projectId: ProjectId) {
       }));
       useUI.getState().setSelected(prevSelected);
     },
-    retry: () => ids.forEach((id) => useIssues.getState().setProject(id, projectId)),
+    retry: () => {},
+    run: noopRun,
   });
 }
 
 function bulkArchive(ids: string[]) {
   if (ids.length === 0) return;
   const prevSelected = Array.from(useUI.getState().selectedIssueIds);
-  useIssues.getState().bulkArchive(ids);
+  useIssues.setState((s) => ({
+    issues: s.issues.map((i) => (ids.includes(i.id) ? { ...i, archived: true } : i)),
+  }));
   apply({
     message: `Archived ${ids.length} issue${ids.length === 1 ? "" : "s"}`,
     affectedIds: ids,
     undo: () => {
-      ids.forEach((id) => useIssues.getState().unarchiveIssue(id));
+      useIssues.setState((s) => ({
+        issues: s.issues.map((i) => (ids.includes(i.id) ? { ...i, archived: false } : i)),
+      }));
       useUI.getState().setSelected(prevSelected);
     },
-    retry: () => useIssues.getState().bulkArchive(ids),
+    retry: () => {},
+    run: noopRun,
   });
 }

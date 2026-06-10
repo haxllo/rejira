@@ -8,6 +8,8 @@ import { Kbd } from "@/components/primitives/kbd";
 import { Avatar } from "@/components/primitives/avatar";
 import { useUI } from "@/lib/state/ui";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import { useRealtimeMemberships } from "@/hooks/useRealtimeMemberships";
 import { WorkspaceSwitcher } from "@/components/team/workspace-switcher";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +18,8 @@ export function TopBar() {
   const path = usePathname();
   const setCommandOpen = useUI((s) => s.setCommandOpen);
   const me = useCurrentUser();
+  const { id: workspaceId } = useWorkspace();
+  useRealtimeMemberships(workspaceId ?? '');
 
   return (
     <header

@@ -36,9 +36,9 @@ export async function getIssuesForActiveWorkspace(filters?: IssueFilters): Promi
     filters?.assigneeId
       ? sql`EXISTS (
           SELECT 1 FROM ${s.issueAssignees} ia
-          JOIN ${s.users} u ON u.id = ia.userId
+          JOIN ${s.users} u ON u.id = ia.user_id
           WHERE ia.issue_id = ${s.issues.id}
-            AND ia.workspace_id = ${workspaceId}
+            AND ia."workspaceId" = ${workspaceId}
             AND u.external_id = ${filters.assigneeId}
         )`
       : undefined,

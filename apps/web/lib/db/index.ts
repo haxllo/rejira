@@ -7,6 +7,7 @@ export {
   withTransaction,
   withWorkspaceTransaction,
 } from './transaction';
+export type { Tx } from './transaction';
 
 export {
   mapDrizzleError,

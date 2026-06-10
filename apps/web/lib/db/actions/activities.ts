@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { activities } from '../schema';
-import { withWorkspaceTransaction } from '../transaction';
+import type { Tx } from '../transaction';
 import { requireAuth } from '@/lib/auth/require-auth';
 import { createId } from '@/lib/utils/id';
 import { activityVerbEnum } from '../schema/enums';
@@ -30,23 +30,21 @@ function isActivityVerb(v: string): v is ActivityVerb {
   return (activityVerbEnum.enumValues as readonly string[]).includes(v);
 }
 
-export async function logActivity(input: LogActivityInput): Promise<true> {
+export async function logActivity(tx: Tx, input: LogActivityInput): Promise<true> {
   const user = await requireAuth();
   if (!isActivityVerb(input.verb)) {
     throw new Error(`Invalid activity verb: ${input.verb}`);
   }
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const before = input.metadata ? JSON.stringify(input.metadata) : null;
-    await tx.insert(activities).values({
-      externalId: createId('act'),
-      workspaceId: input.workspaceId,
-      actorId: BigInt(user.id),
-      verb: input.verb,
-      objectType: input.objectType,
-      objectId: BigInt(input.objectId),
-      before: before as unknown as Record<string, unknown>,
-      after: null,
-    });
-    return true as const;
+  const before = input.metadata ? JSON.stringify(input.metadata) : null;
+  await tx.insert(activities).values({
+    externalId: createId('act'),
+    workspaceId: input.workspaceId,
+    actorId: BigInt(user.id),
+    verb: input.verb,
+    objectType: input.objectType,
+    objectId: BigInt(input.objectId),
+    before: before as unknown as Record<string, unknown>,
+    after: null,
   });
+  return true as const;
 }

@@ -13,6 +13,7 @@ import { RouteChangeSelectionReset } from '@/components/shell/route-change-selec
 import { RequireAuth } from '@/components/auth/require-auth';
 import { getUsers, getLabels, getIssuesForActiveWorkspace, getProjects } from '@/lib/db/rsc';
 import { WorkspaceDataHydrator } from '@/components/workspace/data-hydrator';
+import { WorkspaceRealtimeProvider } from '@/lib/realtime/workspace-provider';
 
 export default async function WorkspaceLayout({
   children,
@@ -28,6 +29,7 @@ export default async function WorkspaceLayout({
   return (
     <RequireAuth>
       <WorkspaceDataHydrator users={users} labels={labels} projects={projects} issues={issues} />
+      <WorkspaceRealtimeProvider>
       <div className="flex h-dvh flex-col">
         <RouteChangeSelectionReset />
         <GlobalShortcuts />
@@ -48,6 +50,7 @@ export default async function WorkspaceLayout({
         <ToastHost />
         <BulkActionBar />
       </div>
+      </WorkspaceRealtimeProvider>
     </RequireAuth>
   );
 }

@@ -3,7 +3,7 @@ import 'server-only';
 import { and, eq } from 'drizzle-orm';
 import { notifications } from '../schema';
 import type { Notification } from '../types';
-import { withWorkspaceTransaction } from '../transaction';
+import type { Tx } from '../transaction';
 import { requireAuth } from '@/lib/auth/require-auth';
 
 export interface MarkNotificationReadInput {
@@ -11,21 +11,19 @@ export interface MarkNotificationReadInput {
   notificationId: string;
 }
 
-export async function markNotificationRead(input: MarkNotificationReadInput): Promise<Notification> {
+export async function markNotificationRead(tx: Tx, input: MarkNotificationReadInput): Promise<Notification> {
   const user = await requireAuth();
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [row] = await tx
-      .update(notifications)
-      .set({ read: true })
-      .where(
-        and(
-          eq(notifications.externalId, input.notificationId),
-          eq(notifications.userId, BigInt(user.id)),
-        ),
-      )
-      .returning();
-    return row;
-  });
+  const [row] = await tx
+    .update(notifications)
+    .set({ read: true })
+    .where(
+      and(
+        eq(notifications.externalId, input.notificationId),
+        eq(notifications.userId, BigInt(user.id)),
+      ),
+    )
+    .returning();
+  return row;
 }
 
 export interface MarkAllNotificationsReadInput {
@@ -37,22 +35,21 @@ export interface MarkAllResult {
 }
 
 export async function markAllNotificationsRead(
+  tx: Tx,
   input: MarkAllNotificationsReadInput,
 ): Promise<MarkAllResult> {
   const user = await requireAuth();
-  return withWorkspaceTransaction(input.workspaceId, async (tx): Promise<MarkAllResult> => {
-    const updated = await tx
-      .update(notifications)
-      .set({ read: true })
-      .where(
-        and(
-          eq(notifications.userId, BigInt(user.id)),
-          eq(notifications.read, false),
-        ),
-      )
-      .returning({ id: notifications.id });
-    return { count: updated.length };
-  });
+  const updated = await tx
+    .update(notifications)
+    .set({ read: true })
+    .where(
+      and(
+        eq(notifications.userId, BigInt(user.id)),
+        eq(notifications.read, false),
+      ),
+    )
+    .returning({ id: notifications.id });
+  return { count: updated.length };
 }
 
 export interface SnoozeNotificationInput {
@@ -61,21 +58,19 @@ export interface SnoozeNotificationInput {
   until: Date;
 }
 
-export async function snoozeNotification(input: SnoozeNotificationInput): Promise<Notification> {
+export async function snoozeNotification(tx: Tx, input: SnoozeNotificationInput): Promise<Notification> {
   const user = await requireAuth();
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [row] = await tx
-      .update(notifications)
-      .set({ snoozedUntil: input.until })
-      .where(
-        and(
-          eq(notifications.externalId, input.notificationId),
-          eq(notifications.userId, BigInt(user.id)),
-        ),
-      )
-      .returning();
-    return row;
-  });
+  const [row] = await tx
+    .update(notifications)
+    .set({ snoozedUntil: input.until })
+    .where(
+      and(
+        eq(notifications.externalId, input.notificationId),
+        eq(notifications.userId, BigInt(user.id)),
+      ),
+    )
+    .returning();
+  return row;
 }
 
 export interface ArchiveNotificationInput {
@@ -83,17 +78,15 @@ export interface ArchiveNotificationInput {
   notificationId: string;
 }
 
-export async function archiveNotification(input: ArchiveNotificationInput): Promise<true> {
+export async function archiveNotification(tx: Tx, input: ArchiveNotificationInput): Promise<true> {
   const user = await requireAuth();
-  return withWorkspaceTransaction(input.workspaceId, async (tx): Promise<true> => {
-    await tx
-      .delete(notifications)
-      .where(
-        and(
-          eq(notifications.externalId, input.notificationId),
-          eq(notifications.userId, BigInt(user.id)),
-        ),
-      );
-    return true;
-  });
+  await tx
+    .delete(notifications)
+    .where(
+      and(
+        eq(notifications.externalId, input.notificationId),
+        eq(notifications.userId, BigInt(user.id)),
+      ),
+    );
+  return true;
 }

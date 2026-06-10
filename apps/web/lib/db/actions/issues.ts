@@ -3,7 +3,7 @@ import 'server-only';
 import { eq, inArray } from 'drizzle-orm';
 import { issues } from '../schema/issues';
 import type { Issue, NewIssue, StatusKey, PriorityKey } from '../types';
-import { withWorkspaceTransaction } from '../transaction';
+import type { Tx } from '../transaction';
 import {
   trackIssueCreated,
   trackStatusChanged,
@@ -26,39 +26,37 @@ export interface CreateIssueInput {
   parentId?: number;
 }
 
-export async function createIssue(input: CreateIssueInput): Promise<Issue> {
+export async function createIssue(tx: Tx, input: CreateIssueInput): Promise<Issue> {
   const user = await requireAuth();
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [row] = await tx
-      .insert(issues)
-      .values({
-        externalId: createId('iss'),
-        workspaceId: input.workspaceId,
-        projectId: input.projectId,
-        title: input.title,
-        description: input.description ?? '',
-        status: input.status ?? 'backlog',
-        priority: input.priority ?? 'none',
-        assigneeIds: input.assigneeIds ?? null,
-        labelIds: input.labelIds ?? null,
-        cycleId: input.cycleId ?? null,
-        dueDate: input.dueDate ?? null,
-        estimatePoints: input.estimatePoints ?? null,
-        parentId: input.parentId ?? null,
-      })
-      .returning();
-
-    trackIssueCreated({
-      userId: user.id,
+  const [row] = await tx
+    .insert(issues)
+    .values({
+      externalId: createId('iss'),
       workspaceId: input.workspaceId,
       projectId: input.projectId,
-      hasAssignee: !!row.assigneeIds?.length,
-      hasLabel: !!row.labelIds?.length,
-      hasDueDate: !!row.dueDate,
-    });
+      title: input.title,
+      description: input.description ?? '',
+      status: input.status ?? 'backlog',
+      priority: input.priority ?? 'none',
+      assigneeIds: input.assigneeIds ?? null,
+      labelIds: input.labelIds ?? null,
+      cycleId: input.cycleId ?? null,
+      dueDate: input.dueDate ?? null,
+      estimatePoints: input.estimatePoints ?? null,
+      parentId: input.parentId ?? null,
+    })
+    .returning();
 
-    return row;
+  trackIssueCreated({
+    userId: user.id,
+    workspaceId: input.workspaceId,
+    projectId: input.projectId,
+    hasAssignee: !!row.assigneeIds?.length,
+    hasLabel: !!row.labelIds?.length,
+    hasDueDate: !!row.dueDate,
   });
+
+  return row;
 }
 
 export interface UpdateIssueInput {
@@ -67,15 +65,13 @@ export interface UpdateIssueInput {
   patch: Partial<NewIssue>;
 }
 
-export async function updateIssue(input: UpdateIssueInput): Promise<Issue> {
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [row] = await tx
-      .update(issues)
-      .set({ ...input.patch, updatedAt: new Date() })
-      .where(eq(issues.externalId, input.issueId))
-      .returning();
-    return row;
-  });
+export async function updateIssue(tx: Tx, input: UpdateIssueInput): Promise<Issue> {
+  const [row] = await tx
+    .update(issues)
+    .set({ ...input.patch, updatedAt: new Date() })
+    .where(eq(issues.externalId, input.issueId))
+    .returning();
+  return row;
 }
 
 export interface SetStatusInput {
@@ -84,33 +80,31 @@ export interface SetStatusInput {
   status: StatusKey;
 }
 
-export async function setStatus(input: SetStatusInput): Promise<Issue> {
+export async function setStatus(tx: Tx, input: SetStatusInput): Promise<Issue> {
   const user = await requireAuth();
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [prior] = await tx
-      .select({ status: issues.status })
-      .from(issues)
-      .where(eq(issues.externalId, input.issueId))
-      .limit(1);
+  const [prior] = await tx
+    .select({ status: issues.status })
+    .from(issues)
+    .where(eq(issues.externalId, input.issueId))
+    .limit(1);
 
-    const [row] = await tx
-      .update(issues)
-      .set({ status: input.status, updatedAt: new Date() })
-      .where(eq(issues.externalId, input.issueId))
-      .returning();
+  const [row] = await tx
+    .update(issues)
+    .set({ status: input.status, updatedAt: new Date() })
+    .where(eq(issues.externalId, input.issueId))
+    .returning();
 
-    if (prior) {
-      trackStatusChanged({
-        userId: user.id,
-        workspaceId: input.workspaceId,
-        issueId: input.issueId,
-        from: prior.status,
-        to: input.status,
-      });
-    }
+  if (prior) {
+    trackStatusChanged({
+      userId: user.id,
+      workspaceId: input.workspaceId,
+      issueId: input.issueId,
+      from: prior.status,
+      to: input.status,
+    });
+  }
 
-    return row;
-  });
+  return row;
 }
 
 export interface SetPriorityInput {
@@ -119,15 +113,13 @@ export interface SetPriorityInput {
   priority: PriorityKey;
 }
 
-export async function setPriority(input: SetPriorityInput): Promise<Issue> {
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [row] = await tx
-      .update(issues)
-      .set({ priority: input.priority, updatedAt: new Date() })
-      .where(eq(issues.externalId, input.issueId))
-      .returning();
-    return row;
-  });
+export async function setPriority(tx: Tx, input: SetPriorityInput): Promise<Issue> {
+  const [row] = await tx
+    .update(issues)
+    .set({ priority: input.priority, updatedAt: new Date() })
+    .where(eq(issues.externalId, input.issueId))
+    .returning();
+  return row;
 }
 
 export interface SetAssigneesInput {
@@ -136,15 +128,13 @@ export interface SetAssigneesInput {
   assigneeIds: number[];
 }
 
-export async function setAssignees(input: SetAssigneesInput): Promise<Issue> {
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [row] = await tx
-      .update(issues)
-      .set({ assigneeIds: input.assigneeIds, updatedAt: new Date() })
-      .where(eq(issues.externalId, input.issueId))
-      .returning();
-    return row;
-  });
+export async function setAssignees(tx: Tx, input: SetAssigneesInput): Promise<Issue> {
+  const [row] = await tx
+    .update(issues)
+    .set({ assigneeIds: input.assigneeIds, updatedAt: new Date() })
+    .where(eq(issues.externalId, input.issueId))
+    .returning();
+  return row;
 }
 
 export interface SetLabelsInput {
@@ -153,15 +143,13 @@ export interface SetLabelsInput {
   labelIds: number[];
 }
 
-export async function setLabels(input: SetLabelsInput): Promise<Issue> {
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [row] = await tx
-      .update(issues)
-      .set({ labelIds: input.labelIds, updatedAt: new Date() })
-      .where(eq(issues.externalId, input.issueId))
-      .returning();
-    return row;
-  });
+export async function setLabels(tx: Tx, input: SetLabelsInput): Promise<Issue> {
+  const [row] = await tx
+    .update(issues)
+    .set({ labelIds: input.labelIds, updatedAt: new Date() })
+    .where(eq(issues.externalId, input.issueId))
+    .returning();
+  return row;
 }
 
 export interface SetDueDateInput {
@@ -170,15 +158,13 @@ export interface SetDueDateInput {
   dueDate: Date | null;
 }
 
-export async function setDueDate(input: SetDueDateInput): Promise<Issue> {
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [row] = await tx
-      .update(issues)
-      .set({ dueDate: input.dueDate, updatedAt: new Date() })
-      .where(eq(issues.externalId, input.issueId))
-      .returning();
-    return row;
-  });
+export async function setDueDate(tx: Tx, input: SetDueDateInput): Promise<Issue> {
+  const [row] = await tx
+    .update(issues)
+    .set({ dueDate: input.dueDate, updatedAt: new Date() })
+    .where(eq(issues.externalId, input.issueId))
+    .returning();
+  return row;
 }
 
 export interface SetEstimateInput {
@@ -187,15 +173,13 @@ export interface SetEstimateInput {
   points: number | null;
 }
 
-export async function setEstimate(input: SetEstimateInput): Promise<Issue> {
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [row] = await tx
-      .update(issues)
-      .set({ estimatePoints: input.points, updatedAt: new Date() })
-      .where(eq(issues.externalId, input.issueId))
-      .returning();
-    return row;
-  });
+export async function setEstimate(tx: Tx, input: SetEstimateInput): Promise<Issue> {
+  const [row] = await tx
+    .update(issues)
+    .set({ estimatePoints: input.points, updatedAt: new Date() })
+    .where(eq(issues.externalId, input.issueId))
+    .returning();
+  return row;
 }
 
 export interface SetDescriptionInput {
@@ -204,15 +188,13 @@ export interface SetDescriptionInput {
   description: string;
 }
 
-export async function setDescription(input: SetDescriptionInput): Promise<Issue> {
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [row] = await tx
-      .update(issues)
-      .set({ description: input.description, updatedAt: new Date() })
-      .where(eq(issues.externalId, input.issueId))
-      .returning();
-    return row;
-  });
+export async function setDescription(tx: Tx, input: SetDescriptionInput): Promise<Issue> {
+  const [row] = await tx
+    .update(issues)
+    .set({ description: input.description, updatedAt: new Date() })
+    .where(eq(issues.externalId, input.issueId))
+    .returning();
+  return row;
 }
 
 export interface SetTitleInput {
@@ -221,15 +203,13 @@ export interface SetTitleInput {
   title: string;
 }
 
-export async function setTitle(input: SetTitleInput): Promise<Issue> {
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [row] = await tx
-      .update(issues)
-      .set({ title: input.title, updatedAt: new Date() })
-      .where(eq(issues.externalId, input.issueId))
-      .returning();
-    return row;
-  });
+export async function setTitle(tx: Tx, input: SetTitleInput): Promise<Issue> {
+  const [row] = await tx
+    .update(issues)
+    .set({ title: input.title, updatedAt: new Date() })
+    .where(eq(issues.externalId, input.issueId))
+    .returning();
+  return row;
 }
 
 export interface SetProjectInput {
@@ -238,15 +218,13 @@ export interface SetProjectInput {
   projectId: number;
 }
 
-export async function setProject(input: SetProjectInput): Promise<Issue> {
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [row] = await tx
-      .update(issues)
-      .set({ projectId: input.projectId, updatedAt: new Date() })
-      .where(eq(issues.externalId, input.issueId))
-      .returning();
-    return row;
-  });
+export async function setProject(tx: Tx, input: SetProjectInput): Promise<Issue> {
+  const [row] = await tx
+    .update(issues)
+    .set({ projectId: input.projectId, updatedAt: new Date() })
+    .where(eq(issues.externalId, input.issueId))
+    .returning();
+  return row;
 }
 
 export interface ArchiveIssueInput {
@@ -254,26 +232,22 @@ export interface ArchiveIssueInput {
   issueId: string;
 }
 
-export async function archiveIssue(input: ArchiveIssueInput): Promise<Issue> {
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [row] = await tx
-      .update(issues)
-      .set({ archivedAt: new Date(), updatedAt: new Date() })
-      .where(eq(issues.externalId, input.issueId))
-      .returning();
-    return row;
-  });
+export async function archiveIssue(tx: Tx, input: ArchiveIssueInput): Promise<Issue> {
+  const [row] = await tx
+    .update(issues)
+    .set({ archivedAt: new Date(), updatedAt: new Date() })
+    .where(eq(issues.externalId, input.issueId))
+    .returning();
+  return row;
 }
 
-export async function unarchiveIssue(input: ArchiveIssueInput): Promise<Issue> {
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [row] = await tx
-      .update(issues)
-      .set({ archivedAt: null, updatedAt: new Date() })
-      .where(eq(issues.externalId, input.issueId))
-      .returning();
-    return row;
-  });
+export async function unarchiveIssue(tx: Tx, input: ArchiveIssueInput): Promise<Issue> {
+  const [row] = await tx
+    .update(issues)
+    .set({ archivedAt: null, updatedAt: new Date() })
+    .where(eq(issues.externalId, input.issueId))
+    .returning();
+  return row;
 }
 
 export interface BulkArchiveInput {
@@ -281,15 +255,13 @@ export interface BulkArchiveInput {
   issueIds: string[];
 }
 
-export async function bulkArchive(input: BulkArchiveInput): Promise<true> {
-  return withWorkspaceTransaction(input.workspaceId, async (tx): Promise<true> => {
-    if (input.issueIds.length === 0) return true;
-    await tx
-      .update(issues)
-      .set({ archivedAt: new Date(), updatedAt: new Date() })
-      .where(inArray(issues.externalId, input.issueIds));
-    return true;
-  });
+export async function bulkArchive(tx: Tx, input: BulkArchiveInput): Promise<true> {
+  if (input.issueIds.length === 0) return true;
+  await tx
+    .update(issues)
+    .set({ archivedAt: new Date(), updatedAt: new Date() })
+    .where(inArray(issues.externalId, input.issueIds));
+  return true;
 }
 
 export interface BulkSetStatusInput {
@@ -298,15 +270,13 @@ export interface BulkSetStatusInput {
   status: StatusKey;
 }
 
-export async function bulkSetStatus(input: BulkSetStatusInput): Promise<true> {
-  return withWorkspaceTransaction(input.workspaceId, async (tx): Promise<true> => {
-    if (input.issueIds.length === 0) return true;
-    await tx
-      .update(issues)
-      .set({ status: input.status, updatedAt: new Date() })
-      .where(inArray(issues.externalId, input.issueIds));
-    return true;
-  });
+export async function bulkSetStatus(tx: Tx, input: BulkSetStatusInput): Promise<true> {
+  if (input.issueIds.length === 0) return true;
+  await tx
+    .update(issues)
+    .set({ status: input.status, updatedAt: new Date() })
+    .where(inArray(issues.externalId, input.issueIds));
+  return true;
 }
 
 export interface ReorderIssuesInput {
@@ -316,10 +286,8 @@ export interface ReorderIssuesInput {
   toIndex: number;
 }
 
-export async function reorderIssues(_input: ReorderIssuesInput): Promise<true> {
-  return withWorkspaceTransaction(_input.workspaceId, async (_tx): Promise<true> => {
-    return true;
-  });
+export async function reorderIssues(_tx: Tx, _input: ReorderIssuesInput): Promise<true> {
+  return true;
 }
 
 export interface AddSubIssueInput {
@@ -328,23 +296,21 @@ export interface AddSubIssueInput {
   childId: string;
 }
 
-export async function addSubIssue(input: AddSubIssueInput): Promise<Issue> {
-  return withWorkspaceTransaction(input.workspaceId, async (tx) => {
-    const [parentRow] = await tx
-      .select({ id: issues.id })
-      .from(issues)
-      .where(eq(issues.externalId, input.parentId))
-      .limit(1);
-    if (!parentRow) {
-      throw new Error('Parent issue not found');
-    }
-    const [row] = await tx
-      .update(issues)
-      .set({ parentId: parentRow.id, updatedAt: new Date() })
-      .where(eq(issues.externalId, input.childId))
-      .returning();
-    return row;
-  });
+export async function addSubIssue(tx: Tx, input: AddSubIssueInput): Promise<Issue> {
+  const [parentRow] = await tx
+    .select({ id: issues.id })
+    .from(issues)
+    .where(eq(issues.externalId, input.parentId))
+    .limit(1);
+  if (!parentRow) {
+    throw new Error('Parent issue not found');
+  }
+  const [row] = await tx
+    .update(issues)
+    .set({ parentId: parentRow.id, updatedAt: new Date() })
+    .where(eq(issues.externalId, input.childId))
+    .returning();
+  return row;
 }
 
 export type IssueLinkType = 'blocks' | 'relates_to' | 'duplicates';
@@ -356,9 +322,7 @@ export interface LinkIssuesInput {
   linkType: IssueLinkType;
 }
 
-export async function linkIssues(_input: LinkIssuesInput): Promise<true> {
+export async function linkIssues(_tx: Tx, _input: LinkIssuesInput): Promise<true> {
   console.warn('[db/actions/issues] linkIssues is a no-op: issue_links table is Phase 5');
-  return withWorkspaceTransaction(_input.workspaceId, async (_tx): Promise<true> => {
-    return true;
-  });
+  return true;
 }

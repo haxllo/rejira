@@ -72,6 +72,7 @@ export function ViewRenderer({ view, issues, currentUserId }: ViewRendererProps)
             affectedIds: [],
             undo: () => useSavedViews.getState().remove(saved.id),
             retry: () => useSavedViews.getState().save(saved),
+            run: () => Promise.resolve(),
           });
         }}
         savingState={savingState}

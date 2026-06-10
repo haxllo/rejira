@@ -2520,13 +2520,7 @@
         },
         "actor_id": {
           "name": "actor_id",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "actor_workspace_id": {
-          "name": "actor_workspace_id",
-          "type": "bigint",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -2561,6 +2555,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "actorWorkspaceId": {
+          "name": "actorWorkspaceId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -2589,7 +2589,7 @@
           "name": "audit_log_actor_workspace_created_idx",
           "columns": [
             {
-              "expression": "actor_workspace_id",
+              "expression": "actorWorkspaceId",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2671,7 +2671,16 @@
         "member_removed",
         "role_changed",
         "data_export_requested",
-        "account_deleted"
+        "account_deleted",
+        "auth_password_change",
+        "auth_email_change",
+        "auth_2fa_enabled",
+        "auth_2fa_disabled",
+        "auth_backup_code_used",
+        "auth_account_deleted",
+        "auth_account_restored",
+        "auth_passkey_enrolled",
+        "auth_passkey_removed"
       ]
     },
     "public.cycle_status": {

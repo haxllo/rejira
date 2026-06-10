@@ -3,8 +3,11 @@
 
 import { chromium } from "playwright";
 import { mkdir, rm } from "fs/promises";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import { spawn } from "child_process";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const ROUTES = [
   { path: "/inbox", name: "inbox" },
@@ -21,7 +24,7 @@ const ROUTES = [
 
 const DENSITIES = ["default", "compact", "roomy"];
 
-const OUT = "G:\\ciqada2\\Projects\\jira redesign\\screenshots";
+const OUT = join(__dirname, "..", "screenshots");
 
 async function waitFor(url, timeoutMs = 90000) {
   const t0 = Date.now();
@@ -51,7 +54,7 @@ async function main() {
   console.log("Starting next dev on :3737...");
   const isWindows = process.platform === "win32";
   const dev = spawn("npx", ["next", "dev", "-p", "3737"], {
-    cwd: "G:\\ciqada2\\Projects\\jira redesign\\apps\\web",
+    cwd: join(__dirname, "..", "apps", "web"),
     stdio: ["ignore", "pipe", "pipe"],
     detached: !isWindows,
     windowsHide: true,

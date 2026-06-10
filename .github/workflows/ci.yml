@@ -66,6 +66,13 @@ jobs:
       - name: Seed the demo workspace
         run: npm run db:seed
 
+      - name: App-level guard check (no requireRole helpers)
+        run: bash apps/web/scripts/check-rbac.sh
+
+      - name: pgTAP RLS suite
+        run: |
+          supabase db test --include 04-rls-cross-tenant.test.sql,04-rls-mutations.test.sql
+
       - name: Vitest: RLS + Drizzle + auth tests
         run: npm run db:test
 

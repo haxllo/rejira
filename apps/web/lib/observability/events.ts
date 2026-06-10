@@ -52,6 +52,25 @@ interface NotificationReadProps {
   notificationId: string;
 }
 
+interface MemberInvitedProps {
+  userId: string;
+  workspaceId: string;
+  email: string;
+}
+
+interface MemberJoinedProps {
+  userId: string;
+  workspaceId: string;
+}
+
+interface MemberRoleChangedProps {
+  userId: string;
+  workspaceId: string;
+  targetUserId: string;
+  from: string;
+  to: string;
+}
+
 function safeCapture(event: string, distinctId: string, properties: Record<string, unknown>): void {
   try {
     trackEvent(event, distinctId, properties);
@@ -113,5 +132,27 @@ export function trackNotificationRead(props: NotificationReadProps): void {
   safeCapture('notification_read', props.userId, {
     workspaceId: props.workspaceId,
     notificationId: props.notificationId,
+  });
+}
+
+export function trackMemberInvited(props: MemberInvitedProps): void {
+  safeCapture('member_invited', props.userId, {
+    workspaceId: props.workspaceId,
+    email: props.email,
+  });
+}
+
+export function trackMemberJoined(props: MemberJoinedProps): void {
+  safeCapture('member_joined', props.userId, {
+    workspaceId: props.workspaceId,
+  });
+}
+
+export function trackMemberRoleChanged(props: MemberRoleChangedProps): void {
+  safeCapture('member_role_changed', props.userId, {
+    workspaceId: props.workspaceId,
+    targetUserId: props.targetUserId,
+    from: props.from,
+    to: props.to,
   });
 }

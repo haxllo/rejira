@@ -37,13 +37,16 @@ function detectLocale(request: NextRequest): string {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (PUBLIC.some((p) => pathname.startsWith(p))) {
+  if (PUBLIC.some((p) => pathname.startsWith(p)) || pathname === '/') {
     const locale = detectLocale(request);
+    const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID();
     const response = NextResponse.next();
+    response.headers.set('x-request-id', requestId);
     response.headers.set('x-locale', locale);
     response.headers.set('X-Frame-Options', 'DENY');
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    response.headers.set('Access-Control-Expose-Headers', 'x-request-id');
 
     const cookieLocale = request.cookies.get('locale')?.value;
     if (!cookieLocale) {
@@ -77,12 +80,22 @@ export async function middleware(request: NextRequest) {
   }
 
   const locale = detectLocale(request);
-  const response = NextResponse.next();
+  const requestId = request.headers.get('x-request-id') ?? randomUUID();
+  const response = NextResponse.next({
+    request: {
+      headers: new Headers({
+        ...Object.fromEntries(request.headers.entries()),
+        'x-request-id': requestId,
+      }),
+    },
+  });
 
+  response.headers.set('x-request-id', requestId);
   response.headers.set('x-locale', locale);
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('Access-Control-Expose-Headers', 'x-request-id');
 
   const cookieLocale = request.cookies.get('locale')?.value;
   if (!cookieLocale) {

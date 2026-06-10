@@ -8,36 +8,43 @@ import { motion } from "motion/react";
 import {
   InboxIcon,
   ListIconCustom,
-  RowsIcon,
-  KanbanIconCustom,
   StarIcon,
-  GanttIcon,
+  ViewIcon,
   ChevronsUpDownIcon,
   PlusIcon,
   HomeIcon,
   CircleDotIcon,
-  CircleCheckIcon,
-  CircleIcon,
 } from "@/components/icons";
+import { useShallow } from "zustand/react/shallow";
 import { useProjectsStore } from "@/lib/state/projects";
 import { useIssues } from "@/lib/state/issues";
+import { useNotifications } from "@/lib/state/notifications";
 import { useCurrentUserId } from "@/hooks/useCurrentUser";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
+import { useUser } from "@/hooks/useUser";
+import { useSavedViews } from "@/lib/state/saved-views";
 import { cn } from "@/lib/utils";
 import { Kbd } from "@/components/primitives/kbd";
 
 export function PrimaryNav() {
   const path = usePathname() ?? "";
-  const projectList = useProjectsStore((s) => Object.values(s.byId));
+  const projectList = useProjectsStore(useShallow((s) => Object.values(s.byId)));
   const issues = useIssues((s) => s.issues);
   const meId = useCurrentUserId();
+  const unreadCount = useNotifications((s) => s.unreadCount);
+  const { user } = useUser();
+  useRealtimeNotifications(user?.id ?? '');
   const myIssuesCount = meId
     ? issues.filter((i) => i.assigneeIds.includes(meId)).length
     : 0;
+  const savedViews = useSavedViews((s) => s.views);
+  const starredViews = savedViews.filter((v) => v.starred);
+  const regularViews = savedViews.filter((v) => !v.starred);
 
   return (
     <nav className="flex w-[244px] shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-bg)] py-3">
       <div className="flex flex-col gap-0.5 px-2">
-        <NavItem href="/inbox" label="Inbox" icon={<InboxIcon size={15} />} active={path.startsWith("/inbox")} />
+        <NavItem href="/inbox" label="Inbox" icon={<InboxIcon size={15} />} badge={unreadCount} active={path.startsWith("/inbox")} />
         <NavItem href="/my-issues" label="My Issues" icon={<ListIconCustom size={15} />} badge={myIssuesCount} active={path.startsWith("/my-issues")} />
         <NavItem href="/" label="Home" icon={<HomeIcon size={15} />} active={path === "/"} />
       </div>
@@ -82,18 +89,23 @@ export function PrimaryNav() {
         })}
       </div>
 
-      <div className="mt-5 flex items-center justify-between px-4">
-        <span className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-faint)]">
-          Views
-        </span>
-      </div>
-
-      <div className="mt-1.5 flex flex-col gap-0.5 px-2">
-        <ViewItem href="/projects/eng/issues" label="All Issues" icon={<RowsIcon size={15} />} active={path === "/projects/eng/issues"} />
-        <ViewItem href="/projects/eng/cycles/23" label="Active Cycle" icon={<KanbanIconCustom size={15} />} active={path.includes("/cycles")} />
-        <ViewItem href="#" label="Roadmap" icon={<GanttIcon size={15} />} />
-        <ViewItem href="#" label="Starred" icon={<StarIcon size={14} />} />
-      </div>
+      {savedViews.length > 0 && (
+        <>
+          <div className="mt-5 flex items-center justify-between px-4">
+            <span className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-faint)]">
+              Views
+            </span>
+          </div>
+          <div className="mt-1.5 flex flex-col gap-0.5 px-2">
+            {starredViews.map((v) => (
+              <ViewItem key={v.id} href={`/views/${v.id}`} label={v.name} icon={<StarIcon size={14} />} active={path === `/views/${v.id}`} />
+            ))}
+            {regularViews.map((v) => (
+              <ViewItem key={v.id} href={`/views/${v.id}`} label={v.name} icon={<ViewIcon size={14} />} active={path === `/views/${v.id}`} />
+            ))}
+          </div>
+        </>
+      )}
 
       <div className="mt-auto px-3 pb-2">
         <div className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] p-2.5">

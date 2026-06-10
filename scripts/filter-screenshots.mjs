@@ -1,10 +1,13 @@
 // Focused screenshots: filter chip removal + filter button states.
 import { chromium } from "playwright";
 import { mkdir } from "fs/promises";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import { spawn } from "child_process";
 
-const OUT = "G:\\ciqada2\\Projects\\jira redesign\\screenshots";
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const OUT = join(__dirname, "..", "screenshots");
 const URL = "http://localhost:3738";
 
 async function waitFor(url, timeoutMs = 90000) {
@@ -26,7 +29,7 @@ async function main() {
 
   console.log("Starting next dev on :3738...");
   const dev = spawn("npx", ["next", "dev", "-p", "3738"], {
-    cwd: "G:\\ciqada2\\Projects\\jira redesign\\apps\\web",
+    cwd: join(__dirname, "..", "apps", "web"),
     stdio: ["ignore", "pipe", "pipe"],
     detached: false,
     windowsHide: true,

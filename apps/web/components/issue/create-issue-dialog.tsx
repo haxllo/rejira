@@ -18,6 +18,7 @@ import { useUI } from "@/lib/state/ui";
 import { useIssues } from "@/lib/state/issues";
 import { useProjectsStore } from "@/lib/state/projects";
 import { useUsersStore } from "@/lib/state/users";
+import { useShallow } from "zustand/react/shallow";
 import { apply } from "@/lib/state/mutations";
 import { useCurrentUserId } from "@/hooks/useCurrentUser";
 import type { StatusKey, PriorityKey } from "@/lib/db/types";
@@ -52,31 +53,46 @@ export function CreateIssueDialog() {
     }
   }, [open, defaultUserIds]);
 
-  const projectList = useProjectsStore((s) => Object.values(s.byId));
-  const userList = useUsersStore((s) => Object.values(s.byId));
+  const projectList = useProjectsStore(useShallow((s) => Object.values(s.byId)));
+  const userList = useUsersStore(useShallow((s) => Object.values(s.byId)));
   const project = projectList.find((p) => p.id === projectId);
 
   const submit = () => {
     const t = title.trim();
     if (!t) return;
-    const newId = useIssues.getState().addIssue({
+    const number = useIssues.getState().issues.length + 1001;
+    const newId = `i_new_${Date.now().toString(36)}`;
+    const created: Record<string, unknown> = {
+      id: newId,
+      externalId: newId,
+      key: `T-${number}`,
+      number,
       projectId,
       title: t,
-      description: "",
+      description: '',
       status,
       priority,
       assigneeIds,
-      authorId: currentUserId ?? "u_unknown",
+      authorId: currentUserId ?? 'u_unknown',
       labelIds: [],
-    });
-    const created = useIssues.getState().issues.find((i) => i.externalId === newId) ?? useIssues.getState().issues[0]!;
+      workspaceId: '',
+      urlCount: 0,
+      attachmentCount: 0,
+      subIssueIds: [],
+      blockedBy: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      archivedAt: null,
+    };
+    useIssues.setState((s) => ({ issues: [created as unknown as typeof s.issues[0], ...s.issues] }));
     apply({
       message: `Created ${created.key}`,
-      detail: created.title,
+      detail: created.title as string,
       affectedIds: [newId],
-      undo: () => useIssues.getState().archiveIssue(newId),
-      retry: () => useIssues.getState().unarchiveIssue(newId),
-      viewAction: { label: "View", run: () => useUI.getState().openDrawer(newId) },
+      undo: () => useIssues.getState().removeOne(newId),
+      retry: () => {},
+      viewAction: { label: 'View', run: () => useUI.getState().openDrawer(newId) },
+      run: () => Promise.resolve(),
     });
     close();
   };

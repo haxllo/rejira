@@ -24,6 +24,7 @@ import { useUI } from '@/lib/state/ui';
 import { lookupUser, type UserView } from '@/lib/state/users';
 import { lookupLabel, type LabelView } from '@/lib/state/labels';
 import { cn } from '@/lib/utils';
+import { useRealtimeComments } from '@/hooks/useRealtimeComments';
 import type { Issue, StatusKey, PriorityKey } from '@/lib/db/types';
 
 const STATUS_ORDER: StatusKey[] = ['backlog', 'todo', 'in_progress', 'in_review', 'done', 'cancelled'];
@@ -262,7 +263,8 @@ function DescriptionSection({ issue }: { issue: Issue }) {
   );
 }
 
-function ActivityAndComments({ issue: _issue }: { issue: Issue }) {
+function ActivityAndComments({ issue }: { issue: Issue }) {
+  useRealtimeComments(issue.externalId);
   return (
     <section className="mt-6">
       <SectionHeader title="Activity" />

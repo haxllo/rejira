@@ -20,6 +20,7 @@ import {
   SettingsIcon,
   UserIcon,
 } from "@/components/icons";
+import { useShallow } from "zustand/react/shallow";
 import { useUI } from "@/lib/state/ui";
 import { useProjectsStore } from "@/lib/state/projects";
 import { useIssues } from "@/lib/state/issues";
@@ -36,7 +37,7 @@ export function CommandPalette() {
   const open = useUI((s) => s.commandOpen);
   const setOpen = useUI((s) => s.setCommandOpen);
   const openDrawer = useUI((s) => s.openDrawer);
-  const projectList = useProjectsStore((s) => Object.values(s.byId));
+  const projectList = useProjectsStore(useShallow((s) => Object.values(s.byId)));
   const issues = useIssues((s) => s.issues);
 
   return (
