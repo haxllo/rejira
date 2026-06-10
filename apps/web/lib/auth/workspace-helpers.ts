@@ -3,8 +3,9 @@ import 'server-only';
 import { db } from '@/lib/db/client';
 import { workspaces } from '@/lib/db/schema/workspaces';
 import { memberships } from '@/lib/db/schema/memberships';
-import { eq, and, isNull, count } from 'drizzle-orm';
-import { auth } from './server';
+import { eq, and, isNull, count, inArray, sql } from 'drizzle-orm';
+import { redirect } from 'next/navigation';
+import { requireAuth } from './require-auth';
 import type { Workspace, MembershipWithUser } from './workspace-types';
 import { headers } from 'next/headers';
 
@@ -21,17 +22,40 @@ interface CreateWorkspaceData {
 }
 
 export async function createWorkspace(
-  _userId: string,
+  userId: string,
   data: CreateWorkspaceData,
 ): Promise<Workspace> {
-  const result = await auth.api.createOrganization({
-    body: {
+  const workspaceId = crypto.randomUUID();
+
+  return db.transaction(async (tx) => {
+    await tx.execute(
+      sql`SELECT set_config('request.jwt.claims', ${JSON.stringify({ sub: userId })}, true)`,
+    );
+
+    await tx.insert(workspaces).values({
+      id: workspaceId,
+      externalId: crypto.randomUUID(),
       name: data.name,
       slug: data.slug,
-    },
-  });
+      ownerId: userId,
+    });
 
-  return result as unknown as Workspace;
+    await tx.insert(memberships).values({
+      id: crypto.randomUUID(),
+      externalId: crypto.randomUUID(),
+      userId,
+      workspaceId,
+      role: 'owner',
+    });
+
+    const [result] = await tx
+      .select()
+      .from(workspaces)
+      .where(eq(workspaces.id, workspaceId))
+      .limit(1);
+
+    return result as Workspace;
+  });
 }
 
 export async function getWorkspace(slug: string): Promise<Workspace | null> {
@@ -50,7 +74,7 @@ export async function listUserWorkspaces(userId: string): Promise<Workspace[]> {
       workspaceId: memberships.workspaceId,
     })
     .from(memberships)
-    .where(eq(memberships.userId, Number(userId)));
+    .where(eq(memberships.userId, userId));
 
   if (userMemberships.length === 0) return [];
 
@@ -62,12 +86,12 @@ export async function listUserWorkspaces(userId: string): Promise<Workspace[]> {
     .where(
       and(
         isNull(workspaces.archivedAt),
-        // Drizzle doesn't support `in` with bigint arrays easily
+        inArray(workspaces.id, workspaceIds),
       ),
     )
     .orderBy(workspaces.name);
 
-  return result.filter((w) => workspaceIds.includes(w.id)) as Workspace[];
+  return result as Workspace[];
 }
 
 export async function getDefaultWorkspace(_userId: string): Promise<Workspace | null> {
@@ -76,7 +100,7 @@ export async function getDefaultWorkspace(_userId: string): Promise<Workspace | 
       workspaceId: memberships.workspaceId,
     })
     .from(memberships)
-    .where(eq(memberships.userId, Number(_userId)))
+    .where(eq(memberships.userId, _userId))
     .limit(1);
 
   if (userMemberships.length === 0) return null;
@@ -110,14 +134,14 @@ export async function archiveWorkspace(workspaceId: string): Promise<void> {
   await db
     .update(workspaces)
     .set({ archivedAt: new Date() })
-    .where(eq(workspaces.id, Number(workspaceId)));
+    .where(eq(workspaces.id, workspaceId));
 }
 
 export async function getWorkspaceMemberCount(workspaceId: string): Promise<number> {
   const result = await db
     .select({ value: count() })
     .from(memberships)
-    .where(eq(memberships.workspaceId, Number(workspaceId)));
+    .where(eq(memberships.workspaceId, workspaceId));
 
   return Number(result[0]?.value ?? 0);
 }
@@ -126,7 +150,7 @@ export async function getMembersWithUsers(
   workspaceId: string,
 ): Promise<MembershipWithUser[]> {
   const result = await db.query.memberships.findMany({
-    where: eq(memberships.workspaceId, Number(workspaceId)),
+    where: eq(memberships.workspaceId, workspaceId),
     with: {
       user: true,
     },
@@ -136,12 +160,20 @@ export async function getMembersWithUsers(
 }
 
 export async function getActiveWorkspaceId(workspaceSlug?: string): Promise<string> {
+  const user = await requireAuth();
+
+
+
   const userMemberships = await db
     .select({ workspaceId: memberships.workspaceId })
-    .from(memberships);
+    .from(memberships)
+    .where(eq(memberships.userId, user.id));
 
   if (userMemberships.length === 0) {
-    throw new Error('No workspace membership found for current user');
+    // No workspace membership — redirect to onboarding to create one.
+    // This can happen for users who signed up before the auto-creation
+    // logic was added, or in edge cases where membership creation failed.
+    redirect('/onboarding');
   }
 
   if (workspaceSlug) {
@@ -157,9 +189,12 @@ export async function getActiveWorkspaceId(workspaceSlug?: string): Promise<stri
 }
 
 export async function getActiveWorkspace(workspaceSlug?: string): Promise<ActiveWorkspace | null> {
+  const user = await requireAuth();
+
   const userMemberships = await db
     .select({ workspaceId: memberships.workspaceId })
-    .from(memberships);
+    .from(memberships)
+    .where(eq(memberships.userId, user.id));
 
   if (userMemberships.length === 0) return null;
 

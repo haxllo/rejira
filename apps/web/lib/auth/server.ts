@@ -10,6 +10,9 @@ import { emitAuditEvent } from './audit';
 import { validatePassword } from './password-policy';
 import { checkBreach } from './breach-check';
 import { buildVerificationPageUrl } from './email-url';
+import { db } from '@/lib/db/client';
+import { workspaces } from '@/lib/db/schema/workspaces';
+import { memberships } from '@/lib/db/schema/memberships';
 
 async function validatePasswordWithBreachCheck(password: string): Promise<string | null> {
   const basicError = await validatePassword(password);
@@ -23,18 +26,24 @@ async function validatePasswordWithBreachCheck(password: string): Promise<string
   return null;
 }
 
-const connectionString = process.env.DATABASE_URL_SESSION!;
+const globalForAuth = globalThis as unknown as {
+  authPool: Pool | undefined;
+};
+
+const connectionString = process.env.DATABASE_URL_SESSION || 'postgresql://postgres:postgres@localhost:54322/postgres';
 const isLocal = connectionString.includes('localhost') || connectionString.includes('127.0.0.1') || connectionString.includes('::1');
 
 const skipEmailVerification =
   process.env.DEV_SKIP_EMAIL_VERIFICATION === 'true' &&
   process.env.NODE_ENV !== 'production';
 
-const pool = new Pool({
+const pool = globalForAuth.authPool ?? new Pool({
   connectionString,
   max: 10,
   ssl: isLocal ? false : { rejectUnauthorized: false },
 });
+
+if (process.env.NODE_ENV !== 'production') globalForAuth.authPool = pool;
 
 export const auth = betterAuth({
   database: pool,
@@ -103,7 +112,6 @@ export const auth = betterAuth({
     },
   },
   plugins: [
-    nextCookies(),
     organization({
       schema: {
         organization: { modelName: 'workspaces' },
@@ -175,6 +183,7 @@ export const auth = betterAuth({
         },
       ],
     }),
+    nextCookies(),
   ],
   trustedOrigins: [process.env.BETTER_AUTH_URL!],
   rateLimit: {
@@ -203,6 +212,43 @@ export const auth = betterAuth({
             });
           } catch {
             // non-critical
+          }
+
+          // Auto-create a default workspace + membership for the new user.
+          // Every user must belong to at least one workspace; the onboarding
+          // wizard can be used later to rename it, invite team members, etc.
+          try {
+            const userId = user.id as string;
+            const userName = (user.name as string) || 'User';
+
+            // Generate a unique slug from the user's name + id suffix to avoid collisions
+            const baseSlug = userName
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-|-$/g, '')
+              .slice(0, 20);
+            const slugSuffix = userId.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
+            const slug = `${baseSlug || 'workspace'}-${slugSuffix}`;
+
+            const workspaceId = crypto.randomUUID();
+
+            await db.insert(workspaces).values({
+              id: workspaceId,
+              externalId: crypto.randomUUID(),
+              name: `${userName}'s Workspace`,
+              slug,
+              ownerId: userId,
+            });
+
+            await db.insert(memberships).values({
+              id: crypto.randomUUID(),
+              externalId: crypto.randomUUID(),
+              userId,
+              workspaceId,
+              role: 'owner',
+            });
+          } catch {
+            // non-critical — workspace creation failure should not block sign-up
           }
         },
         before: async (user: Record<string, unknown>) => {

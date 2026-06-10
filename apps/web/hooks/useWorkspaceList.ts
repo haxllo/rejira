@@ -22,7 +22,8 @@ export function useWorkspaceList(): {
 
   const workspaces = useMemo(() => {
     if (!organizations) return [];
-    return (Array.isArray(organizations) ? organizations : [organizations]).map((org: Record<string, unknown>) => ({
+    const list = Array.isArray(organizations) ? organizations : [organizations];
+    return list.filter(Boolean).map((org: Record<string, unknown>) => ({
       id: (org.id as string) ?? '',
       name: (org.name as string) ?? 'Unknown',
       slug: (org.slug as string) ?? (org.name as string)?.toLowerCase().replace(/\s+/g, '-') ?? '',

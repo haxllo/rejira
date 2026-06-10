@@ -85,7 +85,7 @@ export function StepCreateWorkspace({
             placeholder="My Workspace"
             autoFocus
             maxLength={100}
-            className="h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-[13px] text-[var(--color-text)] transition-colors duration-[120ms] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
+            className="h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-[13px] text-[var(--color-text)] transition-colors duration-[120ms]"
           />
         </label>
 
@@ -95,13 +95,13 @@ export function StepCreateWorkspace({
           </span>
           <div
             className={cn(
-              'flex items-center rounded-md border bg-[var(--color-bg)]',
+              'flex items-center h-9 rounded-md border bg-[var(--color-bg)] transition-[border-color] duration-[var(--duration-enter)] [transition-timing-function:var(--ease-spring)]',
               slug && !isValidSlug(slug)
                 ? 'border-[var(--color-danger)]'
-                : 'border-[var(--color-border)]',
+                : 'border-[var(--color-border)] focus-within:border-[var(--color-accent)]',
             )}
           >
-            <span className="px-3 text-[12px] text-[var(--color-text-muted)] select-none">
+            <span className="px-3 text-[13px] text-[var(--color-text)] select-none">
               rejira.app/
             </span>
             <input
@@ -113,7 +113,7 @@ export function StepCreateWorkspace({
               }}
               onBlur={handleSlugBlur}
               placeholder="my-workspace"
-              className="flex-1 h-9 bg-transparent px-1 text-[13px] text-[var(--color-text)] transition-colors duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
+              className="flex-1 h-9 bg-transparent px-1 text-[13px] text-[var(--color-text)] outline-none transition-colors duration-[120ms]"
             />
           </div>
           <div className="flex items-center gap-2">

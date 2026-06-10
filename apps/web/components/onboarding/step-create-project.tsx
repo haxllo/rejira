@@ -76,7 +76,7 @@ export function StepCreateProject({
             onChange={(e) => handleNameChange(e.target.value)}
             placeholder="My Project"
             autoFocus
-            className="h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-[13px] text-[var(--color-text)] transition-colors duration-[120ms] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
+            className="h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-[13px] text-[var(--color-text)] transition-colors duration-[120ms]"
           />
         </label>
 
@@ -90,7 +90,7 @@ export function StepCreateProject({
             onChange={(e) => setKey(e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5))}
             placeholder="ENG"
             className={cn(
-              'h-9 w-24 rounded-md border bg-[var(--color-bg)] px-3 text-[13px] font-mono uppercase tracking-wider text-[var(--color-text)] transition-colors duration-[120ms] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]',
+              'h-9 w-24 rounded-md border bg-[var(--color-bg)] px-3 text-[13px] font-mono uppercase tracking-wider text-[var(--color-text)] transition-colors duration-[120ms]',
               key && !isValidKey(key) ? 'border-[var(--color-danger)]' : 'border-[var(--color-border)]',
             )}
           />

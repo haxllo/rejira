@@ -86,7 +86,7 @@ export function StepInviteTeam({
               placeholder="colleague@example.com"
               autoFocus
               className={cn(
-                'h-9 rounded-md border bg-[var(--color-bg)] px-3 text-[13px] text-[var(--color-text)] transition-colors duration-[120ms] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]',
+                'h-9 rounded-md border bg-[var(--color-bg)] px-3 text-[13px] text-[var(--color-text)] transition-colors duration-[120ms]',
                 emailError && emailError !== 'This email is already added'
                   ? 'border-[var(--color-danger)]'
                   : 'border-[var(--color-border)]',

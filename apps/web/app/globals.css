@@ -191,10 +191,15 @@ body {
   color: var(--color-text);
 }
 
-/* Focus ring (universal, always visible on keyboard) */
+/* Focus ring (universal, always visible on keyboard)
+   Uses box-shadow with 2px spread instead of outline — outlines have
+   unreliable rendering with border-radius across browsers (gaps at corners,
+   missing sides). box-shadow follows border-radius correctly at all zoom
+   levels and is the industry standard for rounded focus rings. */
 :where(button, a, input, textarea, select, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-border-focus);
-  outline-offset: 2px;
+  outline: none;
+  transition: box-shadow var(--duration-enter) var(--ease-spring);
+  box-shadow: 0 0 0 2px var(--color-border-focus);
   border-radius: var(--radius-sm);
 }
 
@@ -204,6 +209,7 @@ body {
 input[placeholder="Filter shortcuts…"]:focus-visible,
 input[placeholder="Filter shortcuts…"]:focus {
   outline: none;
+  box-shadow: none;
 }
 
 /* Optimistic mutation pulse: brief glow on rows/cards that just mutated */
@@ -387,11 +393,25 @@ input[placeholder="Filter shortcuts…"]:focus {
 
 .auth-field input:focus {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 2px oklch(0.72 0.18 40 / 0.15);
+  box-shadow: 0 0 4px oklch(0.72 0.18 40 / 0.3);
 }
 
 .auth-field input::placeholder {
   color: var(--color-text-subtle);
+}
+
+/* Onboarding inputs: border-color transition on focus — no box-shadow to avoid
+   corner radius mismatch and extra visual width. Uses design system spring easing
+   and enter duration. The :focus rule explicitly sets box-shadow: none (higher
+   specificity than the global :focus-visible) so keyboard focus also gets no ring —
+   just the 1px border changing to accent color. */
+#onboarding-content input {
+  transition: border-color var(--duration-enter) var(--ease-spring);
+}
+
+#onboarding-content input:focus {
+  border-color: var(--color-accent);
+  box-shadow: none;
 }
 
 .auth-field-row {

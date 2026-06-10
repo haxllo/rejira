@@ -18,6 +18,8 @@ const mockOrgApi = {
   removeMember: vi.fn(),
 };
 
+const mockInsertValues = vi.fn().mockResolvedValue(undefined);
+
 vi.mock('pg', () => ({
   Pool: vi.fn(function () {
     return { query: mockQuery, connect: mockConnect };
@@ -111,6 +113,9 @@ function drizzleThenableArray(result: unknown[] = []) {
 
 vi.mock('@/lib/db/client', () => ({
   db: {
+    insert: () => ({
+      values: mockInsertValues,
+    }),
     select: () => drizzleThenableArray([]),
     update: () => ({
       set: () => ({
@@ -238,21 +243,36 @@ describe('organization plugin registration', () => {
 });
 
 describe('workspace helpers', () => {
-  it('createWorkspace delegates to auth.api.createOrganization', async () => {
-    mockOrgApi.createOrganization.mockResolvedValue({
-      id: '1',
-      name: 'Test Workspace',
-      slug: 'test-workspace',
-      externalId: 'ext-1',
-      ownerId: '1',
-      archivedAt: null,
-    });
+  it('createWorkspace inserts workspace and membership via Drizzle', async () => {
+    mockInsertValues.mockClear();
+    mockInsertValues.mockResolvedValue(undefined);
 
     const { createWorkspace } = await import('@/lib/auth/workspace-helpers');
     const result = await createWorkspace('user-1', { name: 'Test Workspace', slug: 'test-workspace' });
 
-    expect(mockOrgApi.createOrganization).toHaveBeenCalled();
-    expect(result).toBeDefined();
+    // Should have called insert twice: once for workspace, once for membership
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
+
+    // First call — workspace insert
+    const firstCall = mockInsertValues.mock.calls[0][0];
+    expect(firstCall.name).toBe('Test Workspace');
+    expect(firstCall.slug).toBe('test-workspace');
+    expect(firstCall.ownerId).toBe('user-1');
+    expect(firstCall.id).toBeDefined();
+    expect(firstCall.externalId).toBeDefined();
+
+    // Second call — membership insert
+    const secondCall = mockInsertValues.mock.calls[1][0];
+    expect(secondCall.userId).toBe('user-1');
+    expect(secondCall.role).toBe('owner');
+    expect(secondCall.workspaceId).toBe(firstCall.id);
+    expect(secondCall.id).toBeDefined();
+    expect(secondCall.externalId).toBeDefined();
+
+    // Result is the re-queried workspace (select returns empty array in mock)
+    // The empty select means result will be undefined, but the function
+    // still completes without throwing.
+    expect(result).toBeUndefined();
   });
 
   it('listUserWorkspaces returns empty array for user with no memberships', async () => {

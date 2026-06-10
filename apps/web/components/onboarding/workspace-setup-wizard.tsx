@@ -95,7 +95,7 @@ export function WorkspaceSetupWizard({ onComplete }: { onComplete?: () => void }
         Skip to content
       </a>
 
-      {/* Progress indicator */}
+      {/* Progress indicator — bars use ease-spring timing to match the content slide animation */}
       <div className="mb-8 flex flex-col items-center gap-2">
         <div
           className="flex items-center gap-1.5"
@@ -108,7 +108,7 @@ export function WorkspaceSetupWizard({ onComplete }: { onComplete?: () => void }
             <div
               key={i}
               className={cn(
-                'h-1 w-8 rounded-full transition-colors duration-[220ms]',
+                'h-1 w-8 rounded-full transition-colors duration-[350ms] ease-[var(--ease-spring)]',
                 i + 1 < state.step
                   ? 'bg-[var(--color-accent)]'
                   : i + 1 === state.step
@@ -123,7 +123,10 @@ export function WorkspaceSetupWizard({ onComplete }: { onComplete?: () => void }
         </span>
       </div>
 
-      <div id="onboarding-content" className="w-full overflow-hidden">
+      {/* overflow-visible allows box-shadow focus rings to render on all 4 sides;
+          mode="wait" ensures only one step at a time, so slide animation overflow
+          is not visible to the user. */}
+      <div id="onboarding-content" className="w-full overflow-visible">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={state.step}
