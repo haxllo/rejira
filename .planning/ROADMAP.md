@@ -159,18 +159,20 @@ Plans:
   8. Tested on iOS Safari 17+ and Android Chrome latest
   9. Transactional emails land in inbox (not spam); unsubscribe works
   10. Project `/activity` page renders the audit trail
-**Status**: Not started
+**Status**: Plans created (2026-06-10)
+
+**Plans:** 9 plans
 
 Plans:
-- [ ] 05-01: Supabase Realtime presence + live issue updates
-- [ ] 05-02: Live activity feed in Inbox
-- [ ] 05-03: Yjs collaborative editing on description (Supabase Realtime Broadcast)
-- [ ] 05-04: Page-level error boundaries + retry UX
-- [ ] 05-05: Sentry + PostHog + Axiom telemetry
-- [ ] 05-06: Security headers & rate limiting (Vercel middleware + Upstash Redis)
-- [ ] 05-07: Mobile & responsive design (iOS Safari 17+, Android Chrome latest)
-- [ ] 05-08: Email & notifications (transactional templates, unsubscribe)
-- [ ] 05-09: Activity log / audit trail surface (project /activity page)
+- [ ] 05-01-PLAN.md — Supabase Realtime presence + live issue updates (Wave 1)
+- [ ] 05-02-PLAN.md — Live activity feed in Inbox (Wave 2)
+- [ ] 05-03-PLAN.md — Yjs collaborative editing on description (Wave 2)
+- [ ] 05-04-PLAN.md — Page-level error boundaries + retry UX (Wave 1)
+- [ ] 05-05-PLAN.md — Sentry + PostHog telemetry (Wave 1)
+- [ ] 05-06-PLAN.md — Security headers & rate limiting — already done in Phase 3 (Wave 0, verification only)
+- [ ] 05-07-PLAN.md — Mobile & responsive design (Wave 2)
+- [ ] 05-08-PLAN.md — Email & notifications (transactional templates, unsubscribe) (Wave 1)
+- [ ] 05-09-PLAN.md — Activity log / audit trail surface (Wave 1)
 
 ### Phase 6: Search & AI
 **Goal**: Hybrid search (BM25 + cosine), `⌘K` semantic search, AI triage on create-issue dialog, "Summarize this issue" action, per-workspace AI key (BYO OpenAI/Anthropic), cost cap.
@@ -279,7 +281,7 @@ Phases execute in numeric order: 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9
 | 2. Data layer (Supabase + Drizzle) | 14/14 | Complete | 2026-06-08 |
 | 3. Auth & Identity (Better Auth) | 7/7 | Complete | 2026-06-08 |
 | 4. Drizzle queries & mutations | 4/8 | In progress (v1 RC broke imports) | - |
-| 5. Live & resilience | 0/9 | Not started | - |
+| 5. Live & resilience | 0/9 | Plans created (2026-06-10) | - |
 | 6. Search & AI | 0/6 | Not started | - |
 | 7. Integrations | 0/6 | Not started | - |
 | 8. Launch | 0/12 | Planned | - |
