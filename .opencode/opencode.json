@@ -1,0 +1,11 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "read": {
+      "C:/Users/mshab/Projects/jira-redesign/.opencode/gsd-core/*": "allow"
+    },
+    "external_directory": {
+      "C:/Users/mshab/Projects/jira-redesign/.opencode/gsd-core/*": "allow"
+    }
+  }
+}

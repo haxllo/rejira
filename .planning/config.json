@@ -12,9 +12,9 @@
   },
   "workflow": {
     "research": true,
-    "plan_check": true,
-    "verifier": false,
-    "auto_advance": true,
+    "plan_check": false,
+    "verifier": true,
+    "auto_advance": false,
     "nyquist_validation": true,
     "security_enforcement": true,
     "security_asvs_level": 2,
@@ -27,7 +27,17 @@
     "plan_bounce_passes": 2,
     "cross_ai_execution": false,
     "cross_ai_command": "",
-    "cross_ai_timeout": 300
+    "cross_ai_timeout": 300,
+    "pattern_mapper": true,
+    "ui_phase": true,
+    "ui_safety_gate": true,
+    "ai_integration_phase": true,
+    "tdd_mode": false,
+    "code_review": true,
+    "code_review_depth": "standard",
+    "ui_review": true,
+    "use_worktrees": true,
+    "skip_discuss": true
   },
   "planning": {
     "commit_docs": true,
@@ -53,9 +63,24 @@
   },
   "project_code": "rejira",
   "agent_skills": {},
-  "model_profile": "smart",
-  "researcher_model": "sonnet",
-  "synthesizer_model": "sonnet",
-  "roadmapper_model": "sonnet",
-  "claude_md_path": "./AGENTS.md"
+  "model_profile": "inherit",
+  "researcher_model": "inherit",
+  "synthesizer_model": "inherit",
+  "roadmapper_model": "inherit",
+  "claude_md_path": "./AGENTS.md",
+  "commit_docs": true,
+  "plan_review": {
+    "source_grounding": true
+  },
+  "intel": {
+    "enabled": true
+  },
+  "graphify": {
+    "enabled": true,
+    "auto_update": false
+  },
+  "git": {
+    "branching_strategy": "none",
+    "create_tag": true
+  }
 }
