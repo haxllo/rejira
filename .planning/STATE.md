@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: milestone
 status: verifying
-last_updated: "2026-06-08T18:00:00.000Z"
-last_activity: 2026-06-08 -- Phase 9 complete (dev env audit, email verification policy, onboarding UX review, onboarding fixes)
+last_updated: "2026-06-10T00:00:00.000Z"
+last_activity: 2026-06-10 -- STATE.md audit: corrected plan counts (47 actual vs 51 stated); Phase 4 code for plans 05-08 exists but is uncommitted
 progress:
   total_phases: 10
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 80
-  completed_plans: 43
-  percent: 54
+  completed_plans: 47
+  percent: 59
 ---
 
 # Project State
@@ -20,24 +20,27 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07)
 
 **Core value:** Linear-grade speed for a Jira-shaped workspace. Every interaction must hit its interaction budget; if a feature slows the budget or adds a config screen, it doesn't ship.
-**Current focus:** Phase 9 — Dev Env & Onboarding Flow
+**Current focus:** Phase 4 complete (uncommitted); next: Phase 5 (Live & Resilience)
 
 ## Current Position
 
-Phase: 9 of 10 (Dev Env & Onboarding Flow)
-Plan: 4 of 4 in current phase
-Status: Phase complete
-Last activity: 2026-06-08 -- Phase 9 complete
+Phase: 4 of 10 (Drizzle queries & mutations)
+Plan: 8 of 8 in current phase
+Status: Phase 4 complete (code uncommitted — plans 04-05 through 04-08 exist in working tree)
+Last activity: 2026-06-10 -- STATE.md audit: corrected plan counts
 
-Progress: [███████░░░] 71%
+Next: Phase 5 (Live & Resilience) — needs plan creation
+Route: D completed — STATE.md fixed
+
+Progress: [█████░░░░░] 59%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 32 (Phase 0: 7, Phase 1: 7, Phase 2: 14, Phase 3: 7)
-- Total execution time: ~8 hours (Phase 0 + 1 + 3 + 9)
-- Average duration: ~20 min/plan
+- Total plans completed: 47 (Phase 0: 7, Phase 1: 7, Phase 2: 14, Phase 3: 7, Phase 4: 8, Phase 9: 4)
+- Total execution time: ~12 hours (Phase 0 + 1 + 2 + 3 + 4 + 9)
+- Average duration: ~14 min/plan
 
 **By Phase:**
 
@@ -47,7 +50,7 @@ Progress: [███████░░░] 71%
 | 1. Interactions | 7/7 | 7 | ~25 min |
 | 2. Data layer | 14/14 | 14 | ~10 min |
 | 3. Auth & Identity | 7/7 | 7 | ~20 min |
-| 4. Drizzle queries | 0/10 | 10 | TBD |
+| 4. Drizzle queries | 8/8 | 8 | ~12 min |
 | 5. Live & resilience | 0/9 | 9 | TBD |
 | 6. Search & AI | 0/6 | 6 | TBD |
 | 7. Integrations | 0/6 | 6 | TBD |
@@ -75,7 +78,13 @@ Recent decisions (full log in PROJECT.md):
 - **Phase 3L (03-06)**: THE CUTOVER — replaced Phase 1 demo session (ME_ID constant) with real Better Auth sessions across all workspace pages; created Next.js middleware for route protection (cookie-only fast path + security headers); built client-side RequireAuth wrapper with motion-pulse loading skeleton; created useSession/useUser convenience hooks; deleted demo-session.ts and proxy.ts; updated 15+ components to read real user from session; 8 cutover tests (131 total); zero ME_ID/ME_EXTERNAL_ID references remain in production code
 - **Phase 3M (03-07)**: Internationalization (6 locales: en, es, fr, de, ja, zh) for auth UI with dot-notation t() function and email templates; middleware Accept-Language detection with locale cookie; CSP + HSTS + security headers in next.config.ts; workspace_security_policy table with RLS and auto-insert trigger; admin-only workspace security settings page; production deploy/rollback runbooks; consolidated STRIDE threat model (24 threats); E2E scaffolding with Playwright + axe-core for WCAG 2.2 AA; Dependabot weekly npm updates; Codecov 80% target; Vitest v8 coverage with 80% thresholds; 8 new workspace-policy tests (139 total Phase 3 Vitest tests). Non-Latin locales (ja, zh) use placeholders pending human review.
 - **GSD config**: YOLO mode, Fine granularity (8–12 phases; we have 9), Sequential execution, Git tracking enabled, Research on, Plan Check on, Verifier off, Smart model profile
-- **Phase 9A (09-01)**: Dev env audit document created with 11 friction points (3 critical) — traced Paths A-E from git clone to first workspace; identified unreachable onboarding, no workspace created on sign-up, and email verification double-hop as critical issues
+- **Known issue**: drizzle-orm v1 RC type resolution (~150 tsc errors). `next build` succeeds; vitest resolves modules correctly at runtime. Root cause: RC module export restructuring. Fix: upgrade to stable or add `.d.ts` shims. Not blocking.
+- **Phase 4A-B (04-01/02)**: Drizzle client tuned for Vercel + PgBouncer (statement_timeout=5s, prepare=false); 11 RSC read helpers (getIssues, getProjects, getCycles, getComments, getNotifications, getSavedViews, getMemberships, getRecentActivities, getActivitiesForObject); withTransaction/withWorkspaceTransaction wrappers set RLS JWT context via set_config; mapDrizzleError maps 5 SQLSTATE codes; 8 action modules (issues, projects, cycles, comments, notifications, saved-views, memberships, activities) with 44 actions; PostHog event tracking (7 fire-and-forget trackers); 28 + 20 = 48 new tests
+- **Phase 4C-D (04-03/04)**: 7 pages migrated to Drizzle RSC (home, my-issues, projects, cycles, roadmap, inbox, saved-views, members); all mock data arrays deleted (ISSUES, PROJECTS, CYCLES, LABELS, INBOX, USERS); inbox + activity pages created; saved-views store refactored from localStorage to hydrator pattern; 27 + 15 = 42 new tests
+- **Phase 4E (04-05)**: Cutover — 7 zod-validated route handlers at /api/db/*; 30+ server action wrappers in lib/server-actions.ts; apply() refactored to await server actions via ctx.run() with undo (revert optimistic only) and retry (re-run server call); useIssues store simplified to setIssues/setOne/removeOne; useIssuesServerActions hook is single mutation entry point; 18 cutover tests pass
+- **Phase 4F (04-06)**: Realtime layer — Supabase browser client singleton; 7 subscription helpers (issues, comments, notifications, memberships, cycles, projects, savedViews); WorkspaceRealtimeProvider (one channel per workspace); 4 client hooks (useRealtimeIssues with 200ms debounce, useRealtimeComments for drawer, useRealtimeNotifications for unread badge, useRealtimeMemberships); wired into primary-nav, top-bar, issue-drawer, layout; 16 tests pass
+- **Phase 4G (04-07)**: RLS proof — 33 pgTAP cases (21 cross-tenant + 12 role-enforcement); 22 Vitest RLS integration tests; rbac-helpers.ts confirmed deleted; check-rbac.sh CI gate for forbidden app-level guards; CI workflow updated
+- **Phase 4H (04-08)**: Observability — pino structured logger with requestId/userId/workspaceId; Sentry breadcrumbs per Drizzle query (>100ms warning); 10 PostHog high-funnel events verified; x-request-id middleware; withSentryConfig wrapper; load test (100 concurrent in <5s); full-flow integration test (signup → workspace → project → issue → close); Playwright E2E scaffold; db-connection-pool operational runbook; 12 tests pass (5 skipped — need local DB) Dev env audit document created with 11 friction points (3 critical) — traced Paths A-E from git clone to first workspace; identified unreachable onboarding, no workspace created on sign-up, and email verification double-hop as critical issues
 - **Phase 9B (09-02)**: `DEV_SKIP_EMAIL_VERIFICATION` env var added with NODE_ENV guard (dev-only); ConsoleTransport enhanced with ASCII box-drawn banner for verification/magic link URLs; both .env.example files updated
 - **Phase 9C (09-03)**: Onboarding UI/UX review documented 28 issues (3 critical, 5 high, 8 medium, 6 low, 6 a11y); critical finding: onboarding wizard is unreachable through natural sign-up flow
 - **Phase 9D (09-04)**: Fixed 20 of 28 review issues; changed callbackURL to '/onboarding' for first-time users (auto-sign-in after verification → onboarding); added sessionStorage persistence for wizard state; applied wizard polish (step indicator, focus rings, email validation, ARIA semantics, spring animations, skip confirmation)
@@ -101,6 +110,7 @@ Items acknowledged and carried forward:
 
 ## Session Continuity
 
-Last session: 2026-06-08T17:58:51.695Z
-Stopped at: Phase 4 context gathered
+Last session: 2026-06-10T00:00:00.000Z
+Stopped at: Phase 4 state corrected (47/80 plans, 59%)
 Resume file: None
+Note: 60+ files uncommitted in working tree (Phase 4 plans 05-08 code, docs changes, debug notes)

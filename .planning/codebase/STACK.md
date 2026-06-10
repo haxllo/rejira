@@ -1,199 +1,236 @@
 # Technology Stack
 
-**Analysis Date:** 2026-06-07
+**Analysis Date:** 2026-06-09
 
-## Languages
+## Package Manager & Monorepo
 
-**Primary:**
-- TypeScript 5.7.2 — All source files in `apps/web`; root `tsconfig.json` enforces `strict: true`, `noEmit: true`, `target: ES2022`, `moduleResolution: bundler` (`apps/web/tsconfig.json:1-29`)
-- TSX (TypeScript + JSX) — UI components; React JSX runtime via `"jsx": "react-jsx"` (`apps/web/tsconfig.json:18`)
+**Package Manager:** npm (Node.js 22)
+- Lockfile: `package-lock.json` (present at root and `apps/web/`)
+- Workspace config in root `package.json`: `"workspaces": ["apps/*"]`
+- Monorepo with one app workspace: `apps/web/`
 
-**Secondary:**
-- SQL (PostgreSQL dialect) — Authored in `supabase/migrations/*.sql` (Phase 2 plan, not yet present in tree)
-- CSS — Tailwind v4 CSS-first config in `apps/web/app/globals.css:1-477` with `@theme {}` block defining OKLCH tokens
-- JavaScript (ESM) — Build/seed scripts in `scripts/*.mjs`; workspace root `"type": "module"` (`package.json:5`)
+**Root `package.json`** (`.\package.json`): Orchestrates all workflows. Scripts delegate to `apps/web` via `npm --prefix apps/web run <script>`. Supabase CLI commands (`db:*`, `auth:*`) and test runners defined here.
 
-## Runtime
+**App `package.json`** (`apps\web\package.json`): Contains the Next.js app and all its dependencies.
 
-**Environment:**
-- Node.js 22 — Pinned by `node-version: 22` in `.github/workflows/ci.yml:25-28`; `@types/node: ^22.19.20` / `22.10.2`
-- Edge runtime — `@edge-runtime/vm: ^5.0.0` in devDependencies (root `package.json:41`) for Drizzle migration testing
-- Browser — Modern evergreen (no legacy targets in `tsconfig.json`)
+## Framework & Runtime
 
-**Package Manager:**
-- npm — Lockfile present (`package-lock.json`); root workspaces config in `package.json:24-26`
-- No pnpm, yarn, or bun lockfiles
+**Framework:** Next.js 16.2.7 — App Router, RSC, Server Actions, Turbopack
+**React:** 19.2.0, `react-dom` 19.2.0
+**TypeScript:** 5.7.2 (strict mode, `tsconfig.json` at `apps\web\tsconfig.json`)
+**Runtime:** Node.js 22 (production in CI, `github/workflows/ci.yml`), `runtime: 'nodejs'` set on route handlers
+**ES Target:** ES2022, module resolution: `bundler`
 
-## Frameworks
+## Styling
 
-**Core (App):**
-- Next.js ^16.2.7 — App Router, Turbopack, React Compiler (`apps/web/package.json:45`)
-- React ^19.2.0 + react-dom ^19.2.0 (`apps/web/package.json:48-49`)
+**CSS Framework:** Tailwind CSS v4.3.0
+- Plugin: `@tailwindcss/postcss` 4.3.0 (PostCSS-based config, `apps\web\postcss.config.mjs`)
+- Global CSS: `apps\web\app\globals.css`
 
-**UI / Styling:**
-- Tailwind CSS 4.3.0 — CSS-first config; PostCSS plugin `@tailwindcss/postcss: 4.3.0` (`apps/web/postcss.config.mjs:1-7`)
-- Motion 12.40.0 — Replaces framer-motion; imported as `motion/react` (`apps/web/components/issue/issue-drawer.tsx:4`)
-- Animate UI icons — Local vendored set at `apps/web/components/animate-ui/icons/*.tsx` (64+ icons, 24×24 stroke 1.5px)
-- Lucide — Set as the shadcn icon library in `apps/web/components.json:13` (used as fallback, not active icons in tree)
+**Design System:**
+- OKLCH color tokens; dark mode default, light mode alternative
+- Fonts: `Geist` (sans), `Geist Mono` (code), loaded from Google Fonts (`apps\web\app\layout.tsx`)
+- 8pt base grid; density modes: Compact (28px), Default (36px), Roomy (48px)
+- 5 surface levels: `bg`, `surface-1`, `surface-2`, `surface-3`, `overlay`
+- Motion: `motion` 12.40.0 (no framer-motion); spring physics only; durations 120/220/320ms
+- Icons: `@animate-ui/icons` (24×24, stroke 1.5px) + `lucide`; no emoji in UI
 
-**Component Primitives:**
-- Radix UI — `apps/web/package.json:18-35` (avatar, checkbox, collapsible, dialog, dropdown-menu, label, popover, radio-group, scroll-area, separator, slot, switch, tabs, toast, toggle, toggle-group, tooltip, visually-hidden)
-- Custom primitives at `apps/web/components/primitives/` (avatar, button, kbd, label, priority, status) — CVA + Motion-powered (`apps/web/components/primitives/button.tsx:1-50`)
+**Component Primitives:** Radix UI (16 packages at pinned versions in `apps\web\package.json`):
+- `@radix-ui/react-avatar`, `@radix-ui/react-checkbox`, `@radix-ui/react-collapsible`, `@radix-ui/react-dialog`, `@radix-ui/react-dropdown-menu`, `@radix-ui/react-label`, `@radix-ui/react-popover`, `@radix-ui/react-radio-group`, `@radix-ui/react-scroll-area`, `@radix-ui/react-separator`, `@radix-ui/react-slot`, `@radix-ui/react-switch`, `@radix-ui/react-tabs`, `@radix-ui/react-toast`, `@radix-ui/react-toggle`, `@radix-ui/react-toggle-group`, `@radix-ui/react-tooltip`, `@radix-ui/react-visually-hidden`
 
-**Drag & Drop:**
-- @dnd-kit/core ^6.3.1 + @dnd-kit/sortable ^10.0.0 + @dnd-kit/utilities ^3.2.2 (`apps/web/package.json:14-16`)
+**Utilities:**
+- `clsx` 2.1.1 + `tailwind-merge` 2.5.5 → `cn()` helper (`apps\web\lib\utils\cn.ts`)
+- `class-variance-authority` 0.7.1 for component variants
+- `components.json` (`apps\web\components.json`): shadcn/ui-compatible config, `radix-nova` style
 
-**State / Data (Client):**
-- Zustand 5.0.3 — Stores in `apps/web/lib/state/` (issues, keyboard, mutations, saved-views, ui, view-query) — `zustand/middleware` imported in `apps/web/lib/state/issues.ts:3`
-- @tanstack/react-query 5.62.7 — Listed as dependency (not yet actively imported in source — Phase 4 will adopt it)
-- @tanstack/react-virtual 3.13.6 — Virtualization for long lists
-- nuqs 2.4.3 — URL state synchronization
-- cmdk 1.0.4 — Command palette (`apps/web/components/shell/command-palette.tsx:23`)
-- @floating-ui/react ^0.27.19 — Popovers, tooltips
+**Component Library Registries:**
+- `@animate-ui`: `https://animate-ui.com/r/{name}.json`
 
-**State / Data (Server — planned, not wired into source):**
-- Drizzle ORM ^0.36.0 + drizzle-kit ^0.28.0 — Phase 2
-- pg ^8.21.0 + postgres ^3.4.5 — Two drivers: `pg` for Better Auth session pool, `postgres.js` for Drizzle transactions
-- kysely 0.27.5 — Type-safe SQL builder (dependency only; not yet imported in source)
+## Database & ORM
 
-**Validation:**
-- zod 3.24.1 — Schema validation (dependency only; not yet imported in source)
+**Database:** PostgreSQL 15 via Supabase (managed)
+- Local dev: Supabase CLI with 3 connection modes:
+  - Transaction-mode pooler port 6543 (`DATABASE_URL`) — app queries
+  - Direct connection port 5432 (`DIRECT_URL`) — migrations only
+  - Session-mode port 5432 (`DATABASE_URL_SESSION`) — Better Auth
 
-**Auth (planned, stubs in source):**
-- better-auth ^1.6.14 — Server `apps/web/lib/auth/server.ts:9-23` (throws until Phase 3 init); client `apps/web/lib/auth/client.ts:10-32` with magicLink, twoFactor, organization plugins
-- nextCookies plugin `better-auth/next-js` (`apps/web/lib/auth/server.ts:10`)
-- OAuth: Google + GitHub providers configured in `apps/web/lib/auth/oauth-config.ts:11-25` (env-driven)
-- @supabase/ssr ^0.10.3 — Supabase Realtime/Storage client wrappers; Auth is NOT used (Better Auth replaces it)
+**ORM:** Drizzle ORM
+- `drizzle-orm` ^1.0.0-rc.4-5d5b77c (in `apps/web/`), ^0.45.0 (root hoisted)
+- `drizzle-kit` ^1.0.0-rc.3 (in `apps/web/`), ^0.31.0 (root hoisted)
+- Dialect: `postgresql`
+- Schema: `apps\web\lib\db\schema\index.ts` (21 schema files)
+- Migrations: Hand-authored SQL in `supabase\migrations\` (25 migrations, `0000` through `0025`)
+- Config: `drizzle.config.ts` (root), `schemaFilter: ['public', 'auth', 'auth_app']`
+- Prepare mode: `false` (no server-side prepared statements)
+- Query logging: Custom `drizzleLogger` → Sentry breadcrumbs + console debug (`apps\web\lib\observability\drizzle-logger.ts`)
+- Driver: `pg` 8.x (`pg.Pool`) — node-postgres (NOT `postgres.js`)
+- Statement timeout: 5s, query timeout: 5s, max pool size: 10
 
-**Email (planned):**
-- resend ^4.0.0 — ResendTransport in `apps/web/lib/email/transport.ts:30-60` (direct `fetch` to `https://api.resend.com/emails`); no SDK used
-- react-email ^4.0.0 — Listed in root deps; not yet imported (3K will use `@react-email/components`)
+**Extras:**
+- `pgvector` extension enabled (migration `0014`) — issue embeddings for Phase 6
+- `pg_cron` extension enabled (migration `0016`) — 4 scheduled jobs
+- `tsvector` full-text search index (migration `0009`)
+- Row Level Security on every table (migrations `0001`–`0003`, `0021`)
 
-**Hooks / Utilities:**
-- class-variance-authority 0.7.1 + clsx 2.1.1 + tailwind-merge 2.5.5 — Tailwind class composition
-- date-fns 4.1.0 — Date formatting
-- sonner 1.7.1 — Toast notifications
-- motion 12.40.0 — Animation primitives (used as `motion/react`)
+## Authentication
 
-**Testing:**
-- Vitest 4.1.8 — Unit tests (`apps/web/package.json` does not list; root `package.json:48`); no `vitest.config.*` exists in tree
-- Playwright ^1.60.0 — E2E + screenshot scripts (`scripts/screenshot.mjs:1-321`, `scripts/filter-screenshots.mjs:1-156`)
-- pgTAP — Planned for RLS testing in CI (`.github/workflows/ci.yml:42-70`)
+**Library:** Better Auth 1.6.14 (`apps\web\lib\auth\server.ts`)
+- Server-side init: `betterAuth()` with `pg.Pool` to `DATABASE_URL_SESSION`
+- Client-side: `createAuthClient` from `better-auth/react` (`apps\web\lib\auth\client.ts`)
+- Route handler: `apps\web\app\api\auth\[...all]\route.ts` → `toNextJsHandler(auth)`
 
-**Linting / Type-checking:**
-- ESLint ^9.17.0 + eslint-config-next ^16.2.7 (`apps/web/package.json:60-61`)
-- TypeScript 5.7.2 — `tsc --noEmit` (`apps/web/package.json:11`, `:64`)
+**Plugins used (server):**
+- `nextCookies()` — cookie management for Next.js
+- `organization()` — multi-workspace (renamed: organizations→workspaces, members→memberships, invitations→invitations, teams→teams)
+- `admin()` — admin role management
+- `jwt()` — JWT issuance
+- `magicLink()` — magic link auth (expires 900s)
+- `genericOAuth()` — Google and GitHub providers
+- `twoFactor()` — TOTP 6-digit, 30s period, 10-char backup codes
 
-## Key Dependencies
+**Plugins used (client):**
+- `magicLinkClient()`, `twoFactorClient()`, `organizationClient()`, `genericOAuthClient()`
 
-**Critical (Runtime, App):**
-| Package | Version | Role |
-| --- | --- | --- |
-| `next` | ^16.2.7 | App framework, RSC, server actions, Turbopack, React Compiler |
-| `react` / `react-dom` | ^19.2.0 | UI runtime |
-| `motion` | ^12.40.0 | Animation (AnimatePresence, `motion` component) |
-| `tailwindcss` | 4.3.0 | CSS framework, OKLCH design tokens |
-| `zustand` | 5.0.3 | Client state management |
-| `cmdk` | 1.0.4 | Command palette (⇧⌘K) |
-| `class-variance-authority` | 0.7.1 | Component variants |
+**Security features:**
+- Session: 7-day expiry, 24h update age, 1h fresh age, cookie cache 5min
+- Password: min 12 chars, HIBP breach check on signup (`apps\web\lib\auth\breach-check.ts`)
+- Rate limiting: Database-stored, custom rules per endpoint (`apps\web\lib\auth\server.ts`)
+- Session binding: New device detection + email notification (`apps\web\lib\auth\session-binding.ts`)
+- Account linking/unlinking (`apps\web\lib\auth\account-linking.ts`)
+- Audit logging: Auth events emitted to audit trail (`apps\web\lib\auth\audit.ts`)
+- CSRF: trusted origins + cookie-based
+- Email verification: Required (dev skip via `DEV_SKIP_EMAIL_VERIFICATION`)
 
-**Auth & Data (Installed, not yet wired to source):**
-| Package | Version | Role |
-| --- | --- | --- |
-| `better-auth` | ^1.6.14 | Auth framework (Phase 3 target) |
-| `drizzle-orm` | ^0.36.0 | ORM (Phase 2 target) |
-| `drizzle-kit` | ^0.28.0 | Migrations / Studio |
-| `pg` | ^8.21.0 | Postgres driver for Better Auth |
-| `postgres` | ^3.4.5 | postgres.js driver for Drizzle |
-| `@supabase/ssr` | ^0.10.3 | Supabase Realtime/Storage (browser + server) |
-| `@supabase/supabase-js` | ^2.107.0 | (transitive) |
-| `zod` | 3.24.1 | Validation |
-| `kysely` | 0.27.5 | Type-safe SQL (transitive / future) |
+**Auth config file:** `apps\web\lib\auth\cli-config.ts` (for Better Auth CLI schema generation)
 
-**Tooling:**
-| Package | Version | Role |
-| --- | --- | --- |
-| `@playwright/test` | ^1.60.0 | E2E + screenshot scripts |
-| `vitest` | ^4.1.8 | Unit tests |
-| `eslint` | ^9.17.0 | Linting |
-| `typescript` | 5.7.2 | Type checking |
-| `tsx` | ^4.19.0 | Run TS scripts (seed) |
-| `@edge-runtime/vm` | ^5.0.0 | Edge test sandbox |
-| `@types/node` | ^22.19.20 | Node type defs |
-| `@types/pg` | ^8.11.10 | `pg` type defs |
+## Realtime
 
-## Configuration
+**Provider:** Supabase Realtime
+- Publication: `supabase_realtime` with 6 tables subscribed (`supabase\migrations\0012_realtime_publication.sql`):
+  - `issues`, `comments`, `notifications`, `saved_views`, `memberships`, `project_members`
+- Replica identity: `FULL` on realtime tables (migration `0013`)
+- RLS enforced during subscription — user JWT scopes access
+- Client-side: `@supabase/supabase-js` 2.x via `createBrowserClient` from `@supabase/ssr`
+- Server-side: `@supabase/ssr` `createServerClient` with cookie handling
+- Storage client in `apps\web\lib\supabase\storage.ts`
 
-**Build:**
-- `apps/web/next.config.ts` — `reactStrictMode: true`; `experimental.optimizePackageImports: ["motion", "@radix-ui/react-dialog", "cmdk"]`
-- `apps/web/tsconfig.json` — Path alias `@/*` → `./`; `strict: true`; `moduleResolution: bundler`; includes `.next/types/**/*.ts`
-- `apps/web/postcss.config.mjs` — Only `@tailwindcss/postcss` plugin
-- `apps/web/components.json` — shadcn config: style `radix-nova`, RSC, TSX, baseColor `neutral`, cssVariables on, aliases `@/components`, `@/lib/utils`, `@/hooks`
+## Storage
 
-**Workspace:**
-- Root `package.json` — npm workspaces `["apps/*"]` (`package.json:24-26`)
-- Root scripts delegate to `apps/web` via `npm --prefix apps/web run …`
+**Provider:** Supabase Storage (S3-compatible)
+- Buckets: `avatars` (2MB max), `attachments` (50MB max), `exports` (100MB max)
+- RLS policies on storage buckets (`supabase\migrations\0011_storage_rls.sql`)
+- Access: Signed URLs (1h default TTL) via `apps\web\lib\supabase\storage.ts`
+- Operations: `signedUrl()`, `uploadFile()`, `deleteFile()` — server-side only
 
-**TypeScript Path Aliases:**
-- `@/*` → `apps/web/*` (`apps/web/tsconfig.json:25-27`)
-- All imports use this alias (no relative `../../../` paths in source)
+## Email
 
-**Environment:**
-- `.env.example` — Committed at repo root; documents all env vars (Supabase, Better Auth, OAuth, Email, Rate limit, Observability, HIBP)
-- `.env.local` — Present in tree (NOT read; existence noted only)
-- `.env` — Not present
-- `apps/web/.env.example` — Workspace-level example (referenced in AGENTS.md)
+**Provider:** Resend (production) + ConsoleTransport (development)
+- Transport abstraction: `apps\web\lib\email\transport.ts`
+  - `ResendTransport` — uses `fetch()` to `https://api.resend.com/emails` with Bearer auth
+  - `ConsoleTransport` — logs rendered emails to stdout with boxed output
+- Template rendering: `apps\web\lib\email\render.ts` (React Email-compatible)
+- Auth emails: `sendEmail()` in `apps\web\lib\auth\email.ts`
+- Config: `RESEND_API_KEY`, `RESEND_FROM`, `RESEND_WEBHOOK_SECRET`
+- Webhook: `apps\web\app\api\email\webhook\route.ts` — receives Resend webhooks (bounce/complaint), HMAC-SHA256 validated
 
-**Tailwind v4 (CSS-first, no JS config):**
-- `apps/web/app/globals.css:1-477` — `@theme {}` block defines color tokens (5 surface levels, 8 status, 8 label, OKLCH), 8pt spacing scale, radii, shadows, motion (springs only)
-- Dark mode default, light as alternative
-- Custom CSS: scrollbars, focus rings, density modifiers (`[data-density="compact|default|roomy"]`), auth form styles, optimistic mutation pulse animation
+## Observability
 
-## Monorepo Layout
+**Error Tracking:** Sentry (`@sentry/nextjs` ^10.57.0)
+- Init: `apps\web\lib\observability\sentry.ts` — lazy init on first `SENTRY_DSN`
+- Next.js integration: `next.config.ts` wrapped with `withSentryConfig()`
+- Traces sample rate: 10% prod, 100% dev
+- Drizzle breadcrumbs: `drizzleLogger` sends query breadcrumbs + slow-query warnings (>100ms)
+- Redaction: Sensitive query params (password, token, secret, etc.) redacted before logging (`apps\web\lib\observability\redact.ts`)
 
-```
-jira-redesign/                       (npm workspaces root)
-├── apps/
-│   └── web/                          (Next.js 16 app — only workspace)
-├── scripts/                          (screenshot.mjs, filter-screenshots.mjs)
-├── .agents/skills/                   (project skill packs; AGENTS.md source)
-├── .github/workflows/                (ci.yml)
-├── .planning/                        (GSD planning artifacts)
-├── vercel.json                       (Vercel deployment config)
-└── package.json                      (root workspace + scripts)
-```
+**Product Analytics:** PostHog
+- Server: `posthog-node` ^5.36.7 (`apps\web\lib\observability\posthog.ts`)
+- Browser: `posthog-js` ^1.383.2 (installed, used on client side)
+- Init: Lazy on first `POSTHOG_API_KEY`
+- Events: `trackEvent()` with distinctId and properties
 
-- Single Next.js app workspace (`apps/web`); no `packages/` directory content (directory exists but empty)
-- `package-lock.json` is the only lockfile
-- `screenshots/`, `.tmp/`, `build.log` present at root (build artifacts)
+**Logging:** Pino ^10.3.1
+- Server logger: `apps\web\lib\observability\logger.ts`
+  - Name: `rejira-web`, level: `LOG_LEVEL` env (default `info`)
+  - Dev: `pino-pretty` transport with colorize
+  - Prod: Structured JSON output
+- Request context: `withRequestContext()` creates child loggers with `requestId`, `userId`, `workspaceId`
 
-## Platform Requirements
+**Auth Events:** Dedicated auth event tracking (`apps\web\lib\observability\auth-events.ts`)
 
-**Development:**
-- Node.js 22 (CI-pinned; local matches)
-- npm (lockfile present; not pnpm/yarn/bun)
-- Internet access — pulls Google Fonts (`apps/web/app/layout.tsx:24-36`) and calls Resend / qrserver / HIBP / Supabase
-- `apps/web` directory is the workspace root; all commands scoped there
-- Local Supabase stack expected (CI uses `supabase start` per `.github/workflows/ci.yml:50-51`)
+## Cron/Scheduled Jobs
 
-**Production:**
-- Vercel — `vercel.json` sets `buildCommand: "npm --prefix apps/web run build"`, `outputDirectory: "apps/web/.next"`, `framework: "nextjs"`
-- Supabase Cloud — Postgres 15 + Realtime + Storage (per stack planning docs)
-- Build output verified by CI: `npm run typecheck` → `npm run lint` → `supabase start` → `supabase db reset` → `npm run db:seed` → `npm run db:test` → `npm run build`
+**Provider:** `pg_cron` (Supabase Postgres extension, migration `0016`)
+- 4 scheduled jobs (`supabase\migrations\0017_cron_jobs.sql`):
+  - `gdpr-hard-delete` — daily at 03:00 UTC (Phase 4 body)
+  - `embedding-refresh` — every 6 hours (Phase 6 body)
+  - `orphan-attachment-cleanup` — Sundays at 04:00 UTC (Phase 7 body)
+  - `issues-vacuum` — daily at 02:00 UTC (VACUUM ANALYZE issues)
+- All job bodies use `SECURITY DEFINER` functions; stubs in Phase 2, implementations in Phase 4/6/7
+- Additional cron function for nightly session cleanup (`supabase\migrations\0019_session_cleanup.sql`) and hard delete (`supabase\migrations\0018_hard_delete_cron.sql`)
 
-**Runtime Constraints (observed):**
-- Auth route handler explicitly uses Node.js runtime: `export const runtime = "nodejs"` (`apps/web/app/api/auth/[...all]/route.ts:2`)
-- Supabase clients use `cookies()` from `next/headers` and Web `Request`/`Response` (Edge-compatible)
-- Email transport uses `fetch` (works in both Node and Edge)
+## Testing
 
-## Versioning Notes
+**Unit/Integration Tests:** Vitest 4.1.8
+- Config: `apps\web\vitest.config.ts`
+- Environment: `node`
+- Glob patterns: `**/_tests/*.test.ts`
+- Coverage: v8 provider, thresholds: lines 80%, functions 80%, branches 70%, statements 80%
+- Test files in: `apps\web\lib\auth\_tests\`, `apps\web\lib\db\_tests\`
+- Commands: `npm test`, `npm run test:watch`, `npm run test:coverage`
 
-- Two `better-auth` versions in tree: `^1.4.0` in root `package.json:31`, `^1.6.14` in `apps/web/package.json:38` — workspace install resolves to the apps/web one
-- `pg` versions diverge similarly: `^8.13.0` root vs `^8.21.0` web
-- `zod` versions: `^3.23.8` root vs `3.24.1` web
-- `@types/node` versions: `^22.19.20` root vs `22.10.2` web
-- `tailwindcss` aligned at 4.3.0 in both root and web
+**E2E Tests:** Playwright 1.60.0
+- Config: `playwright.config.ts` (root)
+- Test dir: `e2e/`
+- Browsers: Chromium, Firefox, WebKit
+- Reports: HTML + list
+- Accessibility: `@axe-core/playwright` ^4.11.3 (`npm run test:a11y`)
+- Web server: Auto-starts `npm --prefix apps/web run dev`
+
+**Database Tests (RLS):** pgTAP
+- Test files: `supabase\tests\04-rls-cross-tenant.test.sql`, `supabase\tests\04-rls-mutations.test.sql`
+- Run via: `supabase db test`
+- CI: Runs pgTAP RLS suite after local Supabase start
+
+**CI Coverage Enforcement:** Codecov (`codecov.yml`)
+- Target: 80% project, 80% patch, 2% threshold
+
+## CI/CD & Hosting
+
+**CI:** GitHub Actions (`github\workflows\ci.yml`)
+- Trigger: push/PR to `main`
+- Concurrency: cancel-in-progress per branch
+- Steps: Typecheck → Lint → Supabase local start + migrations + pgTAP + Vitest → Build
+- Node: 22
+- Supabase CLI: `supabase/setup-cli@v1`
+- DB drift detection: `supabase db diff` fails CI if drift detected
+- No-guard check: `apps\web\scripts\check-rbac.sh` — ensures no `requireRole` helpers exist
+
+**Hosting:** Vercel (`vercel.json`)
+- Framework: `nextjs`
+- Build command: `npm --prefix apps/web run build`
+- Output: `apps\web\.next`
+- Install: `npm install`
+
+**Dependabot:** Weekly npm updates (`github\dependabot.yml`), max 5 open PRs
+
+## Notable Dependencies
+
+**Drag & Drop:** `@dnd-kit/core` 6.3.1, `@dnd-kit/sortable` 10.0.0, `@dnd-kit/utilities` 3.2.2
+**Floating UI:** `@floating-ui/react` 0.27.19 (popovers, tooltips, dropdowns)
+**Command Palette:** `cmdk` 1.0.4 (⌘K)
+**Animations:** `motion` 12.40.0 (successor to framer-motion)
+**Data Fetching:** `@tanstack/react-query` 5.62.7 (client-side cache)
+**Virtualization:** `@tanstack/react-virtual` 3.13.6 (virtual lists)
+**State Management:** `zustand` 5.0.3 (global state stores at `apps\web\lib\state\`)
+**URL State:** `nuqs` 2.4.3 (type-safe URL search params)
+**Validation:** `zod` 3.25.0 (server action inputs, route handler bodies)
+**Date Utilities:** `date-fns` 4.1.0
+**Toast:** `sonner` 1.7.1
+**Rate Limiting:** `@upstash/redis` 1.38.0 (Redis-backed, with in-memory fallback in `apps\web\lib\auth\rate-limit.ts`)
+**i18n:** 6 supported locales (en, es, fr, de, ja, zh) — dictionaries in `apps\web\lib\i18n\dictionaries\`
+
+**Not used (explicitly excluded):** Convex, Firebase, Prisma, tRPC, TanStack Query (server-side — used only for client cache), Drizzle Studio, Socket.io, Auth.js/NextAuth, Supabase Auth, framer-motion, Lucide
 
 ---
 
-*Stack analysis: 2026-06-07*
+*Stack analysis: 2026-06-09*

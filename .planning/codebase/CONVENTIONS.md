@@ -1,302 +1,525 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-06-07
+**Analysis Date:** 2026-06-09
 
-## Scope
+## TypeScript Configuration
 
-Source roots analyzed: `apps/web/app/`, `apps/web/components/`, `apps/web/lib/`, `apps/web/hooks/`, `apps/web/utils/`, plus the `package.json` / `tsconfig.json` / `next.config.ts` configuration. The `packages/` directory exists at the repo root but is **empty** (no workspaces defined under it — `package.json` at root declares `apps/*` only).
+**Config file:** `apps/web/tsconfig.json`
 
-Source file counts: **186** `.ts` / `.tsx` files in `apps/web` (excluding `node_modules` and `.next`).
+**Key settings:**
+- **Target:** ES2022
+- **Strict mode:** `true` (enables all strict checks: `strictNullChecks`, `noImplicitAny`, `strictFunctionTypes`, etc.)
+- **Module:** `esnext` with `moduleResolution: "bundler"`
+- **JSX:** `react-jsx` (automatic runtime)
+- **Path alias:** `@/*` maps to `apps/web/*` (used consistently across the entire app)
+- **Isolated modules:** `true` (required by swc/Turbopack)
+- `allowJs: true`, `skipLibCheck: true`, `resolveJsonModule: true`
+- **Next.js plugin:** `{ "name": "next" }` for type validation of app router conventions
+- **Incremental builds:** `true`
 
-The two top-level enforcement files that this codebase **is missing**:
-- `apps/web/.eslintrc*` / `eslint.config.*` — none found. ESLint is installed (`^9.17.0`, `eslint-config-next ^16.2.7`) and `npm run lint` is wired in `apps/web/package.json:10`, but no config file is committed.
-- `.prettierrc*` / `biome.json` — none found. Prettier is **not** installed; the convention doc claims "Prettier defaults" but no tool enforces them.
-
----
-
-## Naming Patterns
-
-**Files:**
-- Components: `kebab-case.tsx` — `components/issue/issue-drawer.tsx`, `components/primitives/button.tsx`, `components/sell/command-palette.tsx`. (Note: `components/sell/` is a typo for `shell/` — pre-existing in the tree, see `components/shell/global-shortcuts.tsx`, `components/shell/top-bar.tsx`.)
-- Hooks: `use-kebab-case.ts` (`hooks/useCurrentUser.ts` and `hooks/useWorkspace.ts` are the only exceptions to the kebab rule) — `hooks/useViewQuery.ts`, `hooks/useIsInView.tsx`. New hooks should be `use-kebab-case.ts`.
-- Lib modules: `kebab-case.ts` — `lib/auth/two-factor.ts`, `lib/state/view-query.ts`, `lib/motion/variants.ts`. (The `get-strict-context.tsx` file uses camelCase for a one-off helper.)
-- Pages: always `page.tsx` inside the route folder. Layouts: `layout.tsx`. (No `loading.tsx`, `error.tsx`, or `not-found.tsx` yet.)
-- Icon registry: one icon per file under `components/animate-ui/icons/<kebab>.tsx`, all `PascalCase` named exports.
-
-**Functions / Components / Variables:**
-- Components and exported functions: `PascalCase` — `export function IssueDrawer()`, `export function CommandPalette()`, `export function enableTwoFactor()`. (`Button` and `Kbd` are `export const` `forwardRef` or `function` declarations.)
-- Local helpers and factory functions: `camelCase` — `function collectVisibleIds()`, `function nextIssueNumber()`, `function colorFor()`.
-- Constants: `UPPER_SNAKE_CASE` for top-level immutable objects — `STATUS_ORDER`, `STATUS_META`, `PRIORITY_META`, `COMMON`, `MAX_DEPTH`, `PROJECT_KEY`. `const SHORTCUTS` and `const noop` are also `UPPER_SNAKE_CASE`.
-- Booleans / state shape: `is*`, `has*`, `open*`, `show*` — `isDragging`, `isPending`, `isOAuthConfigured`, `hasSession`, `showCompletedCycles`, `openDrawer`, `commandOpen`.
-- Event handlers: `handle*` or `on*` — `handleSubmit`, `handleEnable`, `handleInvite`; `onClick`, `onOpen`, `onSelect`, `onDone`, `onKeyDown`, `onRehydrateStorage`.
-
-**Types:**
-- Type / interface names: `PascalCase` — `UIState`, `IssuesState`, `MutationContext`, `LastError`, `Issue`, `StatusKey`, `PriorityKey`, `ButtonProps`, `AvatarProps`, `KbdProps`, `AuditEvent`, `EmailPayload`, `EmailTransport`, `IconProps`.
-- Discriminated string unions use `Key` suffix: `StatusKey`, `PriorityKey`, `ProjectId`, `LabelId`, `UserId`, `IssueId`. (IDs are typed as `string` brand-style via the `*Id` alias.)
-- Variant objects are suffixed `*Variants` (`homeVariants`, `starVariants`, `alertCircleVariants`).
-- Record maps: `*_META` — `STATUS_META`, `PRIORITY_META`. The `*_META` convention is used for label→color/label/bars lookup tables.
-
----
+**No `any` enforcement:** The project uses TypeScript strict mode. Explicit return types on exported functions are a convention (observed on `lib/server-actions.ts` actions and `lib/utils/*.ts` utilities).
 
 ## Code Style
 
-**Formatting (observed in source, NOT enforced by any tool in-repo):**
-- 2-space indentation across the entire codebase.
-- Single quotes for strings; double quotes only inside JSX attribute values (HTML) and in a few icon files.
-- Trailing commas present in multi-line object/array literals and function call args (Prettier default).
-- Semicolons: present everywhere (Prettier default).
-- Line length: appears to wrap around 100–120 chars; no enforcement.
+**Formatting:** No `.prettierrc` detected. The codebase relies on ESLint defaults from `eslint-config-next` (Next.js 16 flat config). No explicit Prettier configuration exists — formatting is handled by ESLint via `eslint .`.
 
 **Linting:**
-- ESLint 9 + `eslint-config-next` are installed and `npm run lint` is wired (`apps/web/package.json:10`). **No config file is committed** — `apps/web/.eslintrc*`, `eslint.config.mjs`, and `eslint.config.js` do not exist. Lint therefore uses `eslint-config-next` defaults plus any defaults baked into ESLint 9's flat config resolution.
-- Project uses `// eslint-disable-next-line` 10 times, all for `react-hooks/exhaustive-deps` (8 occurrences across `hooks/`, `components/shell/status-bar.tsx`, `components/animate-ui/icons/icon.tsx`, `components/views/...`) and `@typescript-eslint/no-explicit-any` (2 occurrences in `animate-ui/primitives/effects/highlight.tsx` and `animate-ui/primitives/animate/slot.tsx`). 1 `react-hooks/rules-of-hooks` disable in `animate-ui/icons/icon.tsx:621`.
+- **Tool:** ESLint 9 (`eslint` ^9.17.0) with `eslint-config-next` ^16.2.7
+- **Command:** `npm run lint` (runs `eslint .` in `apps/web`)
+- No detected `.eslintrc*` or `eslint.config.*` — uses Next.js defaults
 
-**TypeScript:**
-- `strict: true` is set in `apps/web/tsconfig.json:11`.
-- Target `ES2022`, module `esnext`, moduleResolution `bundler`.
-- `paths: { "@/*": ["./*"] }` — the alias maps to the **app root** (`apps/web/`), not `apps/web/src/`. Use `@/lib/...`, `@/components/...`, `@/hooks/...` from anywhere in `apps/web/`.
-- `noEmit: true`, `incremental: true`, `isolatedModules: true`.
-- `verbatimModuleSyntax` is **not** set; the project uses a mix of `import type` and value imports freely.
-- `next-env.d.ts` and `.next/types/**/*.ts` are auto-included.
+**Observed conventions in source files:**
 
-**Exported-function return types:** the project claims "explicit return types on exported functions" in `AGENTS.md` ("GSD:conventions"), but the actual source mixes inferred and explicit. Examples of **explicit** return types: `export const useUI = create<UIState>()(...)` (inferred via generic), `export const getStatusLabel = (s: StatusKey) => string` is implicit, `export const getPriorityLabel = (p: PriorityKey): string` is **explicit** in `components/primitives/priority.tsx:83`. Server-only `lib/auth/server.ts:14` does explicit: `export function getAuthInstance(): ReturnType<typeof betterAuth>`. **Recommendation for new code:** keep annotating return types for exported functions; this is partially followed.
+| Rule | Convention |
+|------|-----------|
+| Indentation | 2 spaces |
+| Quotes | **Mixed.** Double quotes (`"`) in `.tsx` components; single quotes (`'`) in `.ts` test files. No standard enforced. |
+| Semicolons | Always present at statement ends |
+| Trailing commas | Present in multi-line objects/arrays/imports |
+| Line endings | LF (Windows repo but cross-platform) |
 
-**The `any` ban is violated in 7 places** (per a repo-wide grep for `: any` and `as any`):
-- `apps/web/app/api/auth/[...all]/route.ts:6` — `let _handler: any = null;`
-- `apps/web/app/api/auth/[...all]/route.ts:14, 26, 36` — `catch (e: any) { ... }` (three occurrences)
-- `apps/web/components/team/workspace-invite-form.tsx:23` — `catch (err: any) { ... }`
-- `apps/web/app/(workspace)/inbox/page.tsx:41-43, 96` — array literals cast `as any` and an `it: any` in `.map()`
-- `apps/web/components/issue/issue-drawer.tsx:453` — `priority={activity.payload.to as any}`
-- `apps/web/components/animate-ui/primitives/animate/slot.tsx:20` — `children?: any`
-- `apps/web/components/issue/issue-drawer.tsx` and a few client forms use `res = await ... as any` to access the `.error.message` shape on Better Auth responses. See `sign-in-form.tsx:19`, `sign-up-form.tsx:20`, `magic-link-form.tsx:19`, `two-factor-setup.tsx:16`, `forgot-password-form.tsx:8`, `app/(auth)/two-factor/backup-codes/page.tsx:18`, `lib/auth/backup-codes.ts:13`, `lib/auth/client.ts:43, 45, 46`.
-- **Recommendation:** when writing new code, do not use `any`; use `unknown` for caught errors and narrow with `err instanceof Error`.
+**Examples from source:**
+```typescript
+// components/primitives/button.tsx — double quotes, semicolons, trailing commas
+"use client";
+import * as React from "react";
+import { motion, type HTMLMotionProps } from "motion/react";
 
-**Server vs client components:**
-- Server components are the default — `app/page.tsx` and `app/layout.tsx` have **no** `'use client'` directive. `app/(workspace)/layout.tsx:14` is a server component that mounts client components (`TopBar`, `PrimaryNav`, etc.) inside it.
-- `'use client'` appears in 72 files — every file under `components/animate-ui/icons/`, `components/animate-ui/primitives/`, every component in `components/auth/`, `components/issue/`, `components/shell/`, `components/team/`, `components/views/`, plus all of `lib/state/`, `hooks/`, and the `(workspace)/inbox/page.tsx` and `(workspace)/my-issues/page.tsx` pages.
-- **Rule for new code:** add `'use client'` only when the file uses hooks (`useState`, `useEffect`, `useRef`, custom hooks), browser APIs, zustand stores, or motion components. Pure layout/typography/presentational JSX stays server-side.
-
-**Module style:**
-- `package.json:5` declares `"type": "module"` (ESM).
-- `apps/web/package.json:5` also declares `"type": "module"`.
-- `next.config.ts` uses ESM (`export default`).
-- `postcss.config.mjs` is ESM.
-- `proxy.ts` is an ESM module exporting an async function — see note in `Auth & Identity` section below.
-
-**Comments — project rule violation:**
-- `AGENTS.md` says "No comments unless asked", but the codebase has **100+ comment lines** across source. Most are one-line file-header `// Phase 3 — Stream 3X: ...` banners in `app/(auth)/*/page.tsx`, `app/(workspace)/**/page.tsx`, and all of `lib/auth/*`. The pattern is consistent:
-  - `lib/` modules open with a 4–10 line block describing the file's purpose and phase.
-  - `app/` page files have a one-line phase banner.
-  - `lib/state/mutations.ts` and `lib/motion/variants.ts` have dense JSDoc-style block comments above each exported function.
-  - `components/issue/issue-row.tsx:221` and `components/views/filter-chips.tsx:84, 89, 191` have `/** ... */` block comments above helper functions.
-- **Recommendation for new code:** the convention is violated by existing files, but new files should follow the documented "no comments" rule. Treat the existing comment banners as legacy from the phase-by-phase construction and remove them when refactoring.
-
----
-
-## Import Organization
-
-**Order observed (no tool enforces it):**
-1. React / Next / framework imports — `import * as React from "react"`, `import { redirect } from "next/navigation"`, `import type { NextConfig } from "next"`.
-2. Third-party UI / state libraries — `import { motion } from "motion/react"`, `import { create } from "zustand"`, `import { Command } from "cmdk"`, `import { create } from "zustand/middleware"`, `import { useSortable } from "@dnd-kit/sortable"`, `import { cva, type VariantProps } from "class-variance-authority"`.
-3. Supabase / auth / lib utilities — `import { createBrowserClient } from "@supabase/ssr"`, `import { createAuthClient } from "better-auth/react"`, `import { betterAuth } from "better-auth"`, `import { clsx } from "clsx"`, `import { twMerge } from "tailwind-merge"`, `import { format, isToday } from "date-fns"`.
-4. Local alias imports — `import { cn } from "@/lib/utils"`, `import { StatusDot } from "@/components/primitives/status"`, `import { useUI } from "@/lib/state/ui"`, `import type { Issue } from "@/lib/mock"`.
-5. Type-only imports use `import type { ... }` — `import type { NextRequest } from "next/server"`, `import type { Transition, Variants } from "motion/react"`, `import type { HTMLMotionProps } from "motion/react"`.
-
-**Path aliases:**
-- `@/*` → `apps/web/*` (configured in `apps/web/tsconfig.json:25-27`).
-- Conventional sub-paths used in source: `@/components/`, `@/components/primitives/`, `@/components/icons/`, `@/lib/`, `@/lib/auth/`, `@/lib/state/`, `@/lib/mock/`, `@/lib/utils/`, `@/lib/motion/`, `@/lib/observability/`, `@/lib/email/`, `@/lib/i18n/`, `@/hooks/`, `@/utils/supabase/`.
-- Components alias is also declared in `components.json:16-21` for the shadcn/animate-ui registries (used at install-time, not at runtime).
-
-**Tailwind class composition:**
-- Always use the `cn()` helper from `apps/web/lib/utils/cn.ts` to combine class strings — it wraps `twMerge(clsx(...inputs))`. Import as `import { cn } from "@/lib/utils"` (re-exported via `lib/utils/index.ts`).
-- Tailwind classes are written in `arbitrary-value` form when binding to a CSS variable: `bg-[var(--color-surface-1)]`, `text-[var(--color-text-muted)]`, `border-[var(--color-border)]`, `h-[15px]`. This is the dominant styling pattern — almost every color in JSX uses a `var(--color-*)` reference.
-
----
-
-## Error Handling
-
-**Strategy:** **client-side try/catch with state, server-side try/catch with a 500 JSON response.** There is no global error boundary, no `error.tsx` route segment, and no Sentry wiring (the observability stub at `lib/observability/index.ts:22` is a `console.error` placeholder).
-
-**Client-component pattern (`components/auth/sign-in-form.tsx:14-35`):**
-```ts
-async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
-  try {
-    const res = await signIn.email({ email, password, callbackURL: "/inbox" }) as any;
-    if (res?.error) {
-      setError(res.error.message ?? res.error.statusText ?? "Sign in failed");
-    } else if (!res?.data) {
-      setError("Sign in failed — unexpected response. Check console.");
-      console.error("[sign-in] unexpected", res);
-    } else {
-      setDone(true);
-    }
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    setError(msg || "Sign in failed. Check console.");
-    console.error("[sign-in]", err);
-  } finally {
-    setLoading(false);
-  }
-}
+// lib/db/_tests/rls.test.ts — single quotes, semicolons, trailing commas
+import { describe, it, expect, beforeAll } from 'vitest';
+import { seedTwoWorkspaces, asUser } from './setup';
 ```
 
-**Server route pattern (`app/api/auth/[...all]/route.ts:22-40`):**
-```ts
-export async function GET(request: Request) {
-  try {
-    const h = await getHandler();
-    return h.GET(request);
-  } catch (e: any) {
-    console.error("[auth] GET error:", e?.message ?? e);
-    return new Response(JSON.stringify({ error: e?.message ?? "Internal error" }), { status: 500 });
-  }
-}
+**ESLint rules observed:** No custom rule overrides detected. The project uses `eslint-config-next` defaults which include: react-hooks rules, `@next/next` rules (no `<img>`, no `target="_blank"` without `rel="noreferrer"`), and TypeScript rules from the Next.js preset.
+
+## Component Patterns
+
+### Server vs Client Components
+
+**Default: Server Components.** Components are server components by default. Only add `"use client"` when using:
+- React hooks (`useState`, `useEffect`, `useRef`, etc.)
+- Browser APIs (`window`, `document`, `navigator`)
+- Event handlers (`onClick`, `onChange` passed to DOM elements)
+- Motion/react animations (motion requires client)
+- Zustand stores (state management requires client)
+- Context providers
+
+**File organization:**
+```
+apps/web/
+├── components/
+│   ├── primitives/       # Reusable base components (button, status, priority, avatar, kbd, label)
+│   ├── shell/            # App shell (top-bar, primary-nav, command-palette, status-bar, toast, global-shortcuts)
+│   ├── views/            # View system (view-renderer, filter-chips, filter-popover, grouped-list, cycle-board, bulk-action-bar)
+│   ├── auth/             # Auth UI (sign-in-form, sign-up-form, oauth-buttons, two-factor-*, passkey-*)
+│   ├── onboarding/       # Workspace setup wizard steps
+│   ├── settings/         # User settings forms (profile, password, email, two-factor, sessions)
+│   ├── team/             # Team management (workspace-members-table, workspace-invite-form, role-select)
+│   ├── home/             # Dashboard widgets
+│   ├── activity/         # Activity feed
+│   ├── inbox/            # Inbox items
+│   ├── workspace/        # Workspace-level (data-hydrator)
+│   ├── icons/            # Custom SVG icons in animate-ui style
+│   ├── animate-ui/       # Third-party animate-ui icon components
+│   └── issue/            # Issue components (issue-row, issue-drawer)
 ```
 
-**Throw patterns (6 occurrences):**
-- Stub functions that are placeholders for future phases throw a descriptive `Error` — `lib/auth/server.ts:16-21` (Better Auth not yet initialized), `lib/auth/account-deletion.ts:13, 17, 21` (Phase 3Q GDPR work), `lib/get-strict-context.tsx:16-19` (`useContext for "${name}" must be used within a Provider.`), `components/animate-ui/primitives/effects/highlight.tsx:53` (`useHighlight must be used within a HighlightProvider`).
-- The `getStrictContext<T>(name)` factory in `lib/get-strict-context.tsx` is the canonical "throw if used outside Provider" pattern — copy this when building new context-bound hooks.
+**Component structure pattern:**
+```typescript
+"use client"; // Only when needed
 
-**State stores and undo (`lib/state/mutations.ts`):**
-- A module-level `STACK: MutationContext[]` (max depth 50) holds the undo queue. `apply(ctx)` pushes; `undoLast()` pops and runs `ctx.undo()` inside a `try/finally` that always clears the pending state.
-- `retryLast()` catches errors from `ctx.retry()` and re-sets `pending` + records a `LastError` snapshot that subscribers can render as a toast.
-- Errors propagate to UI through two channels: a `setLastError(err)` function that fans out to subscribed listeners (`errorListeners`), and a custom DOM event `jira:toast` dispatched on `window`. The toast host (`components/shell/toast.tsx`) binds via `bindToastHost(fn)`.
-- The `getStrictContext` factory at `lib/get-strict-context.tsx` is the project's context-with-throw pattern (see above).
+import * as React from "react";
+import { motion } from "motion/react"; // For animated components
+import { cva, type VariantProps } from "class-variance-authority"; // For variants
+import { cn } from "@/lib/utils"; // className merging
 
-**Console as the only logger:** `lib/observability/index.ts` exposes `trackEvent` and `captureError` that currently `console.log`/`console.error` with a `[observability]` prefix. The `lib/email/transport.ts:18-28` `ConsoleTransport` (dev fallback when `RESEND_API_KEY` is absent) prints `[EMAIL] TO/SUBJECT/TEXT…` banners.
+const buttonVariants = cva([...base classes...], {
+  variants: { variant: {...}, size: {...} },
+  defaultVariants: { variant: "secondary", size: "md" },
+});
 
-**Validation:** `lib/auth/password-policy.ts:11-18` uses early-return pure functions that return `string | null` (the error message, or `null` if valid). The Phase 3 stream 3G will swap this for a HaveIBeenPwned k-anonymity check.
+type ButtonProps = HTMLMotionProps<"button"> &
+  VariantProps<typeof buttonVariants> & { asChild?: boolean };
 
----
-
-## Logging
-
-**Framework:** plain `console.*` calls, gated by `[<namespace>]` log prefixes. The full list of `console.*` usages in source (16 occurrences):
-- `lib/observability/index.ts:6, 13, 19, 23` — `[observability]` prefix
-- `lib/email/transport.ts:21-25` — `[EMAIL]` prefix (5 lines per send)
-- `app/api/auth/[...all]/route.ts:15, 27, 37` — `[auth]` prefix
-- `components/auth/sign-in-form.tsx:24, 31` — `[sign-in]` prefix
-- `components/auth/sign-up-form.tsx:25, 32` — `[sign-up]` prefix
-
-**Patterns:**
-- Dev fallback to console: `lib/email/transport.ts:18-28` implements `ConsoleTransport` so emails render to stdout in the absence of `RESEND_API_KEY`.
-- No `pino` / `winston` / `Axiom` SDK is wired; `lib/observability/index.ts` is a no-op stub.
-- **Recommendation:** when adding a log, prefix with the file's module name in brackets (e.g., `[mutations]`, `[inbox]`). Do not log user PII, session tokens, or full email payloads in production builds.
-
----
-
-## Function Design
-
-**Component pattern (`components/primitives/button.tsx:51-67`):**
-```ts
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, type = "button", children, ...props }, ref) => {
-    return (
-      <motion.button ref={ref} type={type} whileTap={{ scale: 0.97 }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        className={cn(buttonVariants({ variant, size }), className)}
-        {...props}
-      >{children}</motion.button>
-    );
+    // ...
   },
 );
 Button.displayName = "Button";
 ```
-- `forwardRef` is used for primitives that wrap an intrinsic element so consumers can pass refs through.
-- `displayName` is set explicitly (only `Button` does this in the current code; `Avatar`/`AvatarGroup`/`Kbd` rely on the inferred name from the `export function`).
-- `cva` (class-variance-authority) variants are exported alongside the component as `buttonVariants` so consumers can extend the class set.
 
-**Props typing:**
-- Inline `type X = { ... }` is preferred for component prop types (`components/primitives/avatar.tsx:40-46`, `components/sell/command-palette.tsx:266-276`, `components/primitives/kbd.tsx:4-6`).
-- Compound variants on `cva` use a single string union or boolean (no nested unions in observed source).
-- Functions that return JSX use `React.ReactNode` for slot props (`{ children: React.ReactNode }`).
-- Event callbacks use `(e: React.MouseEvent | React.FormEvent | React.KeyboardEvent)` and check `e.currentTarget` / `e.target` directly.
+**Key patterns:**
+- `cva` (class-variance-authority) for component variants — used in `button.tsx`, pattern shared across primitives
+- `cn()` from `@/lib/utils` for className merging (clsx + tailwind-merge)
+- `React.forwardRef` for components that need ref forwarding
+- Explicit `displayName` for better DevTools experience
+- `motion/react` (Motion 12) for animation, not `framer-motion`
+- Design tokens referenced via CSS custom properties: `var(--color-text)`, `var(--color-surface-2)`, `var(--radius-md)`
+- `@/*` path alias for all internal imports
 
-**Parameter style:**
-- Destructured parameters are the rule for components: `function Avatar({ name, size = "md", className, ring, status }: AvatarProps)`.
-- Default parameter values use `=` with no spaces around: `size = 8`, `size = "md"`, `type = "button"`, `className, ...props`.
-- Rest spread is the last parameter: `({ className, ...props }, ref)`.
-- `noUncheckedIndexedAccess` is **not** set in tsconfig — array access returns `T` not `T | undefined`, so `const target = STATUS_ORDER[idx]!` uses the `!` non-null assertion in `components/issue/issue-drawer.tsx:70`. New code that needs the assertion can use `!` but prefer narrowing with `if (!x) return`.
+**Strict context pattern (`lib/get-strict-context.tsx`):**
+Creates a typed context that throws when accessed outside its Provider:
+```typescript
+const [Provider, useContext] = getStrictContext<MyType>("ContextName");
+```
 
-**State hook patterns:**
-- zustand `create<State>()(set => ({...}))` is the universal pattern. Selectors are used at call sites: `useUI((s) => s.density)`, `useIssues((s) => s.issues.find(...))`. The `persist` middleware wraps the whole store in `lib/state/ui.ts:53-147` with `name: "jira-redesign-ui"` and a `partialize` whitelist.
-- Mutations live in the store action methods; selectors are kept in store files. `useIssues.getState().setStatus(...)` is the pattern used inside event handlers and inside other stores (e.g., `apply()` in `lib/state/mutations.ts:158`).
+## Data Fetching Patterns
+
+Three distinct patterns based on context:
+
+### 1. Server Components (Direct Drizzle)
+Server components call `requireAuth()` then query Drizzle directly inside `async` RSC functions. This is the primary path for the Phase 4 migration.
+
+### 2. Server Actions (`lib/server-actions.ts`)
+Client components call typed action functions that `POST` to `/api/db/{domain}`:
+```typescript
+// lib/server-actions.ts
+export interface CreateIssuePayload {
+  op: 'create';
+  workspaceId: string;
+  projectId: number;
+  title: string;
+  // ...
+}
+export async function createIssueAction(input: CreateIssuePayload): Promise<Issue> {
+  return post<Issue>('issues', input);
+}
+```
+Each action has:
+- An interface for its payload (with `op` discriminator)
+- An async function wrapping `post<T>()` or `get<T>()`
+- Return type explicitly declared
+
+### 3. Transaction Wrappers (`lib/db/transaction.ts`)
+For server-side mutations requiring auth + RLS context:
+```typescript
+export async function withTransaction<T>(fn: (tx: Tx) => Promise<T>): Promise<T>
+export async function withWorkspaceTransaction<T>(workspaceId: string, fn: (tx: Tx) => Promise<T>): Promise<T>
+```
+These wrappers:
+1. Call `requireAuth()` to get the user
+2. Open a Drizzle transaction
+3. Set `request.jwt.claims` via `set_config()` to pass user identity through RLS
+4. Capture errors via Sentry
+5. Map Drizzle errors through `mapDrizzleError()`
+
+**Client data access:**
+- Better Auth hooks: `useSession()` wraps Better Auth's `useSession` to normalize shape
+- Zustand stores in `lib/state/` for UI state (density, selected IDs, drag state, sort/group)
+- Supabase Realtime via `hooks/useRealtime*.ts` for live subscriptions
+- `@tanstack/react-query` (5.62.7) available for server-state caching
+
+**Phase 4 migration:** Server actions (`POST /api/db/:domain`) and RSC reads will replace the current `lib/mock/` data. Mock imports like:
+```typescript
+import { ISSUES } from "@/lib/mock";
+```
+...are being replaced with Drizzle queries. The `ISSUES` constant from `lib/mock/` will be deleted in Phase 4.
+
+## Error Handling
+
+### Server-Side Error Classes
+
+**`DbError` (`lib/db/errors.ts`):**
+```typescript
+export class DbError extends Error {
+  code: DbErrorCode; // 'FORBIDDEN' | 'CONFLICT' | 'FOREIGN_KEY' | 'TIMEOUT' | 'NOT_FOUND' | 'INTERNAL'
+  status: number;
+  cause?: unknown;
+}
+```
+Maps PostgreSQL SQLSTATE codes to typed errors:
+| SQLSTATE | Error | Status |
+|----------|-------|--------|
+| `42501` | FORBIDDEN | 403 |
+| `23505` | CONFLICT | 409 |
+| `23503` | FOREIGN_KEY | 409 |
+| `57014` | TIMEOUT | 408 |
+| `PGRST116` | NOT_FOUND | 404 |
+
+**`ServerActionError` (`lib/server-actions.ts`):**
+```typescript
+export class ServerActionError extends Error {
+  code: string;
+  status: number;
+  details?: unknown;
+}
+```
+
+### Error Capture
+
+- **Sentry:** `captureError()` and `captureDrizzleError()` with context (workspaceId, SQL truncated to 500 chars)
+- **Sentry wrappers:** `withSentryTransaction()` for performance tracing
+- **Sentry ignores:** `NEXT_REDIRECT`, `NEXT_NOT_FOUND` (Next.js internal exceptions)
+- **Fallback:** If no `SENTRY_DSN`, errors are logged via `console.error` with `[observability]` prefix
+
+### Database Hook Error Handling
+In `lib/auth/server.ts`, database hooks wrap side effects in try/catch with "non-critical" comments:
+```typescript
+try { await emitAuditEvent({...}); }
+catch { /* non-critical */ }
+```
+
+## Naming Conventions
+
+**Files:**
+- `kebab-case.ts` for utility files: `server-actions.ts`, `get-session.ts`, `require-auth.ts`, `email-url.ts`
+- `PascalCase.tsx` for components: `Button`, `SignInForm`, `ViewRenderer`, `TopBar`
+- `camelCase.ts` for hooks: `useSession`, `useLocale`, `useCurrentUser`
+- `.test.ts` suffix for test files: `rls.test.ts`, `auth.test.ts`
+- `_tests/` directories contain tests (underscore prefix keeps them grouped)
+- `_tests/` `setup.ts` for shared test setup
+
+**Directories:**
+- `kebab-case` with hyphen: `animate-ui`, `server-actions`, `view-query`
+- `camelCase` for feature directories: `useRealtimeIssues` (hook file)
+
+**Functions:**
+- `camelCase` for regular functions: `getSession`, `mapDrizzleError`, `createId`
+- `PascalCase` for React components: `Button`, `StatusDot`, `ViewRenderer`
+- `camelCase` for React hooks: `useSession`, `useLocale`, `useUI`
+- Export function names are explicit and descriptive
+
+**Variables:**
+- `camelCase`: `userExternalId`, `localeCookie`, `selectedIssueIds`
+- `UPPER_SNAKE_CASE` for constants: `SUPPORTED_LOCALES`, `DEFAULT_LOCALE`, `STATUS_META`
+- `camelCase` for React refs: `localRef`, `lastGRef`, `drawerPrevFocusEl`
+
+**Types:**
+- `PascalCase` interfaces: `CreateIssuePayload`, `ViewRendererProps`, `ButtonProps`
+- `PascalCase` type aliases: `StatusKey`, `PriorityKey`, `Tx`, `DB`
+- Type imports use `import type` for type-only imports: `import type { Metadata, Viewport } from 'next'`
+
+**Enums:** Drizzle enum values exported as union types: `type StatusKey = (typeof statusKeyEnum.enumValues)[number]`
+
+## Import Conventions
+
+**Order (observed in source files):**
+1. React imports: `import * as React from "react"`
+2. External framework imports: `import { motion } from "motion/react"`
+3. External utility imports: `import { cva } from "class-variance-authority"`
+4. Internal `@/` aliased imports (components, lib, hooks)
+5. Type imports: `import type { Issue } from "@/lib/db/types"`
+
+**Path aliases:** Only `@/*` → `apps/web/*`. No other aliases configured.
+
+**Barrel exports (observed):**
+- `lib/utils/index.ts` re-exports from `cn.ts` and `id.ts`
+- `lib/auth/index.ts` re-exports from `types`, `server`, `get-session`, `require-auth`, `email`, `client`
+- `lib/observability/index.ts` re-exports from `sentry`, `posthog`, `auth-events`, `logger`, `drizzle-logger`, `redact`
+- `lib/db/types.ts` re-exports all schema types + union types for enums
+
+**No circular imports:** The codebase avoids circular dependencies through barrel exports and the `@/` alias.
+
+**`server-only` imports:** Server-side files (auth server, db client, transaction wrapper, observability) start with `import 'server-only'` to prevent accidental client import. A no-op mock `lib/_tests/__mocks__/server-only.ts` is aliased in `vitest.config.ts` for tests.
+
+## Design System
+
+**Token file:** `apps/web/app/globals.css` (Tailwind v4 `@theme` block)
+
+### Colors (OKLCH — perceptual uniformity, dark-first)
+
+**Surfaces (5 levels of depth):**
+```css
+--color-bg:        oklch(0.16 0.005 250);   /* Deep navy background */
+--color-surface-1: oklch(0.19 0.006 250);   /* Card surface */
+--color-surface-2: oklch(0.22 0.007 250);   /* Elevated */
+--color-surface-3: oklch(0.26 0.008 250);   /* Overlay surface */
+--color-overlay:   oklch(0.10 0.004 250 / 0.72); /* Modal backdrop */
+--color-hover:     oklch(1 0 0 / 0.04);     /* Light overlay */
+--color-active:    oklch(1 0 0 / 0.08);     /* Pressed state */
+```
+
+**Borders (alpha-based):**
+```css
+--color-border:        oklch(1 0 0 / 0.08);  /* Subtle */
+--color-border-strong: oklch(1 0 0 / 0.14);  /* Prominent */
+--color-border-focus:  oklch(0.72 0.18 40);   /* Focus ring (warm amber) */
+```
+
+**Text hierarchy:**
+```css
+--color-text:         oklch(0.98 0.002 250); /* Primary */
+--color-text-muted:   oklch(0.72 0.005 250); /* Secondary */
+--color-text-subtle:  oklch(0.55 0.005 250); /* Tertiary */
+--color-text-faint:   oklch(0.40 0.005 250); /* Disabled */
+--color-text-inverse: oklch(0.16 0.005 250); /* On accent */
+```
+
+**Brand accent (warm amber — deliberately not Jira blue):**
+```css
+--color-accent:       oklch(0.78 0.17 55);
+--color-accent-hover: oklch(0.82 0.17 55);
+--color-accent-fg:    oklch(0.16 0.005 250);
+--color-accent-soft:  oklch(0.78 0.17 55 / 0.12);
+```
+
+**Semantic colors:** `--color-success` (green), `--color-warning` (yellow), `--color-danger` (red), `--color-info` (blue)
+
+**Priority colors:** `--color-prio-urgent`, `--color-prio-high`, `--color-prio-medium`, `--color-prio-low`, `--color-prio-none`
+
+**Workflow status colors:** `--color-status-backlog`, `--color-status-todo`, `--color-status-progress`, `--color-status-review`, `--color-status-done`, `--color-status-cancel`
+
+**Label palette:** 8 deterministic label colors (`--color-label-1` through `--color-label-8`), assigned from name hash.
+
+### Typography
+
+**Fonts:**
+- `Geist` (sans-serif): primary UI font (300–700 weights)
+- `Geist Mono` (monospace): code, issue keys, IDs, counts
+- `Inter Display`: fallback for large numerals
+
+**Scale (in px — Tailwind v4 `@theme` tokens):**
+```css
+--text-2xs: 10px → 14px line-height
+--text-xs:  11px → 16px
+--text-sm:  12px → 18px
+--text-base: 13px → 20px  (body default)
+--text-md:  14px → 22px
+--text-lg:  16px → 24px
+--text-xl:  20px → 28px
+--text-2xl: 24px → 32px
+--text-3xl: 32px → 40px
+```
+
+### Spacing (8pt grid)
+
+```css
+--spacing-1: 4px; --spacing-2: 8px; --spacing-3: 12px; --spacing-4: 16px;
+--spacing-5: 20px; --spacing-6: 24px; --spacing-7: 28px; --spacing-8: 32px;
+--spacing-9: 36px; --spacing-10: 40px; --spacing-12: 48px; --spacing-16: 64px;
+```
+
+### Radii
+```
+--radius-xs: 3px; --radius-sm: 4px; --radius-md: 6px;
+--radius-lg: 8px; --radius-xl: 10px; --radius-2xl: 12px; --radius-3xl: 16px;
+```
+
+### Shadows (pure black OKLCH)
+
+```css
+--shadow-xs: 0 1px 2px 0 oklch(0 0 0 / 0.25);
+--shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.25), 0 1px 1px 0 oklch(0 0 0 / 0.15);
+--shadow-md: 0 4px 8px -2px oklch(0 0 0 / 0.4), 0 2px 4px -1px oklch(0 0 0 / 0.25);
+--shadow-lg: 0 12px 24px -4px oklch(0 0 0 / 0.5), 0 4px 8px -2px oklch(0 0 0 / 0.3);
+--shadow-popover: 0 8px 24px -4px oklch(0 0 0 / 0.5);
+--shadow-focus: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-border-focus);
+```
+
+### Density modes
+
+Applied via `data-density` attribute on `<html>`:
+| Mode | Row height | Padding | Font size |
+|------|-----------|---------|-----------|
+| Compact | 28px | 12px | 12px |
+| Default | 36px | 14px | 12.5px |
+| Roomy | 48px | 18px | 13.5px |
+
+## Motion & Animation
+
+**Framework:** Motion 12 (`motion/react`) — replaces framer-motion.
+
+**Physics:** Spring physics only. No linear easings for UI transitions.
+
+**Token file:** `apps/web/lib/motion/variants.ts`
+
+```typescript
+// Spring presets
+const spring: Transition = { type: "spring", stiffness: 380, damping: 32, mass: 0.8 };
+const springSnap: Transition = { type: "spring", stiffness: 500, damping: 38, mass: 0.7 };
+const springBounce: Transition = { type: "spring", stiffness: 260, damping: 18, mass: 0.6 };
+```
+
+**CSS motion tokens (`globals.css`):**
+```css
+--ease-spring:        cubic-bezier(0.32, 0.72, 0, 1);
+--ease-spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+--ease-spring-snap:   cubic-bezier(0.2, 0.8, 0.2, 1);
+--ease-exit:          cubic-bezier(0.4, 0, 1, 1);
+
+--duration-micro:  120ms;
+--duration-enter:  220ms;
+--duration-layout: 320ms;
+--duration-exit:   160ms;
+```
+
+**Reusable animation variants:**
+- `fadeIn`, `fadeUp`, `fadeDown`, `fadeRight` — basic transitions
+- `drawerSlide` + `overlayFade` — drawer component
+- `popover`, `dialogContent`, `commandPalette` — overlay components
+- `listContainer` + `listItem` — staggered lists (18ms stagger, 40ms delay)
+- `pressable` — tap/scale interaction (scale 0.97, y -1)
+- `bounceIn` — celebratory animation
+- `statusPill` — pulse animation (scale 1→1.08)
+
+**Button tap pattern:**
+```typescript
+<motion.button
+  whileTap={{ scale: 0.97 }}
+  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+>
+```
+
+**Reduced motion:** `prefers-reduced-motion: reduce` media query sets `animation-duration` and `transition-duration` to `0.01ms !important`.
+
+## Accessibility
+
+### Focus Management
+- **Universal focus ring** (`globals.css`):
+  ```css
+  :where(button, a, input, textarea, select, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+  ```
+- Focus rings are always visible on keyboard focus (`focus-visible`), never on mouse clicks
+- `cmdk` search inputs suppress their own focus rings (implicit focus affordance)
+
+### ARIA & Semantics
+- `aria-label` on icon-only components (e.g., `StatusDot`, `PriorityIcon`)
+- `role` attributes on custom interactive elements
+- Semantic HTML: `<nav>`, `<button>`, `<form>`, `<input>`, `<kbd>`
+- `type="button"` default on `<button>` elements to prevent accidental form submissions
+
+### Keyboard Navigation
+- **Full keyboard navigability** tested via Playwright E2E tests (`e2e/a11y/keyboard.spec.ts`)
+- **Global shortcut system** (`components/shell/global-shortcuts.tsx` → `lib/state/keyboard.ts`):
+  - `⌘K` / `Ctrl+K` → Command palette
+  - `Esc` → Close drawer, cancel drag, close modals
+  - `G` then `{key}` → Go-to navigation (Linear-style)
+  - `⌘Z` → Undo
+  - Number keys 1–5 → Status shortcuts (per issue row)
+- **Skip logic:** Shortcuts are suppressed when focus is in `INPUT`, `TEXTAREA`, or `contentEditable` elements
+
+### Accessibility Testing
+- **axe-core** integrated via `@axe-core/playwright` (^4.11.3)
+- WCAG 2.2 AA audits for sign-in, sign-up, forgot-password pages (`e2e/a11y/auth.spec.ts`)
+- Keyboard navigability tests for all auth pages (`e2e/a11y/keyboard.spec.ts`)
+- E2E tests run on Chromium, Firefox, and WebKit
+
+### Other
+- `suppressHydrationWarning` on `<html>` for theme/density attribute hydration
+- `text-rendering: optimizeLegibility` with font feature settings `"ss01", "cv11", "cv02", "cv03", "cv04"`
+- `-webkit-tap-highlight-color: transparent` for mobile
+- Custom scrollbars in OKLCH tokens for dark theme consistency
+
+## Internationalization
+
+**Supported locales:** `en`, `es`, `fr`, `de`, `ja`, `zh` (defined in `lib/i18n/dict.ts`)
+
+**Locale resolution priority:**
+1. URL path segment (e.g., `/es/sign-in`)
+2. Browser `locale` cookie
+3. Browser `navigator.language`
+4. Default: `en`
+
+**Dictionary system:**
+- JSON dictionaries in `lib/i18n/dictionaries/{locale}.json`
+- Typed dictionary structure: `Record<string, Record<string, string>>`
+- `getDict(locale)` with in-memory cache per locale
+- `t(key, dict)` lookup with dot-notation: `t("sign_in.title", dict)`
+- Replacement interpolation: `t("greeting", { name: "John" })` replaces `{name}`
+- Client-side: `useLocale()` hook (`hooks/useLocale.ts`) with dictionary loaded via `loadLocaleDict()`
+
+**Example dictionary structure (`en.json`):**
+```json
+{
+  "sign_in": {
+    "title": "Sign in",
+    "subtitle": "to continue to rejira",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in"
+  }
+}
+```
+
+## Git Conventions
+
+**Commit format:** Conventional Commits (scope-first)
+
+From the git log (`git log --oneline -30`), the pattern is:
+```
+type(scope): description
+```
+Where:
+- `type`: `feat`, `fix`, `test`, `docs`, `refactor`, `perf`, `chore`
+- `scope`: The phase/plan number or feature area: `04`, `04-01`, `04-02`, `04-04`, `09-dev-env-onboarding-flow`, `09-dev-env`, `phase-8`
+- Description: Imperative mood, lowercase, no period
+
+**Examples from log:**
+```
+feat(04): complete Wave 2 — issues/projects/cycles page migrations
+docs(04): update Phase 4 state (4/8 executed)
+test(04-04): add pages-aux integration tests (9 cases)
+refactor(04-04): slim inbox.ts, users.ts, index.ts to type re-exports only
+fix(09-dev-env-onboarding-flow): redirect new users to /onboarding after sign-up
+```
+
+**Branching:** Not evident from log (squash/merge workflow). The CI runs on push/PR to `main`.
 
 ---
 
-## Module Design
-
-**Exports:**
-- Files export **named** functions, not default exports, for components and utilities: `export function IssueDrawer()`, `export const useUI = ...`, `export type StatusKey = ...`, `export const transport = createTransport()`.
-- Page files (`app/**/page.tsx`) use **default** export for the page function and **named** export for `metadata` / `viewport` / `revalidate` / `runtime` when needed: `export const metadata: Metadata = {...}`, `export const viewport: Viewport = {...}`, `export const runtime = "nodejs"`.
-- Layout files use **default** export for the layout and **named** export for `metadata`: see `app/(auth)/layout.tsx:4-8`.
-
-**Barrel files:**
-- `components/icons/index.ts` re-exports the registry — every icon component used in the app is consumed from `@/components/icons`, not from `@/components/animate-ui/icons/<name>`.
-- `components/icons/index-bridge.ts` is the lower-level barrel that re-exports from each icon file.
-- `lib/utils/index.ts` re-exports `cn` and the `date.ts` helpers (the file exists but the date re-exports are not yet present in source — `lib/utils/index.ts` currently only re-exports `cn`; date helpers are imported directly from `@/lib/utils/date`).
-
-**Side-effect imports:** none observed. `import "server-only"` is **not** used in any source file, even in `lib/auth/server.ts` and `lib/auth/oauth-config.ts` where it would be appropriate. **Recommendation:** add `import "server-only"` to `lib/auth/server.ts`, `lib/auth/audit.ts`, `lib/auth/rate-limit.ts`, and `lib/email/transport.ts` to enforce the server boundary at compile time.
-
-**File-purpose naming:**
-- `kebab-case.ts` for non-component modules.
-- `PascalCase` reserved for component filenames would be more conventional, but the project consistently uses `kebab-case` for components too.
-- `index.ts` is reserved for barrel re-exports; pages and components use explicit filenames.
-
----
-
-## Motion Conventions
-
-The project follows the AGENTS.md rules:
-- **Spring physics only.** `lib/motion/variants.ts` defines three reusable spring presets: `spring` (stiffness 380, damping 32, mass 0.8), `springSnap` (500/38/0.7), `springBounce` (260/18/0.6). Most components use these directly.
-- **Durations 120 / 220 / 320 ms.** These are CSS custom properties `--duration-micro: 120ms`, `--duration-enter: 220ms`, `--duration-layout: 320ms`, `--duration-exit: 160ms` defined in `app/globals.css:136-139`.
-- **`ease-spring` cubic-bezier(0.32, 0.72, 0, 1)** is defined in `app/globals.css:132` (`--ease-spring`); `--ease-spring-bounce` and `--ease-spring-snap` are also available.
-- **No linear easings** — the variants file uses `easeOut` / `easeIn` strings for opacity-only fades (e.g., `fadeIn` exit) but every enter transition uses a spring. The global `@media (prefers-reduced-motion: reduce)` block in `app/globals.css:257-264` collapses all animations to `0.01ms` for accessibility.
-- `motion` (not `framer-motion`) is the only animation library; `framer-motion` is **not** in `package.json`. Both `lib/motion/variants.ts:1` and `components/primitives/button.tsx:4` import from `motion/react`.
-
----
-
-## Design-System Conventions (verified in source)
-
-These were declared in `AGENTS.md` and **are present** in the codebase:
-
-- **OKLCH color tokens** — every color in `app/globals.css:8-66` is `oklch(...)`. Tokens include `--color-bg`, `--color-surface-1..3`, `--color-overlay`, plus semantic (`--color-success`, `--color-danger`, etc.), priority (`--color-prio-*`), status (`--color-status-*`), and label (`--color-label-1..8`).
-- **Five surface levels** — `bg`, `surface-1`, `surface-2`, `surface-3`, `overlay`. Implemented in `app/globals.css:10-14` and referenced throughout components as `bg-[var(--color-surface-1)]`, etc.
-- **1px borders at 8% alpha** — `app/globals.css:19` defines `--color-border: oklch(1 0 0 / 0.08)`; `app/globals.css:147` sets `* { border-color: var(--color-border); }` as the universal default.
-- **Dark mode default** — `app/layout.tsx:22` does not set a `class` on `<html>`; the dark tokens in `globals.css` are the only theme. The `app/globals.css` file has no `prefers-color-scheme: light` override.
-- **Geist fonts (sans/mono)** — `app/layout.tsx:33-36` loads `Geist:wght@300;400;500;600;700` and `Geist+Mono:wght@400;500;600` from Google Fonts; `--font-sans` and `--font-mono` are set in `globals.css:68-69`. `Inter Display` mentioned in the spec is **not** present.
-- **8pt spacing grid** — `globals.css:92-111` defines `--spacing-px: 1px` through `--spacing-20: 80px`, with half-step entries (`--spacing-0_5: 2px`, `--spacing-1_5: 6px`, etc.). All Tailwind class usage references the in-token values directly.
-- **Density modes** — `globals.css:223-244` defines three CSS selectors for `[data-density="compact|default|roomy"]` with `--row-h`, `--pad-x`, `--group-h`, `--card-pad`, `--row-font` variables. The `data-density` attribute is set by `useUI.setDensity` in `lib/state/ui.ts:59-61` and rehydrated on mount via `onRehydrateStorage` at line 141-145.
-- **2px focus ring (accent color, 2px offset)** — `globals.css:195-199` defines `:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: 2px; border-radius: var(--radius-sm); }` as the universal focus ring; `--color-border-focus: oklch(0.72 0.18 40)` (line 21).
-- **`@animate-ui/icons` 24×24 stroke 1.5px** — partially followed. The custom icons in `components/icons/custom.tsx` use `strokeWidth={2}` and `viewBox="0 0 24 24"` (not 1.5px stroke). The animate-ui icons in `components/animate-ui/icons/*` come from the registry and follow the upstream default (also 2px stroke). The `AGENTS.md` spec says 1.5px but the actual rendered icons use 2px.
-- **No emoji in UI** — followed. The only non-ASCII glyphs in the UI are: ⌘, ↵, ⇧, ⌃, ⌥, ⌫, ⌘K, ⎋, ⇪, ⌃, etc. (keyboard shortcut symbols), and `⏣` and `⊘` (`⏣` in `components/sell/top-bar.tsx:42` for the brand logo placeholder, `⊘` in `components/issue/issue-row.tsx:155` for the "blocked-by" badge). These are technically symbols (Unicode miscellaneous symbols block) rather than emoji. The avatar initials use uppercase letters.
-
----
-
-## Where to Add New Code
-
-**New feature (UI):**
-- Component: `apps/web/components/<area>/<feature>-<role>.tsx` with `'use client'` only if it needs hooks/motion. Co-locate state in `lib/state/<area>.ts` if it spans routes.
-- Page: `apps/web/app/(workspace)/<feature>/page.tsx` (default export). Add a `loading.tsx` or `error.tsx` only if needed.
-- Hook: `apps/web/hooks/use-<name>.ts` (start with `use-` even if not technically a hook, e.g. `use-workspace.ts`). Mark `'use client'` at the top.
-
-**New lib module:**
-- `apps/web/lib/<area>/<module>.ts` for non-React utilities.
-- Add a `cn` re-export to `lib/utils/index.ts` if it is a generic helper that downstream components will consume.
-- If the module is server-only, add `import "server-only"` at the top and place it under `lib/auth/`, `lib/email/`, or `lib/observability/`.
-
-**New icon:**
-- Run `npx shadcn@latest add @animate-ui/icons-<name>` to install into `components/animate-ui/icons/<name>.tsx`, then re-export from `components/icons/index-bridge.ts` and `components/icons/index.ts`. Custom icons that the registry does not provide go in `components/icons/custom.tsx` and follow the same `getVariants` + `IconWrapper` API (see `components/icons/custom.tsx:22-51` for the canonical pattern).
-
-**New state slice:**
-- `apps/web/lib/state/<slice>.ts` — define the `State` type, a `create<State>()(...)` call, and the action methods. If the slice should persist, wrap the store in `persist({ name, partialize, onRehydrateStorage })` (see `lib/state/ui.ts:53-147` for the canonical pattern). Always export selectors via store methods (`getState()`) when other modules need imperative access.
-
-**New server action / route handler:**
-- `apps/web/app/api/<feature>/route.ts` for a REST handler. Use `try/catch` and return `new Response(JSON.stringify({ error: ... }), { status: 500 })` on failure (see `app/api/auth/[...all]/route.ts:22-39` for the pattern).
-- `'use client'` is **not** used in route handlers; `export const runtime = "nodejs"` is the only directive in `app/api/auth/[...all]/route.ts:2`.
-
-**Mock data (transitional):**
-- Add fixtures to `apps/web/lib/mock/<entity>.ts` and re-export from `apps/web/lib/mock/index.ts`. Phase 4 will delete the `lib/mock/` directory; do not import from `lib/mock/` outside of `app/`, `components/`, and `lib/state/` (i.e., never from a server action or `utils/`).
+*Convention analysis: 2026-06-09*

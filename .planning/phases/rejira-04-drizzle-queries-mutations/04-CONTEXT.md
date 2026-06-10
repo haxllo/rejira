@@ -1,6 +1,16 @@
 # Phase 4: Drizzle queries & mutations — Context
 
+> **IMPORTANT (2026-06-09):** drizzle-orm and drizzle-kit were upgraded to `1.0.0-rc.4` (v1 RC).
+> This is a LOCKED decision — downgrade to 0.45.2 is NOT an option.
+> The v1 RC restructured all module exports (`drizzle-orm/pg-core`, `drizzle-orm/node-postgres`,
+> root `drizzle-orm`). Currently ~120 import errors across schema/client/actions/auth.
+> Full impact report: `.planning/quick/20260609-add-drizzle-v1/SUMMARY.md`
+> Upgrade guide: https://orm.drizzle.team/docs/upgrade-v1
+> Relations v1→v2 guide: https://orm.drizzle.team/docs/relations-v1-v2
+> Phase 4 MUST include fixing v1 import paths as part of its migration work.
+
 **Gathered:** 2026-06-08
+**Updated:** 2026-06-09 — drizzle-orm upgraded to v1 RC; see quick task
 **Status:** Ready for planning
 **Source:** User redesign directive — "find a better approach redesign phase 4 with the best and robust path"
 **Padded phase:** 04

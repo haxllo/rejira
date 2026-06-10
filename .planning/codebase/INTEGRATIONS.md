@@ -1,268 +1,305 @@
 # External Integrations
 
-**Analysis Date:** 2026-06-07
+**Analysis Date:** 2026-06-09
 
-## APIs & External Services
+## External Services
 
-### Authentication — Better Auth (Phase 3 — stubbed)
+### Supabase (Database + Realtime + Storage)
 
-- **Provider:** [Better Auth](https://better-auth.com) ^1.6.14
-- **Role:** Replaces Supabase Auth and NextAuth as the single auth framework
-- **Server entry:** `apps/web/lib/auth/server.ts:9-23` — `betterAuth()` instance; **throws until Phase 3 init** (current state: pre-Phase 2/3)
-- **Client entry:** `apps/web/lib/auth/client.ts:10-32` — `createAuthClient` with `basePath: "/api/auth"`
-- **Route handler:** `apps/web/app/api/auth/[...all]/route.ts:1-40` — `toNextJsHandler` from `better-auth/next-js`; `runtime = "nodejs"`
-- **Active client plugins:** `magicLinkClient`, `twoFactorClient`, `organizationClient` (`apps/web/lib/auth/client.ts:11-13`)
-- **Server plugin stack (planned):** `organization`, `twoFactor`, `magicLink`, `admin` (per AGENTS.md/PLAN.md)
-- **Env vars:** `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `BETTER_AUTH_API_KEY` (`.env.example:21-23`)
+**What it provides:** Managed PostgreSQL 15 with PITR, branching, read replicas; Realtime WebSocket subscriptions; S3-compatible object storage; pgvector extension; pg_cron scheduling.
 
-### OAuth Providers (planned, env-gated)
+**SDK/Client packages:**
+- `@supabase/supabase-js` ^2.108.0 — browser client for Realtime subscriptions
+- `@supabase/ssr` ^0.10.3 — server-side client with Next.js cookie handling
+- Driver: `pg` ^8.21.0 — direct Postgres connection via `pg.Pool` (used by Drizzle and Better Auth)
 
-- **Google** — Client/secret read in `apps/web/lib/auth/oauth-config.ts:11-14`
-  - Env: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (`.env.example:26-27`)
-  - Callback URL pattern: `{baseURL}/api/auth/callback/google`
-- **GitHub** — Client/secret read in `apps/web/lib/auth/oauth-config.ts:16-19`
-  - Env: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` (`.env.example:28-29`)
-  - Callback URL pattern: `{baseURL}/api/auth/callback/github`
-- **Account linking:** Configured for trusted providers Google + GitHub (`apps/web/lib/auth/account-linking.ts:11-22`); `allowUnlinking: true`
+**Connection strings (3):**
+- `DATABASE_URL` — transaction-mode pooler port 6543, used by Drizzle ORM (`apps\web\lib\db\client.ts`)
+- `DIRECT_URL` — direct port 5432, used by `drizzle-kit` migrations only (`drizzle.config.ts`)
+- `DATABASE_URL_SESSION` — session-mode port 5432, used by Better Auth (`apps\web\lib\auth\server.ts`)
 
-### Email — Resend (planned, env-gated)
+**Browser-side env vars:**
+- `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — anon/publishable key
 
-- **Provider:** [Resend](https://resend.com) ^4.0.0
-- **Implementation:** Direct REST call to `https://api.resend.com/emails` (no SDK); `apps/web/lib/email/transport.ts:39-59`
-- **Auth:** Bearer token from `RESEND_API_KEY`
-- **Env vars:**
-  - `RESEND_API_KEY` (`.env.example:32`)
-  - `RESEND_FROM` (`.env.example:33`) — Default: `Rejira <noreply@rejira.app>`
-  - `RESEND_WEBHOOK_SECRET` (`.env.example:34`) — For bounce/DMARC/SPF
-- **Dev transport:** `ConsoleTransport` logs emails to stdout when `RESEND_API_KEY` is unset (`apps/web/lib/email/transport.ts:18-28`)
-- **Templates:** Inline HTML in `apps/web/lib/email/templates/index.ts:6-51` (welcome, verify-email, magic-link, reset-password); planned migration to `@react-email/components` in 3K
-- **React Email:** ^4.0.0 installed (root `package.json:35`) but no component imports yet
+**Server-only env vars:**
+- `SUPABASE_SERVICE_ROLE_KEY` — service role key (never exposed to client)
 
-### Two-Factor QR Codes (third-party)
+### Better Auth
 
-- **Provider:** [goqr.me](https://goqr.me) (api.qrserver.com) — Free public QR service
-- **Use:** Renders TOTP QR code during 2FA setup
-- **URL pattern:** `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={otpauth_url}` (`apps/web/components/auth/two-factor-setup.tsx:32`)
-- **Note:** No API key, no rate-limit handling; runs on the client. Should be replaced with a self-hosted or paid QR service in production
+**What it provides:** Authentication framework — email/password, magic link, OAuth, 2FA, organizations/workspaces.
 
-### HaveIBeenPwned (planned, stub)
+**Version:** ^1.6.14
 
-- **Provider:** HIBP k-anonymity API
-- **Use:** Password breach check on signup/password change
-- **Env:** `HIBP_API_KEY` (`.env.example:48`)
-- **Status:** Stub returns `Promise.resolve(false)` (`apps/web/lib/auth/password-policy.ts:20-24`) — implementation in 3K
+**Server init:** `apps\web\lib\auth\server.ts`
+- Uses `pg.Pool` to `DATABASE_URL_SESSION` (max 10 connections)
+- Plugins: `nextCookies()`, `organization()`, `admin()`, `jwt()`, `magicLink()`, `genericOAuth()`, `twoFactor()`
+- Custom password validator with HIBP breach check (`apps\web\lib\auth\breach-check.ts`)
+- Database hooks for audit logging on user create/update, session create/delete
 
-## Data Storage
+**Client init:** `apps\web\lib\auth\client.ts`
+- Uses `createAuthClient` from `better-auth/react`
+- Client plugins: `magicLinkClient()`, `twoFactorClient()`, `organizationClient()`, `genericOAuthClient()`
 
-### Database — Supabase Postgres (Phase 2 target)
+**API endpoint:** `apps\web\app\api\auth\[...all]\route.ts` — catch-all handler via `toNextJsHandler(auth)`
 
-- **Provider:** [Supabase](https://supabase.com) — Managed Postgres 15 with PITR, branching, read replicas
-- **Role:** Single source of truth for app data + Better Auth sessions
-- **Three connection strings per env** (from `.env.example:11-17`):
-  - `DATABASE_URL` — Transaction-mode pooler (port 6543); used by Drizzle in the app
-  - `DIRECT_URL` — Port 5432, never pooled; used by `drizzle-kit migrate` only
-  - `DATABASE_URL_SESSION` — Port 5432, session-mode pooler; used by Better Auth for long-lived prepared statements
-- **Connection pooling strategy:** Transaction pool for short queries, session pool for auth (Better Auth), direct for migrations
-- **Drivers (both installed):**
-  - `pg` ^8.21.0 — For Better Auth's `pg.Pool` to `DATABASE_URL_SESSION` (`apps/web/package.json:47`)
-  - `postgres` ^3.4.5 — For Drizzle's transaction wrapper (root `package.json:34`)
-- **ORM:** Drizzle ^0.36.0 + drizzle-kit ^0.28.0
-- **RLS:** Planned on every table (Phase 2H); pgTAP test suite in CI
-- **Migrations:** 13 hand-authored SQL migrations (planned; not yet in tree); applied via `supabase db push`. Better Auth schema generated via `npx @better-auth/cli generate`
-- **Scripts available:**
-  - `npm run db:generate` — Drizzle generate
-  - `npm run db:migrate` — Drizzle migrate
-  - `npm run db:push` — Drizzle push
-  - `npm run db:studio` — Drizzle Studio (note: AGENTS.md says use Supabase Studio instead)
-  - `npm run db:seed` — `tsx scripts/seed.ts` (seed script not in tree)
-  - `npm run db:reset` — Drop + migrate + seed
-  - `npm run auth:generate` / `auth:migrate` — Better Auth CLI
-- **Local dev:** CI uses `supabase start` to run a self-contained Supabase stack (`.github/workflows/ci.yml:50-51`)
+**Env vars:**
+- `BETTER_AUTH_SECRET` — signing secret (generate: `openssl rand -base64 32`)
+- `BETTER_AUTH_URL` — base URL (e.g., `http://localhost:3000`)
+- `NEXT_PUBLIC_BETTER_AUTH_URL` — browser-accessible auth URL
+- `BETTER_AUTH_API_KEY` — API key for programmatic access
+- `DEV_SKIP_EMAIL_VERIFICATION` — skip verification in dev
 
-### File Storage — Supabase Storage (Phase 2 target)
+### Resend (Email)
 
-- **Provider:** Supabase Storage (S3-compatible)
-- **Use:** Avatars, attachments, exports
-- **Status:** Buckets not yet created (Phase 2 deliverable)
-- **Client:** Browser-side `@supabase/ssr` client; `process.env.NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+**What it provides:** Transactional email delivery.
 
-### Caching — None (Phase 3 target: Upstash Redis)
+**Version:** ^4.0.0
 
-- **Provider (planned):** Upstash Redis (REST API)
-- **Use:** Production rate limiting; in-memory fallback in dev (`apps/web/lib/auth/rate-limit.ts:13-40` — already implemented as in-process Map with 60s GC)
-- **Env:** `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (`.env.example:38-39`)
+**Transport:** `apps\web\lib\email\transport.ts`
+- `ResendTransport` — `POST https://api.resend.com/emails` with `Bearer` token
+- `ConsoleTransport` — stdio output for dev (no Resend key required)
+- Auto-selection: `RESEND_API_KEY` present → Resend, else → Console
 
-## Authentication & Identity
+**Templates:** React Email templates rendered via `apps\web\lib\email\render.ts`
+- Templates: `reset-password`, `verify-email`, `magic-link`, `workspace-invite`, `new-device`
 
-### Primary auth
+**Webhook:** `apps\web\app\api\email\webhook\route.ts`
+- Receives Resend webhook events (bounce, complaint, etc.)
+- HMAC-SHA256 signature validation using `RESEND_WEBHOOK_SECRET`
+- Handler: `apps\web\lib\email\bounce-handler.ts`
 
-- **Provider:** Better Auth (see above) — currently a stub that throws on import
-- **Browser session storage:** Cookie-based; cookie names `better-auth.session_token` and `__Secure-better-auth.session_token` (`apps/web/proxy.ts:24-25`)
-- **Auth proxy:** `apps/web/proxy.ts:1-31` — checks Supabase session first, then falls back to Better Auth cookie; redirects unauthenticated users to `/sign-in?next=…`
-- **Public routes (no auth):** `/`, `/sign-in`, `/sign-up`, `/forgot-password`, `/reset-password`, `/verify-email`, `/two-factor`, `/api/auth/*`, `/api/check`, `/invite*` (`apps/web/proxy.ts:6-11`)
+**Env vars:**
+- `RESEND_API_KEY` — Resend API key (if absent, uses ConsoleTransport)
+- `RESEND_FROM` — default from address (e.g., `Rejira <noreply@rejira.app>`)
+- `RESEND_WEBHOOK_SECRET` — webhook HMAC secret
 
-### Two-factor auth (TOTP)
+### Sentry (Error Tracking)
 
-- **Library:** `better-auth/client/plugins` → `twoFactorClient` (`apps/web/lib/auth/client.ts:12`)
-- **TOTP secret delivery:** QR code via api.qrserver.com (see above)
-- **Backup codes:** Generated by Better Auth's twoFactor plugin; UI in `apps/web/components/auth/backup-codes-display.tsx`
+**What it provides:** Error monitoring, performance tracing, query-level breadcrumbs.
 
-### Password policy
+**Version:** `@sentry/nextjs` ^10.57.0
 
-- **Min length:** 12 chars (`apps/web/lib/auth/password-policy.ts:12`)
-- **Composition:** Letters + at least one number
-- **Blocklist:** 8 common passwords (`apps/web/lib/auth/password-policy.ts:6-9`)
-- **Breach check:** HIBP stub (planned 3K)
+**Init:** `apps\web\lib\observability\sentry.ts`
+- Lazy init on first `SENTRY_DSN`
+- Wraps Next.js config via `withSentryConfig()` (`apps\web\next.config.ts`)
+- Traces: 10% sample rate prod, 100% dev
+- Drizzle breadcrumbs: every query logged as Sentry breadcrumb; slow queries (>100ms) sent as warning events
 
-### Audit logging (planned 3K)
+**Env vars:**
+- `SENTRY_DSN` — Sentry project DSN
+- `SENTRY_AUTH_TOKEN` — auth token for source map uploads
+- `SENTRY_ORG` — Sentry organization slug
+- `SENTRY_PROJECT` — Sentry project slug
 
-- **Pattern:** Subscribe to events; emit to handlers (`apps/web/lib/auth/audit.ts:14-32`)
-- **Targets (planned):** PostHog, Sentry
-- **Events tracked:** sign-in, sign-out, password change (per module comments)
+### PostHog (Product Analytics)
 
-## Monitoring & Observability
+**What it provides:** Product analytics and event tracking.
 
-### Error Tracking — Sentry (Phase 4J/3K, stubbed)
+**Packages:**
+- `posthog-node` ^5.36.7 — server-side tracking (`apps\web\lib\observability\posthog.ts`)
+- `posthog-js` ^1.383.2 — browser-side tracking (installed, used client-side)
 
-- **Status:** Stubs in `apps/web/lib/observability/index.ts:3-8` — currently console.logs; `import("@sentry/nextjs")` planned
-- **Env:** `SENTRY_DSN`, `SENTRY_AUTH_TOKEN` (`.env.example:42-43`)
+**Server-side init:** Lazy on first `POSTHOG_API_KEY`
+- Flush: 10 events or 5s interval
+- Host: `POSTHOG_HOST` (default `https://us.i.posthog.com`)
 
-### Product Analytics — PostHog (Phase 4J/3K, stubbed)
+**Env vars:**
+- `POSTHOG_API_KEY` — server-side API key
+- `POSTHOG_HOST` — PostHog instance host
+- `NEXT_PUBLIC_POSTHOG_KEY` — browser-side API key
+- `NEXT_PUBLIC_POSTHOG_HOST` — browser-accessible PostHog host
 
-- **Status:** Stubs in `apps/web/lib/observability/index.ts:10-20`; `posthog-js` and `posthog.capture` planned
-- **Env:** `POSTHOG_API_KEY` (server-side), `POSTHOG_HOST` (default `https://us.i.posthog.com`), `NEXT_PUBLIC_POSTHOG_KEY` (browser-exposed; not yet documented in `.env.example` but referenced in `lib/observability/index.ts:11`)
+### Upstash Redis (Rate Limiting)
 
-### Logs — Axiom (planned, not yet referenced)
+**What it provides:** Distributed rate limiting for auth endpoints.
 
-- Per PLAN.md stack table; no env vars documented in `.env.example`; no imports in source
+**Version:** `@upstash/redis` ^1.38.0
 
-## CI/CD & Deployment
+**Usage:** `apps\web\lib\auth\rate-limit.ts`
+- `RedisRateLimiter` — uses Upstash Redis REST API when env vars present
+- `MemoryRateLimiter` — in-memory fallback when Redis not configured
+- Better Auth's built-in rate limiter also uses database storage (`apps\web\lib\auth\server.ts`)
 
-### Hosting — Vercel
+**Env vars:**
+- `UPSTASH_REDIS_REST_URL` — Upstash Redis REST endpoint
+- `UPSTASH_REDIS_REST_TOKEN` — Upstash Redis auth token
 
-- **Config:** `vercel.json:1-6`
-  - `buildCommand`: `npm --prefix apps/web run build`
-  - `outputDirectory`: `apps/web/.next`
-  - `installCommand`: `npm install`
-  - `framework`: `nextjs`
-- **Preview envs:** Supabase Branching for per-PR database (planned)
+### Google OAuth
 
-### CI Pipeline — GitHub Actions
+**Provider in:** `apps\web\lib\auth\server.ts` (genericOAuth plugin)
+- Authorization URL: `https://accounts.google.com/o/oauth2/v2/auth`
+- Token URL: `https://oauth2.googleapis.com/token`
+- UserInfo URL: `https://www.googleapis.com/oauth2/v3/userinfo`
+- Scopes: `openid`, `profile`, `email`
+- Redirect URI: `{BETTER_AUTH_URL}/api/auth/callback/google`
 
-- **Workflow:** `.github/workflows/ci.yml:1-82`
-- **Triggers:** Push to `main`, PRs to `main`
-- **Concurrency:** Cancels in-flight runs for the same branch (`:10-12`)
-- **Job `build`** on `ubuntu-latest`, 15 min timeout
-- **Steps:**
-  1. Checkout (`actions/checkout@v4`)
-  2. Setup Node 22 with npm cache (`actions/setup-node@v4`)
-  3. `npm ci`
-  4. `npm run typecheck`
-  5. `npm run lint` (Biome)
-  6. Install Supabase CLI (`supabase/setup-cli@v1`)
-  7. `supabase start` — local Supabase stack
-  8. `supabase db reset --no-seed` — apply migrations
-  9. `supabase db lint` + `supabase db diff` — drift detection (fails CI if drift)
-  10. `npm run db:seed` — populate demo workspace
-  11. `npm run db:test` — Vitest (RLS, Drizzle transactions, auth flow)
-  12. `npm run build` — with placeholder `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- **Note:** `npm run lint` is documented as Biome in CI but `apps/web/package.json:10` uses `eslint .` — mismatch (likely TODO)
+**Env vars:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+
+### GitHub OAuth
+
+**Provider in:** `apps\web\lib\auth\server.ts` (genericOAuth plugin)
+- Authorization URL: `https://github.com/login/oauth/authorize`
+- Token URL: `https://github.com/login/oauth/access_token`
+- UserInfo URL: `https://api.github.com/user`
+- Scopes: `user:email`
+- Redirect URI: `{BETTER_AUTH_URL}/api/auth/callback/github`
+
+**Env vars:** `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`
+
+### HIBP (Have I Been Pwned)
+
+**What it provides:** Password breach checking during signup.
+
+**Usage:** `apps\web\lib\auth\breach-check.ts` — called in the `user.create.before` database hook
+- Uses k-anonymity model (range-based API query)
+- Non-blocking on failure (breach check failure does not prevent signup)
+
+**Env vars:** `HIBP_API_KEY` (optional)
 
 ## Environment Configuration
 
-### Required env vars (committed in `.env.example`)
+### Required Environment Variables
 
-| Group | Var | Required | Purpose |
-| --- | --- | --- | --- |
-| Supabase | `NEXT_PUBLIC_SUPABASE_URL` | Yes (client) | Supabase project URL |
-| Supabase | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes (client) | Browser-exposed anon/publishable key |
-| Supabase | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Alias | Newer alias for anon key |
-| Supabase | `SUPABASE_SERVICE_ROLE_KEY` | Server-only | Bypasses RLS — never expose to client |
-| Database | `DATABASE_URL` | Yes (server) | Transaction-mode pooler (port 6543) for Drizzle |
-| Database | `DIRECT_URL` | Yes (migrations) | Port 5432, never pooled; migrations only |
-| Database | `DATABASE_URL_SESSION` | Yes (Better Auth) | Session-mode pooler (port 5432) |
-| Auth | `BETTER_AUTH_SECRET` | Yes (prod) | 32-byte secret (`openssl rand -base64 32`) |
-| Auth | `BETTER_AUTH_URL` | Yes | Base URL (e.g. `http://localhost:3000`) |
-| Auth | `BETTER_AUTH_API_KEY` | Optional | API key for external consumers |
-| OAuth | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Optional | Google sign-in |
-| OAuth | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | Optional | GitHub sign-in |
-| Email | `RESEND_API_KEY` | Optional (prod) | Falls back to console transport in dev |
-| Email | `RESEND_FROM` | Optional | Default `Rejira <noreply@rejira.app>` |
-| Email | `RESEND_WEBHOOK_SECRET` | Optional | Webhook signature verification |
-| Rate limit | `UPSTASH_REDIS_REST_URL` | Optional (prod) | Upstash Redis (in-memory fallback in dev) |
-| Rate limit | `UPSTASH_REDIS_REST_TOKEN` | Optional (prod) | |
-| Observability | `SENTRY_DSN` | Optional | Sentry error tracking |
-| Observability | `SENTRY_AUTH_TOKEN` | Optional | Sentry auth |
-| Observability | `POSTHOG_API_KEY` | Optional | PostHog server-side events |
-| Observability | `POSTHOG_HOST` | Optional | Default `https://us.i.posthog.com` |
-| Optional | `HIBP_API_KEY` | Optional | HaveIBeenPwned breach check |
+**Supabase (required for data access):**
+| Variable | Where Used | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Browser + Server | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser + Server | Anon/publishable key for Realtime + Storage |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server only | Service role key |
+| `DATABASE_URL` | Server only (`apps\web\lib\db\client.ts`) | Drizzle ORM (transaction pooler :6543) |
+| `DIRECT_URL` | `drizzle-kit` only (`drizzle.config.ts`) | Migrations (direct :5432) |
+| `DATABASE_URL_SESSION` | Server only (`apps\web\lib\auth\server.ts`) | Better Auth (session pooler :5432) |
 
-### Client-exposed vars (NEXT_PUBLIC_*)
+**Better Auth (required for authentication):**
+| Variable | Where Used | Purpose |
+|---|---|---|
+| `BETTER_AUTH_SECRET` | Server only | Signing secret |
+| `BETTER_AUTH_URL` | Server only | Auth base URL |
+| `NEXT_PUBLIC_BETTER_AUTH_URL` | Browser | Client-side auth URL |
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` (or `_PUBLISHABLE_KEY`)
-- `NEXT_PUBLIC_BETTER_AUTH_URL` (consumed in `apps/web/lib/auth/client.ts:18-20`)
-- `NEXT_PUBLIC_SITE_URL` (consumed in `apps/web/lib/auth/client.ts:19`, `apps/web/lib/email/templates/index.ts:11`)
-- `NEXT_PUBLIC_POSTHOG_KEY` (referenced in `apps/web/lib/observability/index.ts:11`, not in `.env.example`)
-- `NEXT_PUBLIC_APP_URL` (used in CI placeholder, not in `.env.example`)
+**Email (optional — ConsoleTransport used without it):**
+| Variable | Where Used | Purpose |
+|---|---|---|
+| `RESEND_API_KEY` | Server only | Resend API key |
+| `RESEND_FROM` | Server only | Default sender address |
+| `RESEND_WEBHOOK_SECRET` | Server only | Webhook HMAC secret |
 
-### Secrets location
+**Environment files:**
+- `.env.example` (root) — 52 lines, template with all variables
+- `.env.example` (`apps\web\`) — 56 lines, app-specific template
+- `.env.local` (`apps\web\`) — gitignored, local dev configuration
 
-- Local: `apps/web/.env.local` (gitignored) and root `.env.local` (gitignored, present in tree)
-- Production: Vercel environment variables (per `vercel.json` framework setup)
-- CI: GitHub Actions secrets (no env values hardcoded; placeholders used for build)
+## Server-Side Clients
 
-## Realtime & Subscriptions
+### Drizzle ORM Client
+**File:** `apps\web\lib\db\client.ts`
+**Init:** `drizzle(pool, { schema, prepare: false, logger: ... })`
+- `pg.Pool` to `DATABASE_URL`, max 10 connections, 30s idle timeout, 5s connection timeout
+- SSL: `rejectUnauthorized: true` in production, `false` in dev
+- Query logger: Development only — `drizzleLogger` (Sentry breadcrumbs + console)
+- Exported as `db` via `apps\web\lib\db\index.ts`
 
-### Supabase Realtime (Phase 2 target)
+### Better Auth Server
+**File:** `apps\web\lib\auth\server.ts`
+**Init:** `betterAuth({ database: pool, ... })`
+- `pg.Pool` to `DATABASE_URL_SESSION`, max 10 connections
+- SSL: disabled for localhost, `rejectUnauthorized: false` for remote
+- Exported as `auth`, `getAuthInstance()` via `apps\web\lib\auth\index.ts`
+- Route handler at `apps\web\app\api\auth\[...all]\route.ts`
 
-- **Channels:** Postgres Changes + Broadcast + Presence (per AGENTS.md)
-- **Subscription model:** One WebSocket per workspace
-- **Status:** Client wrappers exist (`apps/web/utils/supabase/{client,server,middleware}.ts`) but no Realtime subscriptions in source yet
+### Supabase Server Client
+**File:** `apps\web\utils\supabase\server.ts`
+**Init:** `createServerClient(url, anonKey, { cookies })` from `@supabase/ssr`
+- Uses `next/headers` cookies
+- Used in `apps\web\lib\supabase\storage.ts` for Storage operations
 
-## Webhooks & Callbacks
+### Supabase Middleware Client
+**File:** `apps\web\utils\supabase\middleware.ts`
+**Init:** `createServerClient(url, anonKey, { cookies })` with request-based cookies
+- `updateSession(request)` — validates Supabase auth session, returns `{ supabase, user, response }`
 
-### Incoming
+### Observability
+**Files:** `apps\web\lib\observability\`
+- `sentry.ts` — `initSentry()`, `captureError()`, `withSentryTransaction()`, `captureDrizzleError()`
+- `posthog.ts` — `initPostHog()`, `trackEvent()`
+- `logger.ts` — Pino logger (`logger`, `withRequestContext()`)
+- `drizzle-logger.ts` — Drizzle query logging → Sentry
 
-- `POST /api/auth/[...all]` — Better Auth catch-all (sign-in, sign-up, OAuth callback, magic-link, 2FA, etc.) — `apps/web/app/api/auth/[...all]/route.ts:32-40`
-- `POST /api/auth/verify-email?token=…` — Email verification (called from `apps/web/app/(auth)/verify-email/page.tsx:23`)
-- `POST /api/check` — Listed as public in `apps/web/proxy.ts:9`; implementation not in source
-- Resend webhook — `RESEND_WEBHOOK_SECRET` env present; no route handler in source yet (Phase 3K)
+## Browser-Side Clients
 
-### Outgoing
+### Better Auth Client
+**File:** `apps\web\lib\auth\client.ts`
+**Init:** `createAuthClient({ baseURL, basePath: '/api/auth', plugins })` from `better-auth/react`
+- Exports: `signIn`, `signUp`, `signOut`, `useSession`, `getSession`, `useActiveOrganization`, `useListOrganizations`, `useActiveMember`
+- Base URL auto-detected from `window.location.origin` or `NEXT_PUBLIC_BETTER_AUTH_URL`
 
-- Better Auth → Google OAuth (`{baseURL}/api/auth/callback/google`) — handled by Better Auth
-- Better Auth → GitHub OAuth (`{baseURL}/api/auth/callback/github`) — handled by Better Auth
-- Resend API — `POST https://api.resend.com/emails` (`apps/web/lib/email/transport.ts:40-53`)
-- api.qrserver.com — `GET https://api.qrserver.com/v1/create-qr-code/?…` (client-side, `apps/web/components/auth/two-factor-setup.tsx:32`)
-- Google Fonts — `GET https://fonts.googleapis.com/css2?family=Geist…` (`apps/web/app/layout.tsx:34-36`)
+### Supabase Browser Client
+**File:** `apps\web\utils\supabase\client.ts`
+**Init:** `createBrowserClient(url, anonKey)` from `@supabase/ssr`
+- Used for Realtime subscriptions and Storage operations from client components
 
-## Assets & Static Resources
+## Route Handlers & API Endpoints
 
-- **Google Fonts (CDN):** `https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap` — preconnect + stylesheet link in `apps/web/app/layout.tsx:24-36`
-  - Fonts: Geist (sans), Geist Mono (code)
-  - Loaded with `display=swap`; no FOIT
-  - **No self-hosting** — third-party CDN dependency at runtime
+### Auth Routes
+| Route | Method | File | Handler |
+|---|---|---|---|
+| `/api/auth/[...all]` | GET, POST | `apps\web\app\api\auth\[...all]\route.ts` | Better Auth catch-all |
 
-## Integration Status Matrix
+### Database API Routes (all at `/api/db/`)
+| Route | Methods | File | Auth |
+|---|---|---|---|
+| `/api/db/issues` | GET, POST | `apps\web\app\api\db\issues\route.ts` | `requireAuth()` + workspace check |
+| `/api/db/projects` | POST | `apps\web\app\api\db\projects\route.ts` | `requireAuth()` + workspace check |
+| `/api/db/cycles` | POST | `apps\web\app\api\db\cycles\route.ts` | `requireAuth()` + workspace check |
+| `/api/db/comments` | POST | `apps\web\app\api\db\comments\route.ts` | `requireAuth()` + workspace check |
+| `/api/db/memberships` | POST | `apps\web\app\api\db\memberships\route.ts` | `requireAuth()` + workspace check |
+| `/api/db/notifications` | POST | `apps\web\app\api\db\notifications\route.ts` | `requireAuth()` + workspace check |
+| `/api/db/saved-views` | POST | `apps\web\app\api\db\saved-views\route.ts` | `requireAuth()` + workspace check |
 
-| Integration | Dependency | Env vars | Code | Status |
-| --- | --- | --- | --- | --- |
-| Supabase Realtime/Storage | `@supabase/ssr` 0.10.3 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `apps/web/utils/supabase/*` | Wired, no active subscriptions yet |
-| Supabase Postgres | `pg` 8.21.0, `postgres` 3.4.5 | `DATABASE_URL`, `DIRECT_URL`, `DATABASE_URL_SESSION` | Not in source | Phase 2 — not started |
-| Drizzle ORM | `drizzle-orm` 0.36.0 + `drizzle-kit` 0.28.0 | (DB) | Not in source | Phase 2 — not started |
-| Better Auth | `better-auth` 1.6.14 | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` | Stubs throw | Phase 3 — pre-init |
-| Google OAuth | via Better Auth | `GOOGLE_CLIENT_*` | `oauth-config.ts` reads env | Env-gated, not yet active |
-| GitHub OAuth | via Better Auth | `GITHUB_CLIENT_*` | `oauth-config.ts` reads env | Env-gated, not yet active |
-| Resend Email | `resend` 4.0.0 (not imported) | `RESEND_API_KEY`, `RESEND_FROM` | `lib/email/transport.ts` (raw fetch) | Active transport, no callers yet |
-| React Email | `react-email` 4.0.0 (not imported) | — | — | Phase 3K — not started |
-| QR codes (2FA) | none | — | `two-factor-setup.tsx:32` | Active (third-party) |
-| HIBP | none | `HIBP_API_KEY` | `password-policy.ts:20` stub | Phase 3K — not started |
-| Sentry | none (env stubbed) | `SENTRY_DSN` | `observability/index.ts:3` stub | Phase 4J — not started |
-| PostHog | none (env stubbed) | `POSTHOG_API_KEY` | `observability/index.ts:10` stub | Phase 4J — not started |
-| Upstash Redis | none | `UPSTASH_REDIS_*` | In-memory `rate-limit.ts` | Phase 3 — not started |
-| Google Fonts | none | — | `layout.tsx:24-36` | Active (CDN) |
+**Pattern:** All DB routes use discriminated union Zod schema (field `op`), `requireAuth()`, workspace ID verification against session, `withWorkspaceTransaction()`, and `mapDrizzleError()` for consistent error responses.
+
+### Health Check
+| Route | Method | File | Purpose |
+|---|---|---|---|
+| `/api/db-check` | GET | `apps\web\app\api\db-check\route.ts` | `SELECT 1` liveness probe |
+
+### Email Webhook
+| Route | Method | File | Purpose |
+|---|---|---|---|
+| `/api/email/webhook` | POST | `apps\web\app\api\email\webhook\route.ts` | Resend bounce/complaint webhooks |
+
+### Server Actions
+**File:** `apps\web\lib\server-actions.ts` (440 lines)
+- Client-side callable functions that POST to `/api/db/<domain>`
+- Error handling: throws `ServerActionError` with code, status, details
+- Domains: `issues`, `projects`, `cycles`, `comments`, `notifications`, `saved-views`, `memberships`
+- Operations per domain: create, update, delete, archive, bulk operations, etc.
+
+## Middleware
+
+**File:** `apps\web\middleware.ts` (115 lines)
+
+**Matcher:** `/((?!_next/static|_next/image|favicon.ico).*)`
+
+**Behavior:**
+1. **Public routes** (`/sign-in`, `/sign-up`, etc.): Sets locale cookie, security headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`), request ID via `x-request-id`
+2. **Static/assets** (`/_next`, `/static`, files with `.`): Pass through
+3. **Protected routes**: Checks for `better-auth.session_token` cookie — redirects to `/sign-in` if absent
+
+**No Supabase session management in middleware** — Better Auth handles auth; middleware only checks cookie presence for route gating.
+
+**Supported locales:** en, es, fr, de, ja, zh (detected from cookie, then Accept-Language header, default `en`)
+
+## Webhooks
+
+**Incoming Webhooks:**
+| Endpoint | Source | File | Validation |
+|---|---|---|---|
+| `POST /api/email/webhook` | Resend | `apps\web\app\api\email\webhook\route.ts` | HMAC-SHA256 (`RESEND_WEBHOOK_SECRET`) |
+
+**Outgoing Webhooks:** None currently implemented.
 
 ---
 
-*Integration audit: 2026-06-07*
+*Integration audit: 2026-06-09*
