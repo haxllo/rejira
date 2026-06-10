@@ -73,3 +73,10 @@ export function resetPasswordTemplate(props: { name: string; url: string }) {
     text: `Reset your password by clicking: ${props.url}\n\nIf you didn't request this, ignore this email.`,
   };
 }
+
+// Issue notification templates
+export { issueAssignedTemplate } from './issue-assigned';
+export { issueMentionedTemplate } from './issue-mentioned';
+export { issueStatusChangedTemplate } from './issue-status-changed';
+export { issueCommentedTemplate } from './issue-commented';
+export { unsubscribeLink, listUnsubscribeHeader, unsubscribeFooter, unsubscribeFooterHtml } from './unsubscribe';

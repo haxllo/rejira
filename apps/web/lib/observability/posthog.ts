@@ -24,6 +24,32 @@ export function initPostHog(): void {
   }
 }
 
+export function trackIssueEvent(
+  event: 'issue_created' | 'issue_updated' | 'issue_commented' | 'issue_deleted',
+  distinctId: string,
+  properties: {
+    issueId: string;
+    workspaceId?: string;
+    projectId?: string;
+    status?: string;
+    priority?: string;
+    assigneeIds?: string[];
+  },
+): void {
+  trackEvent(event, distinctId, {
+    ...properties,
+    $set: { lastSeen: new Date().toISOString() },
+  });
+}
+
+export function trackWorkspaceEvent(
+  event: 'workspace_created' | 'workspace_joined' | 'workspace_invite_sent',
+  distinctId: string,
+  properties: { workspaceId: string; workspaceName?: string; role?: string },
+): void {
+  trackEvent(event, distinctId, properties);
+}
+
 export function trackEvent(
   event: string,
   distinctId: string,

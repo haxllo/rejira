@@ -39,6 +39,7 @@
     "@radix-ui/react-tooltip": "1.1.8",
     "@radix-ui/react-visually-hidden": "1.1.2",
     "@sentry/nextjs": "^10.57.0",
+    "@supabase-labs/y-supabase": "^0.1.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.108.0",
     "@tanstack/react-query": "5.62.7",
@@ -63,6 +64,7 @@
     "sonner": "1.7.1",
     "tailwind-merge": "2.5.5",
     "use-debounce": "^10.1.1",
+    "yjs": "^13.6.31",
     "zod": "^3.25.0",
     "zustand": "5.0.3"
   },

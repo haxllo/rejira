@@ -1,26 +1,13 @@
-import 'server-only';
-
 import * as Sentry from '@sentry/nextjs';
 
 let initialized = false;
 
 export function initSentry(): void {
-  if (initialized || !process.env.SENTRY_DSN) {
+  if (initialized) return;
+  if (!process.env.SENTRY_DSN && !process.env.NEXT_PUBLIC_SENTRY_DSN) {
     return;
   }
-
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV || 'development',
-    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-    debug: process.env.NODE_ENV !== 'production',
-    ignoreErrors: [
-      'NEXT_REDIRECT',
-      'NEXT_NOT_FOUND',
-    ],
-  });
   initialized = true;
-  console.log('[observability] Sentry initialized');
 }
 
 export function captureError(error: Error, context?: Record<string, unknown>): void {

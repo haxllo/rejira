@@ -25,6 +25,8 @@ import { lookupUser, type UserView } from '@/lib/state/users';
 import { lookupLabel, type LabelView } from '@/lib/state/labels';
 import { cn } from '@/lib/utils';
 import { useRealtimeComments } from '@/hooks/useRealtimeComments';
+import { usePresence } from '@/lib/realtime/presence';
+import { IssueDescriptionEditor } from '@/components/issue/issue-description-editor';
 import type { Issue, StatusKey, PriorityKey } from '@/lib/db/types';
 
 const STATUS_ORDER: StatusKey[] = ['backlog', 'todo', 'in_progress', 'in_review', 'done', 'cancelled'];
@@ -90,6 +92,7 @@ export function IssueDrawer({ issues }: Props) {
 }
 
 function DrawerHeader({ issue, onClose }: { issue: Issue; onClose: () => void }) {
+  const { onlineUsers } = usePresence();
   return (
     <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-bg)]/95 px-5 py-2.5 backdrop-blur">
       <div className="flex items-center gap-2.5 text-[12px] text-[var(--color-text-muted)]">
@@ -106,7 +109,21 @@ function DrawerHeader({ issue, onClose }: { issue: Issue; onClose: () => void })
           </>
         )}
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5">
+        {onlineUsers.length > 0 && (
+          <div className="mr-1 flex -space-x-1.5">
+            {onlineUsers.slice(0, 5).map((u) => (
+              <div key={u.userId} className="relative">
+                <Avatar name={u.name} size="xs" />
+              </div>
+            ))}
+            {onlineUsers.length > 5 && (
+              <span className="z-10 flex size-5 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[9px] text-[var(--color-text-faint)]">
+                +{onlineUsers.length - 5}
+              </span>
+            )}
+          </div>
+        )}
         <IconBtn icon={<ShareIcon size={14} />} label="Share" />
         <IconBtn icon={<MoreHorizontalIcon size={14} />} label="More" />
         <button
@@ -127,7 +144,7 @@ function DrawerBody({ issue }: { issue: Issue }) {
       <div className="min-w-0 border-r border-[var(--color-border)] px-6 py-5">
         <TitleSection issue={issue} />
         <PropertiesBar issue={issue} />
-        <DescriptionSection issue={issue} />
+        <YjsDescriptionSection issue={issue} />
         <ActivityAndComments issue={issue} />
         <ReplyBox />
       </div>
@@ -224,40 +241,15 @@ function PropertyPill({
   );
 }
 
-function DescriptionSection({ issue }: { issue: Issue }) {
-  const [editing, setEditing] = React.useState(false);
-  const [value, setValue] = React.useState(issue.description);
-  React.useEffect(() => setValue(issue.description), [issue.description]);
+function YjsDescriptionSection({ issue }: { issue: Issue }) {
   return (
     <section className="mt-6">
-      <SectionHeader
-        title="Description"
-        action={
-          <button
-            onClick={() => setEditing((v) => !v)}
-            className="text-[11px] text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)]"
-          >
-            {editing ? "Save" : "Edit"}
-          </button>
-        }
-      />
-      {editing ? (
-        <textarea
-          autoFocus
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onBlur={() => setEditing(false)}
-          rows={5}
-          className="w-full resize-none rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] p-3 text-[13px] text-[var(--color-text)] outline-none focus:border-[var(--color-border-strong)]"
+      <SectionHeader title="Description" />
+      <div className="mt-3">
+        <IssueDescriptionEditor
+          issueExternalId={issue.externalId}
+          initialDescription={issue.description ?? ''}
         />
-      ) : (
-        <p className="whitespace-pre-line text-[13px] leading-[1.6] text-[var(--color-text-muted)]">
-          {issue.description || <span className="text-[var(--color-text-faint)]">No description</span>}
-        </p>
-      )}
-      <div className="mt-2 flex items-center gap-1.5 text-[11px] text-[var(--color-text-faint)]">
-        <SparklesIcon size={11} className="text-[var(--color-accent)]" />
-        <span>Suggested: add acceptance criteria · 3 sections</span>
       </div>
     </section>
   );

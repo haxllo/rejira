@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 
 import {
+  ActivityIcon,
   InboxIcon,
   ListIconCustom,
   StarIcon,
@@ -47,6 +48,7 @@ export function PrimaryNav() {
         <NavItem href="/inbox" label="Inbox" icon={<InboxIcon size={15} />} badge={unreadCount} active={path.startsWith("/inbox")} />
         <NavItem href="/my-issues" label="My Issues" icon={<ListIconCustom size={15} />} badge={myIssuesCount} active={path.startsWith("/my-issues")} />
         <NavItem href="/" label="Home" icon={<HomeIcon size={15} />} active={path === "/"} />
+        <NavItem href="/activity" label="Activity" icon={<ActivityIcon size={15} />} active={path.startsWith("/activity")} />
       </div>
 
       <div className="mt-5 flex items-center justify-between px-4">

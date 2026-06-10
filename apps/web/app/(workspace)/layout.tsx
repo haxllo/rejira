@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { TopBar } from '@/components/shell/top-bar';
 import { PrimaryNav } from '@/components/shell/primary-nav';
 import { CommandPalette } from '@/components/shell/command-palette';
+import { MobileNavToggle } from '@/components/shell/mobile-nav';
 import { StatusBar } from '@/components/shell/status-bar';
 import { ToastHost } from '@/components/shell/toast';
 import { IssueDrawer } from '@/components/issue/issue-drawer';
@@ -14,6 +15,8 @@ import { RequireAuth } from '@/components/auth/require-auth';
 import { getUsers, getLabels, getIssuesForActiveWorkspace, getProjects } from '@/lib/db/rsc';
 import { WorkspaceDataHydrator } from '@/components/workspace/data-hydrator';
 import { WorkspaceRealtimeProvider } from '@/lib/realtime/workspace-provider';
+import { SentryErrorBoundaryWrapper } from '@/components/error-boundary/sentry-error-boundary-wrapper';
+import { PresenceWrapper } from '@/components/workspace/presence-wrapper';
 
 export default async function WorkspaceLayout({
   children,
@@ -28,16 +31,25 @@ export default async function WorkspaceLayout({
   ]);
   return (
     <RequireAuth>
+      <SentryErrorBoundaryWrapper>
       <WorkspaceDataHydrator users={users} labels={labels} projects={projects} issues={issues} />
+      <PresenceWrapper>
       <WorkspaceRealtimeProvider>
       <div className="flex h-dvh flex-col">
         <RouteChangeSelectionReset />
         <GlobalShortcuts />
         <Suspense fallback={<div className="h-12 border-b border-[var(--color-border)]" />}>
-          <TopBar />
+          <div className="flex items-center">
+            <div className="md:hidden">
+              <MobileNavToggle />
+            </div>
+            <TopBar />
+          </div>
         </Suspense>
         <div className="flex min-h-0 flex-1">
-          <PrimaryNav />
+          <div className="hidden md:flex">
+            <PrimaryNav />
+          </div>
           <main className="min-w-0 flex-1 overflow-hidden">{children}</main>
         </div>
         <Suspense fallback={null}>
@@ -51,6 +63,8 @@ export default async function WorkspaceLayout({
         <BulkActionBar />
       </div>
       </WorkspaceRealtimeProvider>
+      </PresenceWrapper>
+      </SentryErrorBoundaryWrapper>
     </RequireAuth>
   );
 }

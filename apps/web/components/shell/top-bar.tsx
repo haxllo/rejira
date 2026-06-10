@@ -41,7 +41,8 @@ export function TopBar() {
         )}
       >
         <SearchIcon size={14} className="text-[var(--color-text-faint)]" />
-        <span className="flex-1">Search issues, projects, views…</span>
+        <span className="hidden sm:inline flex-1">Search issues, projects, views…</span>
+        <span className="sm:hidden flex-1">Search…</span>
         <Kbd keys={["⌘", "K"]} />
       </button>
 
