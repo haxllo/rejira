@@ -30,6 +30,14 @@ import { cn } from "@/lib/utils";
 const STATUS_ORDER: StatusKey[] = ["backlog", "todo", "in_progress", "in_review", "done"];
 const PRIORITY_ORDER: PriorityKey[] = ["urgent", "high", "medium", "low", "none"];
 
+interface TriageSuggestion {
+  priority?: string;
+  suggestedAssignee?: string;
+  labels?: string[];
+  suggestedProject?: string;
+  explanation?: string;
+}
+
 export function CreateIssueDialog() {
   const open = useUI((s) => s.createIssueOpen);
   const close = useUI((s) => s.closeCreateIssue);
@@ -40,6 +48,9 @@ export function CreateIssueDialog() {
   const [status, setStatus] = React.useState<StatusKey>("todo");
   const [priority, setPriority] = React.useState<PriorityKey>("none");
   const [assigneeIds, setAssigneeIds] = React.useState<string[]>(defaultUserIds);
+  const [triageLoading, setTriageLoading] = React.useState(false);
+  const [triageSuggestions, setTriageSuggestions] = React.useState<TriageSuggestion | null>(null);
+  const [triageError, setTriageError] = React.useState<string | null>(null);
   const titleRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
@@ -49,9 +60,35 @@ export function CreateIssueDialog() {
       setStatus("todo");
       setPriority("none");
       setAssigneeIds(defaultUserIds);
+      setTriageSuggestions(null);
+      setTriageError(null);
       setTimeout(() => titleRef.current?.focus(), 60);
     }
   }, [open, defaultUserIds]);
+
+  const runTriage = async () => {
+    if (!title.trim()) return;
+    setTriageLoading(true);
+    setTriageError(null);
+    setTriageSuggestions(null);
+    try {
+      const res = await fetch('/api/ai/triage', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ issueTitle: title }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setTriageError(data.error ?? 'AI triage failed');
+        return;
+      }
+      setTriageSuggestions(data.suggestions);
+    } catch {
+      setTriageError('AI triage is unavailable');
+    } finally {
+      setTriageLoading(false);
+    }
+  };
 
   const projectList = useProjectsStore(useShallow((s) => Object.values(s.byId)));
   const userList = useUsersStore(useShallow((s) => Object.values(s.byId)));
@@ -142,19 +179,91 @@ export function CreateIssueDialog() {
 
             <div className="space-y-3 px-4 py-4">
               <div>
-                <input
-                  ref={titleRef}
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                      e.preventDefault();
-                      submit();
-                    }
-                  }}
-                  placeholder="Issue title"
-                  className="w-full bg-transparent text-[16px] font-semibold text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] outline-none"
-                />
+                <div className="flex items-center gap-2">
+                  <input
+                    ref={titleRef}
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault();
+                        submit();
+                      }
+                    }}
+                    placeholder="Issue title"
+                    className="flex-1 bg-transparent text-[16px] font-semibold text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] outline-none"
+                  />
+                  <button
+                    onClick={runTriage}
+                    disabled={!title.trim() || triageLoading}
+                    className="flex h-6 items-center gap-1 rounded-md bg-[var(--color-accent-soft)] px-2 text-[10.5px] font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)]/20 disabled:opacity-40"
+                  >
+                    <SparklesIcon size={11} />
+                    {triageLoading ? 'Generating…' : 'AI Assist'}
+                  </button>
+                </div>
+
+                {triageError && (
+                  <div className="mt-2 flex items-center gap-2 rounded-md bg-[var(--color-danger)]/10 px-3 py-1.5 text-[11px] text-[var(--color-danger)]">
+                    <span>{triageError}</span>
+                    <button onClick={runTriage} className="ml-auto underline hover:no-underline">Retry</button>
+                  </div>
+                )}
+
+                {triageSuggestions && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-2 rounded-md border border-[var(--color-accent)]/20 bg-[var(--color-accent-soft)]/30 p-2"
+                  >
+                    <div className="mb-1.5 flex items-center gap-1 text-[10px] font-medium text-[var(--color-accent)]">
+                      <SparklesIcon size={10} />
+                      AI Suggestions
+                    </div>
+                    <div className="space-y-1 text-[11px] text-[var(--color-text-muted)]">
+                      {triageSuggestions.priority && (
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-[var(--color-text-faint)]">Priority:</span>
+                          <span className={cn(
+                            "rounded px-1 py-0.5 text-[10px] font-medium",
+                            triageSuggestions.priority === 'urgent' && 'bg-[var(--color-danger)]/10 text-[var(--color-danger)]',
+                            triageSuggestions.priority === 'high' && 'bg-[var(--color-warning)]/10 text-[var(--color-warning)]',
+                          )}>
+                            {triageSuggestions.priority}
+                          </span>
+                        </div>
+                      )}
+                      {triageSuggestions.suggestedAssignee && (
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-[var(--color-text-faint)]">Assignee:</span>
+                          <span>{triageSuggestions.suggestedAssignee}</span>
+                        </div>
+                      )}
+                      {triageSuggestions.labels && triageSuggestions.labels.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-[var(--color-text-faint)]">Labels:</span>
+                          <span>{triageSuggestions.labels.join(', ')}</span>
+                        </div>
+                      )}
+                      {triageSuggestions.explanation && (
+                        <div className="mt-1 text-[10.5px] italic text-[var(--color-text-faint)]">
+                          {triageSuggestions.explanation}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (triageSuggestions.priority && ['none','low','medium','high','urgent'].includes(triageSuggestions.priority)) {
+                          setPriority(triageSuggestions.priority as PriorityKey);
+                        }
+                        setTriageSuggestions(null);
+                      }}
+                      className="mt-1.5 h-5 rounded bg-[var(--color-accent)] px-2 text-[10px] font-medium text-white hover:opacity-90"
+                    >
+                      Apply
+                    </button>
+                  </motion.div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -210,7 +319,7 @@ export function CreateIssueDialog() {
               <div className="flex items-center gap-3 text-[11px] text-[var(--color-text-faint)]">
                 <span className="flex items-center gap-1">
                   <SparklesIcon size={11} className="text-[var(--color-accent)]" />
-                  <span>AI will suggest labels and assignees</span>
+                  <span>AI Assist can suggest priority, labels, and more</span>
                 </span>
               </div>
             </div>

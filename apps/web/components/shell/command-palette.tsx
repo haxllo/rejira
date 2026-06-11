@@ -23,14 +23,12 @@ import {
 import { useShallow } from "zustand/react/shallow";
 import { useUI } from "@/lib/state/ui";
 import { useProjectsStore } from "@/lib/state/projects";
-import { useIssues } from "@/lib/state/issues";
-import { lookupLabel } from "@/lib/state/labels";
-import { lookupUser } from "@/lib/state/users";
 import { StatusDot } from "@/components/primitives/status";
 import { PriorityIcon } from "@/components/primitives/priority";
 import { Avatar } from "@/components/primitives/avatar";
 import { LabelDot } from "@/components/primitives/label";
 import { cn } from "@/lib/utils";
+import type { SearchResult, SearchMode } from "@/lib/search/types";
 
 export function CommandPalette() {
   const router = useRouter();
@@ -38,7 +36,42 @@ export function CommandPalette() {
   const setOpen = useUI((s) => s.setCommandOpen);
   const openDrawer = useUI((s) => s.openDrawer);
   const projectList = useProjectsStore(useShallow((s) => Object.values(s.byId)));
-  const issues = useIssues((s) => s.issues);
+
+  const [searchText, setSearchText] = React.useState("");
+  const [searchMode, setSearchMode] = React.useState<SearchMode>("hybrid");
+  const [searchResults, setSearchResults] = React.useState<SearchResult[]>([]);
+  const [searchLoading, setSearchLoading] = React.useState(false);
+  const debounceRef = React.useRef<ReturnType<typeof setTimeout>>();
+
+  React.useEffect(() => {
+    if (!searchText.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearchLoading(true);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({
+          text: searchText,
+          mode: searchMode,
+          limit: "20",
+        });
+        const res = await fetch(`/api/search?${params}`);
+        const data = await res.json();
+        setSearchResults(data.results ?? []);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 200);
+
+    return () => clearTimeout(debounceRef.current);
+  }, [searchText, searchMode]);
+
+  const hasAIKey = true;
 
   return (
     <AnimatePresence>
@@ -62,7 +95,7 @@ export function CommandPalette() {
             <Command
               label="Global command menu"
               className="flex flex-col"
-              shouldFilter
+              shouldFilter={false}
               loop
               onKeyDown={(e) => {
                 if (e.key === "Escape") setOpen(false);
@@ -70,175 +103,187 @@ export function CommandPalette() {
             >
               <div className="flex items-center gap-3 border-b border-[var(--color-border)] px-4">
                 <SearchIcon size={16} className="text-[var(--color-text-faint)]" />
+
+                {hasAIKey && (
+                  <button
+                    onClick={() => setSearchMode(searchMode === "hybrid" ? "semantic" : "hybrid")}
+                    className={cn(
+                      "flex h-5 items-center rounded px-1.5 text-[10px] font-medium transition-colors",
+                      searchMode === "semantic"
+                        ? "bg-[var(--color-accent)] text-white"
+                        : "bg-[var(--color-surface-2)] text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)]"
+                    )}
+                  >
+                    {searchMode === "semantic" ? "AI" : "⌘"}
+                  </button>
+                )}
+
                 <Command.Input
                   autoFocus
-                  placeholder="Type a command, search, or jump to a view…"
+                  value={searchText}
+                  onValueChange={setSearchText}
+                  placeholder="Type a command, search, or ask AI…"
                   className="h-12 flex-1 bg-transparent text-[14px] text-[var(--color-text)] placeholder:text-[var(--color-text-faint)] outline-none"
                 />
-                <SparklesIcon size={13} className="text-[var(--color-accent)]" />
+                {searchLoading && (
+                  <div className="size-3 animate-spin rounded-full border-2 border-[var(--color-border-strong)] border-t-[var(--color-accent)]" />
+                )}
               </div>
+
               <Command.List className="max-h-[60vh] overflow-y-auto p-1.5">
-                <Command.Empty className="px-3 py-8 text-center text-[12.5px] text-[var(--color-text-faint)]">
-                  No results. Press Enter to create an issue with this title.
-                </Command.Empty>
+                {searchText.trim() && searchResults.length === 0 && !searchLoading && (
+                  <Command.Empty className="px-3 py-8 text-center text-[12.5px] text-[var(--color-text-faint)]">
+                    No results. Press Enter to create an issue with this title.
+                  </Command.Empty>
+                )}
 
-                <Command.Group
-                  heading="Jump to"
-                  className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10.5px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em] [&_[cmdk-group-heading]]:text-[var(--color-text-faint)]"
-                >
-                  <Item
-                    icon={<InboxIcon size={14} />}
-                    label="Inbox"
-                    sub="Notifications and assignments"
-                    onSelect={() => {
-                      router.push("/inbox");
-                      setOpen(false);
-                    }}
-                  />
-                  <Item
-                    icon={<ListIconCustom size={14} />}
-                    label="My Issues"
-                    sub="Issues assigned to you"
-                    onSelect={() => {
-                      router.push("/my-issues");
-                      setOpen(false);
-                    }}
-                  />
-                  <Item
-                    icon={<HomeIcon size={14} />}
-                    label="Home"
-                    sub="Workspace overview"
-                    onSelect={() => {
-                      router.push("/");
-                      setOpen(false);
-                    }}
-                  />
-                </Command.Group>
-
-                <Command.Group
-                  heading="Views"
-                  className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10.5px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em] [&_[cmdk-group-heading]]:text-[var(--color-text-faint)]"
-                >
-                  <Item
-                    icon={<RowsIcon size={14} />}
-                    label="Engineering — All Issues"
-                    sub="ENG"
-                    onSelect={() => {
-                      router.push("/projects/eng/issues");
-                      setOpen(false);
-                    }}
-                  />
-                  <Item
-                    icon={<KanbanIconCustom size={14} />}
-                    label="Cycle 23 — Realtime foundations"
-                    sub="ENG · 2 days left"
-                    onSelect={() => {
-                      router.push("/projects/eng/cycles/23");
-                      setOpen(false);
-                    }}
-                  />
-                  <Item
-                    icon={<GanttIcon size={14} />}
-                    label="Engineering — Roadmap"
-                    sub="Timeline view"
-                    onSelect={() => {
-                      router.push("/projects/eng/roadmap");
-                      setOpen(false);
-                    }}
-                  />
-                </Command.Group>
-
-                <Command.Group
-                  heading="Projects"
-                  className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10.5px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em] [&_[cmdk-group-heading]]:text-[var(--color-text-faint)]"
-                >
-                  {projectList.map((p) => (
-                    <Item
-                      key={p.id}
-                      icon={
-                        <span
-                          className="grid size-4 place-items-center rounded text-[9px] font-bold text-[oklch(0.16_0.005_250)]"
-                          style={{ background: p.iconColor ?? 'var(--color-text-faint)' }}
-                        >
-                          {(p.iconLetter ?? p.name.slice(0, 1)).toUpperCase()}
-                        </span>
-                      }
-                      label={p.name}
-                      sub={p.description}
-                      onSelect={() => {
-                        router.push(`/projects/${p.key.toLowerCase()}/issues`);
-                        setOpen(false);
-                      }}
-                    />
-                  ))}
-                </Command.Group>
-
-                <Command.Group
-                  heading="Issues"
-                  className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10.5px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em] [&_[cmdk-group-heading]]:text-[var(--color-text-faint)]"
-                >
-                  {issues.slice(0, 12).map((issue) => {
-                    const labels = issue.labelIds
-                      .map((id) => lookupLabel(id))
-                      .filter(Boolean);
-                    return (
+                {!searchText.trim() && (
+                  <>
+                    <Command.Group
+                      heading="Jump to"
+                      className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10.5px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em] [&_[cmdk-group-heading]]:text-[var(--color-text-faint)]"
+                    >
                       <Item
-                        key={issue.externalId}
+                        icon={<InboxIcon size={14} />}
+                        label="Inbox"
+                        sub="Notifications and assignments"
+                        onSelect={() => { router.push("/inbox"); setOpen(false); }}
+                      />
+                      <Item
+                        icon={<ListIconCustom size={14} />}
+                        label="My Issues"
+                        sub="Issues assigned to you"
+                        onSelect={() => { router.push("/my-issues"); setOpen(false); }}
+                      />
+                      <Item
+                        icon={<HomeIcon size={14} />}
+                        label="Home"
+                        sub="Workspace overview"
+                        onSelect={() => { router.push("/"); setOpen(false); }}
+                      />
+                    </Command.Group>
+
+                    <Command.Group
+                      heading="Views"
+                      className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10.5px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em] [&_[cmdk-group-heading]]:text-[var(--color-text-faint)]"
+                    >
+                      <Item
+                        icon={<RowsIcon size={14} />}
+                        label="Engineering — All Issues"
+                        sub="ENG"
+                        onSelect={() => { router.push("/projects/eng/issues"); setOpen(false); }}
+                      />
+                      <Item
+                        icon={<KanbanIconCustom size={14} />}
+                        label="Cycle 23 — Realtime foundations"
+                        sub="ENG · 2 days left"
+                        onSelect={() => { router.push("/projects/eng/cycles/23"); setOpen(false); }}
+                      />
+                      <Item
+                        icon={<GanttIcon size={14} />}
+                        label="Engineering — Roadmap"
+                        sub="Timeline view"
+                        onSelect={() => { router.push("/projects/eng/roadmap"); setOpen(false); }}
+                      />
+                    </Command.Group>
+
+                    <Command.Group
+                      heading="Projects"
+                      className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10.5px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em] [&_[cmdk-group-heading]]:text-[var(--color-text-faint)]"
+                    >
+                      {projectList.map((p) => (
+                        <Item
+                          key={p.id}
+                          icon={
+                            <span
+                              className="grid size-4 place-items-center rounded text-[9px] font-bold text-[oklch(0.16_0.005_250)]"
+                              style={{ background: p.iconColor ?? 'var(--color-text-faint)' }}
+                            >
+                              {(p.iconLetter ?? p.name.slice(0, 1)).toUpperCase()}
+                            </span>
+                          }
+                          label={p.name}
+                          sub={p.description}
+                          onSelect={() => {
+                            router.push(`/projects/${p.key.toLowerCase()}/issues`);
+                            setOpen(false);
+                          }}
+                        />
+                      ))}
+                    </Command.Group>
+
+                    <Command.Group
+                      heading="Actions"
+                      className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10.5px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em] [&_[cmdk-group-heading]]:text-[var(--color-text-faint)]"
+                    >
+                      <Item
+                        icon={<PlusIcon size={14} />}
+                        label="Create new issue"
+                        sub="⌘ N"
+                        onSelect={() => setOpen(false)}
+                      />
+                      <Item
+                        icon={<SparklesIcon size={14} />}
+                        label="Ask AI: summarize cycle progress"
+                        sub="⌘ ⇧ A"
+                        onSelect={() => setOpen(false)}
+                      />
+                      <Item
+                        icon={<UserIcon size={14} />}
+                        label="Invite teammate"
+                        onSelect={() => setOpen(false)}
+                      />
+                      <Item
+                        icon={<SettingsIcon size={14} />}
+                        label="Workspace settings"
+                        onSelect={() => setOpen(false)}
+                      />
+                    </Command.Group>
+                  </>
+                )}
+
+                {searchResults.length > 0 && (
+                  <Command.Group
+                    heading={`Search Results (${searchResults.length})`}
+                    className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10.5px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em] [&_[cmdk-group-heading]]:text-[var(--color-text-faint)]"
+                  >
+                    {searchResults.map((result) => (
+                      <Item
+                        key={result.id}
                         icon={
                           <span className="font-mono text-[10.5px] text-[var(--color-text-faint)]">
-                            {issue.key}
+                            {result.projectKey}
                           </span>
                         }
-                        label={issue.title}
+                        label={
+                          <span>
+                            {result.matchHighlights.length > 0
+                              ? result.matchHighlights[0]
+                              : result.title}
+                          </span>
+                        }
                         sub={
                           <span className="flex items-center gap-2">
-                            <StatusDot status={issue.status} size={6} />
-                            <PriorityIcon priority={issue.priority} size={10} />
-                            {labels.slice(0, 2).map((l) => l && <LabelDot key={l.id} name={l.name} />)}
-                            {issue.assigneeIds[0] && (
-                              <Avatar
-                                name={lookupUser(issue.assigneeIds[0])?.name ?? "?"}
-                                size="xs"
-                              />
+                            <StatusDot status={result.status as any} size={6} />
+                            <PriorityIcon priority={result.priority as any} size={10} />
+                            {result.matchType === "semantic" && (
+                              <span className="flex items-center gap-0.5 text-[10px] text-[var(--color-accent)]">
+                                <SparklesIcon size={9} /> AI
+                              </span>
+                            )}
+                            {result.assigneeName && (
+                              <Avatar name={result.assigneeName} size="xs" />
                             )}
                           </span>
                         }
                         onSelect={() => {
-                          openDrawer(issue.externalId);
+                          openDrawer(result.id);
                           setOpen(false);
                         }}
                       />
-                    );
-                  })}
-                </Command.Group>
-
-                <Command.Group
-                  heading="Actions"
-                  className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10.5px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.08em] [&_[cmdk-group-heading]]:text-[var(--color-text-faint)]"
-                >
-                  <Item
-                    icon={<PlusIcon size={14} />}
-                    label="Create new issue"
-                    sub="⌘ N"
-                    onSelect={() => setOpen(false)}
-                  />
-                  <Item
-                    icon={<SparklesIcon size={14} />}
-                    label="Ask AI: summarize cycle progress"
-                    sub="⌘ ⇧ A"
-                    onSelect={() => setOpen(false)}
-                  />
-                  <Item
-                    icon={<UserIcon size={14} />}
-                    label="Invite teammate"
-                    onSelect={() => setOpen(false)}
-                  />
-                  <Item
-                    icon={<SettingsIcon size={14} />}
-                    label="Workspace settings"
-                    onSelect={() => setOpen(false)}
-                  />
-                </Command.Group>
+                    ))}
+                  </Command.Group>
+                )}
               </Command.List>
 
               <div className="flex items-center justify-between border-t border-[var(--color-border)] bg-[var(--color-surface-2)]/40 px-3 py-1.5 text-[10.5px] text-[var(--color-text-faint)]">
@@ -257,7 +302,7 @@ export function CommandPalette() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CircleDotIcon size={9} className="text-[var(--color-success)]" />
-                  <span>Synced 2s ago</span>
+                  <span>Search</span>
                 </div>
               </div>
             </Command>
@@ -275,13 +320,13 @@ function Item({
   onSelect,
 }: {
   icon: React.ReactNode;
-  label: string;
+  label: React.ReactNode;
   sub?: React.ReactNode;
   onSelect: () => void;
 }) {
   return (
     <Command.Item
-      value={`${label} ${typeof sub === "string" ? sub : ""}`}
+      value={`${typeof label === "string" ? label : ""}`}
       onSelect={onSelect}
       className={cn(
         "flex h-9 cursor-pointer items-center gap-3 rounded-md px-2 text-[12.5px] text-[var(--color-text-muted)]",
