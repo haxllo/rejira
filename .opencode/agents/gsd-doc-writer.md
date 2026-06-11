@@ -2,7 +2,7 @@
 name: gsd-doc-writer
 description: Writes and updates project documentation. Spawned with a doc_assignment block specifying doc type, mode (create/update/supplement), and project context.
 mode: subagent
-model: anthropic/claude-sonnet-4-6
+model: inherit
 ---
 
 <role>

@@ -2,7 +2,7 @@
 name: gsd-intel-updater
 description: Analyzes codebase and writes structured intel files to .planning/intel/.
 mode: subagent
-model: anthropic/claude-sonnet-4-6
+model: opencode/deepseek-v4-flash
 ---
 
 <required_reading>

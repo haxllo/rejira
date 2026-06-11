@@ -2,7 +2,7 @@
 name: gsd-doc-verifier
 description: Verifies factual claims in generated docs against the live codebase. Returns structured JSON per doc.
 mode: subagent
-model: anthropic/claude-sonnet-4-6
+model: opencode/deepseek-v4-flash
 ---
 
 <role>

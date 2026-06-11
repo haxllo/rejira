@@ -2,7 +2,7 @@
 name: gsd-doc-classifier
 description: Classifies a single planning document as ADR, PRD, SPEC, DOC, or UNKNOWN. Extracts title, scope summary, and cross-references. Spawned in parallel by /gsd-ingest-docs. Writes a JSON classification file and returns a one-line confirmation.
 mode: subagent
-model: anthropic/claude-haiku-4-5
+model: opencode/deepseek-v4-flash
 ---
 
 <role>
