@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth/require-auth';
 import { getActiveWorkspaceId } from '@/lib/auth/workspace-helpers';
 import { createWorkspaceAIClient } from '@/lib/ai/client';
+import { checkAIBudget, recordAICost } from '@/lib/ai/cost';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,14 @@ export async function POST(request: NextRequest) {
 
     if (!issueTitle?.trim()) {
       return NextResponse.json({ error: 'Issue title is required' }, { status: 400 });
+    }
+
+    const budget = await checkAIBudget(workspaceId);
+    if (!budget.withinBudget) {
+      return NextResponse.json(
+        { error: 'Monthly AI budget exceeded', spent: budget.spent, budget: budget.budget },
+        { status: 429 }
+      );
     }
 
     const client = await createWorkspaceAIClient(workspaceId);
@@ -43,6 +52,8 @@ export async function POST(request: NextRequest) {
     }
 
     const suggestions = JSON.parse(content);
+
+    recordAICost(workspaceId, 'gpt-4o-mini', completion.usage?.total_tokens ?? 0).catch(() => {});
 
     return NextResponse.json({ suggestions });
   } catch (error: any) {

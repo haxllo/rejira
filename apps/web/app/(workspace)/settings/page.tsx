@@ -11,6 +11,7 @@ import {
   BellIcon,
   UsersIcon,
   ShieldCheckIcon,
+  SparklesIcon,
   ChevronRightIcon,
 } from '@/components/icons';
 
@@ -51,6 +52,12 @@ const SETTINGS_CARDS: SettingCard[] = [
     description: 'Email notification preferences',
     href: '/settings/account/notifications',
     icon: <BellIcon size={18} />,
+  },
+  {
+    title: 'AI & Search',
+    description: 'AI provider key, budget, and search settings',
+    href: '/settings/ai',
+    icon: <SparklesIcon size={18} />,
   },
   {
     title: 'Workspace Security',

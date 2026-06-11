@@ -93,6 +93,45 @@ export function IssueDrawer({ issues }: Props) {
 
 function DrawerHeader({ issue, onClose }: { issue: Issue; onClose: () => void }) {
   const { onlineUsers } = usePresence();
+  const [summarizing, setSummarizing] = React.useState(false);
+  const [summary, setSummary] = React.useState<string[] | null>(null);
+  const [summaryError, setSummaryError] = React.useState<string | null>(null);
+  const [showOverflow, setShowOverflow] = React.useState(false);
+  const overflowRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (overflowRef.current && !overflowRef.current.contains(e.target as Node)) {
+        setShowOverflow(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const runSummarize = async () => {
+    setSummarizing(true);
+    setSummaryError(null);
+    setShowOverflow(false);
+    try {
+      const res = await fetch('/api/ai/summarize', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ issueId: issue.externalId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSummaryError(data.error ?? 'Summarization failed');
+        return;
+      }
+      setSummary(data.summary);
+    } catch {
+      setSummaryError('AI summarization is unavailable');
+    } finally {
+      setSummarizing(false);
+    }
+  };
+
   return (
     <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-bg)]/95 px-5 py-2.5 backdrop-blur">
       <div className="flex items-center gap-2.5 text-[12px] text-[var(--color-text-muted)]">
@@ -125,7 +164,27 @@ function DrawerHeader({ issue, onClose }: { issue: Issue; onClose: () => void })
           </div>
         )}
         <IconBtn icon={<ShareIcon size={14} />} label="Share" />
-        <IconBtn icon={<MoreHorizontalIcon size={14} />} label="More" />
+        <div className="relative" ref={overflowRef}>
+          <button
+            onClick={() => setShowOverflow(!showOverflow)}
+            className="flex size-6 items-center justify-center rounded-md text-[var(--color-text-muted)] hover:bg-[var(--color-hover)] hover:text-[var(--color-text)]"
+            aria-label="More actions"
+          >
+            <MoreHorizontalIcon size={14} />
+          </button>
+          {showOverflow && (
+            <div className="absolute right-0 top-full z-20 mt-1 w-56 overflow-hidden rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface-1)] py-1 shadow-[var(--shadow-popover)]">
+              <button
+                onClick={runSummarize}
+                disabled={summarizing}
+                className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] text-[var(--color-text-muted)] hover:bg-[var(--color-hover)] hover:text-[var(--color-text)] disabled:opacity-40"
+              >
+                <SparklesIcon size={13} className="text-[var(--color-accent)]" />
+                {summarizing ? 'Summarizing…' : 'Summarize this issue'}
+              </button>
+            </div>
+          )}
+        </div>
         <button
           onClick={onClose}
           className="ml-1 flex size-6 items-center justify-center rounded-md text-[var(--color-text-muted)] hover:bg-[var(--color-hover)] hover:text-[var(--color-text)]"
@@ -134,6 +193,33 @@ function DrawerHeader({ issue, onClose }: { issue: Issue; onClose: () => void })
           <XIcon size={14} />
         </button>
       </div>
+
+      {(summary || summaryError) && (
+        <div className="absolute left-0 right-0 top-full z-20 border-b border-[var(--color-border)] bg-[var(--color-bg)] px-5 py-3">
+          {summary && (
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--color-accent)]">
+                <SparklesIcon size={12} />
+                Summary
+              </div>
+              <ul className="space-y-0.5">
+                {summary.map((point, i) => (
+                  <li key={i} className="flex items-start gap-2 text-[12px] text-[var(--color-text-muted)]">
+                    <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-[var(--color-accent)]/50" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {summaryError && (
+            <div className="flex items-center gap-2 text-[12px] text-[var(--color-danger)]">
+              <span>{summaryError}</span>
+              <button onClick={runSummarize} className="ml-auto underline hover:no-underline">Try again</button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
