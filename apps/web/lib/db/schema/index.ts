@@ -17,3 +17,7 @@ export * from './attachments';
 export * from './audit_log';
 export * from './invitations';
 export * from './teams';
+export * from './workspace-security-policy';
+export * from './outbound-webhooks';
+export * from './exports';
+export * from './api-tokens';
