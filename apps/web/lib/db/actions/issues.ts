@@ -11,6 +11,33 @@ import {
 import { requireAuth } from '@/lib/auth/require-auth';
 import { createId } from '@/lib/utils/id';
 
+async function generateAndStoreEmbedding(
+  issueId: string,
+  workspaceId: string,
+  title: string,
+  description: string
+): Promise<void> {
+  try {
+    const { createWorkspaceAIClient } = await import('@/lib/ai/client');
+    const { generateEmbedding } = await import('@/lib/ai/embed');
+    const { db } = await import('@/lib/db/client');
+
+    const client = await createWorkspaceAIClient(workspaceId);
+    if (!client) return;
+
+    const text = `${title} ${description}`.trim();
+    if (!text) return;
+
+    const embedding = await generateEmbedding(text, client);
+    await db
+      .update(issues)
+      .set({ embedding } as any)
+      .where(eq(issues.externalId, issueId));
+  } catch {
+    // Fire-and-forget: failure should not break the mutation
+  }
+}
+
 export interface CreateIssueInput {
   workspaceId: string;
   projectId: number;
@@ -55,6 +82,8 @@ export async function createIssue(tx: Tx, input: CreateIssueInput): Promise<Issu
     hasLabel: !!row.labelIds?.length,
     hasDueDate: !!row.dueDate,
   });
+
+  generateAndStoreEmbedding(String(row.id), input.workspaceId, input.title, input.description ?? '').catch(() => {});
 
   return row;
 }
@@ -194,6 +223,9 @@ export async function setDescription(tx: Tx, input: SetDescriptionInput): Promis
     .set({ description: input.description, updatedAt: new Date() })
     .where(eq(issues.externalId, input.issueId))
     .returning();
+
+  generateAndStoreEmbedding(input.issueId, input.workspaceId, row.title, input.description).catch(() => {});
+
   return row;
 }
 
@@ -209,6 +241,9 @@ export async function setTitle(tx: Tx, input: SetTitleInput): Promise<Issue> {
     .set({ title: input.title, updatedAt: new Date() })
     .where(eq(issues.externalId, input.issueId))
     .returning();
+
+  generateAndStoreEmbedding(input.issueId, input.workspaceId, input.title, row.description).catch(() => {});
+
   return row;
 }
 
