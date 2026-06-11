@@ -16,6 +16,10 @@ export const workspaceSecurityPolicy = pgTable('workspace_security_policy', {
   monthlyAiSpentCents: integer('monthly_ai_spent_cents').default(0),
   aiBudgetResetAt: timestamp('ai_budget_reset_at', { withTimezone: true }),
   aiFeaturesEnabled: boolean('ai_features_enabled').default(true),
+  githubWebhookSecret: text('github_webhook_secret'),
+  slackBotToken: text('slack_bot_token'),
+  slackSigningSecret: text('slack_signing_secret'),
+  slackTeamId: text('slack_team_id'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });

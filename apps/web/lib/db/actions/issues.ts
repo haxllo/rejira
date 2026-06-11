@@ -8,6 +8,7 @@ import {
   trackIssueCreated,
   trackStatusChanged,
 } from '@/lib/observability/events';
+import { notifyIssueAssigned } from '@/lib/integrations/notify';
 import { requireAuth } from '@/lib/auth/require-auth';
 import { createId } from '@/lib/utils/id';
 
@@ -163,6 +164,9 @@ export async function setAssignees(tx: Tx, input: SetAssigneesInput): Promise<Is
     .set({ assigneeIds: input.assigneeIds, updatedAt: new Date() })
     .where(eq(issues.externalId, input.issueId))
     .returning();
+
+  notifyIssueAssigned(input.workspaceId, input.issueId, input.assigneeIds).catch(() => {});
+
   return row;
 }
 
