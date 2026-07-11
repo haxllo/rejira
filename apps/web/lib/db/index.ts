@@ -6,6 +6,7 @@ export type { DB } from './client';
 export {
   withTransaction,
   withWorkspaceTransaction,
+  withWorkspaceRead,
 } from './transaction';
 export type { Tx } from './transaction';
 

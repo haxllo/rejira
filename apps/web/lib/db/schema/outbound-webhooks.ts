@@ -1,4 +1,4 @@
-import { pgTable, bigserial, text, integer, boolean, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, bigserial, bigint, text, integer, boolean, timestamp } from 'drizzle-orm/pg-core';
 import { workspaces } from './workspaces';
 
 export const outboundWebhooks = pgTable('outbound_webhooks', {
