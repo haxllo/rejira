@@ -50,7 +50,7 @@
     "drizzle-orm": "^0.45.0",
     "pg": "^8.13.0",
     "postgres": "^3.4.5",
-    "react-email": "^4.0.0",
+    "react-email": "^6.9.3",
     "resend": "^4.0.0",
     "tailwindcss": "^4.3.0",
     "zod": "^3.23.8"
